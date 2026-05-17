@@ -35,20 +35,50 @@ export const StatsModal = ({ open, onClose, history }: StatsModalProps) => {
           </div>
           <div className="wj-stats__bignum">
             <div className="wj-stats__bignum-value">
-              {stats.matchedOptimal}
+              {stats.optimalOrBetter}
             </div>
-            <div className="wj-stats__bignum-label">optimal solves</div>
+            <div className="wj-stats__bignum-label">
+              optimal or better
+            </div>
           </div>
         </div>
 
         {stats.averageOverOptimal !== null && (
           <p className="wj-stats__summary">
-            On average,{" "}
-            <strong>
-              {stats.averageOverOptimal.toFixed(1)} more move
-              {Math.abs(stats.averageOverOptimal - 1) < 0.05 ? "" : "s"}
-            </strong>{" "}
-            than common-word optimal.
+            {(() => {
+              const avg = stats.averageOverOptimal;
+              const abs = Math.abs(avg);
+              const rounded = abs.toFixed(1);
+              const movesWord = Math.abs(abs - 1) < 0.05 ? "move" : "moves";
+              if (abs < 0.05) {
+                return (
+                  <>
+                    On average, you hit{" "}
+                    <strong>common-word optimal</strong> exactly.
+                  </>
+                );
+              }
+              if (avg < 0) {
+                return (
+                  <>
+                    On average,{" "}
+                    <strong>
+                      {rounded} {movesWord} under
+                    </strong>{" "}
+                    common-word optimal.
+                  </>
+                );
+              }
+              return (
+                <>
+                  On average,{" "}
+                  <strong>
+                    {rounded} more {movesWord}
+                  </strong>{" "}
+                  than common-word optimal.
+                </>
+              );
+            })()}
           </p>
         )}
 

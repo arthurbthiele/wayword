@@ -32,32 +32,26 @@ export const computeStreak = (history: DailyHistory): number => {
 
 export type DailyStats = {
   totalSolved: number;
-  matchedOptimal: number;
-  bestOverOptimal: number | null; // smallest diff over optimal (excluding match)
+  /** Solves where the user matched OR beat common-word optimal (diff ≤ 0). */
+  optimalOrBetter: number;
   averageOverOptimal: number | null;
 };
 
 export const computeStats = (history: DailyHistory): DailyStats => {
   const entries = Object.values(history);
-  let matchedOptimal = 0;
+  let optimalOrBetter = 0;
   let totalDiff = 0;
   let diffCount = 0;
-  let bestOverOptimal: number | null = null;
   for (const entry of entries) {
     if (entry.optimalMoves === null) continue;
     const diff = entry.userMoves - entry.optimalMoves;
-    if (diff === 0) {
-      matchedOptimal++;
-    } else if (bestOverOptimal === null || diff < bestOverOptimal) {
-      bestOverOptimal = diff;
-    }
+    if (diff <= 0) optimalOrBetter++;
     totalDiff += diff;
     diffCount++;
   }
   return {
     totalSolved: entries.length,
-    matchedOptimal,
-    bestOverOptimal,
+    optimalOrBetter,
     averageOverOptimal: diffCount > 0 ? totalDiff / diffCount : null,
   };
 };
