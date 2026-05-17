@@ -7,10 +7,9 @@ export const Graph = () => {
 
   const [network, setNetwork] = useState();
   const containerRef = useRef(null);
+  const initialFitDoneRef = useRef(false);
 
-  // Keep vis-network's canvas in sync with its container. Triggered by both
-  // window resize and dynamic in-page layout changes (e.g. the victory panel
-  // appearing and squeezing the graph row in our CSS grid).
+  // Keep vis-network's canvas in sync with its container.
   useEffect(() => {
     if (!network || !containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
@@ -25,17 +24,34 @@ export const Graph = () => {
     return () => observer.disconnect();
   }, [network]);
 
+  // Fit once when the network first appears, with minZoomLevel so very small
+  // graphs (like just 'a') don't render microscopically.
+  useEffect(() => {
+    if (!network || initialFitDoneRef.current) return;
+    network.fit({
+      minZoomLevel: 1.0,
+      maxZoomLevel: 2,
+      animation: false,
+    });
+    initialFitDoneRef.current = true;
+  }, [network]);
+
+  // Sync vis-network's selection with React state. Done in a useEffect rather
+  // than on every afterDrawing tick — repeatedly calling fit() during draw
+  // was fighting the user's pinch-to-zoom.
+  useEffect(() => {
+    if (!network || !selectedWord) return;
+    network.setSelection({ nodes: [selectedWord] });
+  }, [network, selectedWord]);
+
   // When an input takes focus (i.e. the mobile keyboard is about to appear
   // and the page will reflow / scroll), recenter the graph on the currently
   // selected node so it stays visible regardless of what the browser does
-  // to the layout. Preserves the user's current zoom level.
+  // to the layout.
   useEffect(() => {
     if (!network || !selectedWord) return;
     const onFocusIn = (event) => {
       if (!(event.target instanceof HTMLInputElement)) return;
-      // requestAnimationFrame lets the browser do its initial keyboard /
-      // scroll work first, so our focus animation lands on the post-reflow
-      // viewport rather than fighting it.
       requestAnimationFrame(() => {
         network.focus(selectedWord, {
           scale: network.getScale(),
@@ -49,23 +65,13 @@ export const Graph = () => {
 
   const events = {
     select: (event) => {
+      // Ignore clicks on empty space — keep the current selection rather than
+      // dropping it; otherwise the input bar's hint can't reason about it.
+      if (event.nodes.length === 0) return;
       setSelectedWord(event.nodes[0]);
     },
-    afterDrawing: () => {
-      if (selectedWord && selectedWord !== network?.getSelectedNodes()[0]) {
-        network?.setSelection({ nodes: [selectedWord] });
-        network?.fit({
-          minZoomLevel: 1.0,
-          maxZoomLevel: 2,
-          animation: { duration: 300 },
-        });
-      }
-    },
     doubleClick: () => {
-      network?.fit({
-        minZoomLevel: 1.0,
-        animation: { duration: 300 },
-      });
+      network?.fit({ animation: { duration: 300 } });
     },
   };
 
@@ -85,8 +91,6 @@ export const Graph = () => {
   );
 };
 
-// Themed to match the warm-papery look. Nodes are paper-tone pills with ink
-// text; the selected one gets the accent colour.
 const options = {
   nodes: {
     shape: "box",

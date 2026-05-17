@@ -23,6 +23,13 @@ export const InputBar = ({ targetReminder }: InputBarProps) => {
 
   const hint = (() => {
     if (trimmed.length === 0) return null;
+    if (!selectedWord) {
+      return (
+        <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
+          Click a word in your graph to pick where to add from
+        </span>
+      );
+    }
     if (!isDictionaryWord) {
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--bad">
