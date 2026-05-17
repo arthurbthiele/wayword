@@ -11,7 +11,10 @@ import {
   useLocalStorage,
   migrateLegacyFreePlayKeys,
 } from "./utilities/useLocalStorage";
-import { getLocalDateString } from "./utilities/dailyTarget";
+import {
+  getLocalDateString,
+  getTargetForDate,
+} from "./utilities/dailyTarget";
 
 migrateLegacyFreePlayKeys();
 
@@ -36,6 +39,11 @@ const App = () => {
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
   const [helpOpen, setHelpOpen] = useState(false);
   const today = getLocalDateString();
+  const dailyTarget = getTargetForDate(today);
+  const [freePlayTarget, setFreePlayTarget] = useLocalStorage<string | null>(
+    "freeplay:target",
+    null
+  );
 
   return (
     <div className="wj-app">
@@ -57,7 +65,7 @@ const App = () => {
             </div>
           </main>
           <VictoryPanelDaily />
-          <InputBar />
+          <InputBar targetReminder={dailyTarget} />
         </GraphProvider>
       ) : (
         <GraphProvider
@@ -65,13 +73,16 @@ const App = () => {
           initialGraph={freeplayInitialGraph}
           initialSelectedWord="art"
         >
-          <StatusStripFreePlay />
+          <StatusStripFreePlay
+            target={freePlayTarget}
+            setTarget={setFreePlayTarget}
+          />
           <main className="wj-graph">
             <div className="wj-graph__inner">
               <Graph />
             </div>
           </main>
-          <InputBar />
+          <InputBar targetReminder={freePlayTarget} />
         </GraphProvider>
       )}
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />

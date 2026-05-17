@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
 import { useLocalStorage } from "../utilities/useLocalStorage";
@@ -8,11 +14,15 @@ import { logTargetPaths } from "../utilities/logTargetPaths";
 const MIN_DIFFICULTY = 1;
 const MAX_DIFFICULTY = 15;
 
-export const StatusStripFreePlay = () => {
-  const [target, setTarget] = useLocalStorage<string | null>(
-    "freeplay:target",
-    null
-  );
+type StatusStripFreePlayProps = {
+  target: string | null;
+  setTarget: Dispatch<SetStateAction<string | null>>;
+};
+
+export const StatusStripFreePlay = ({
+  target,
+  setTarget,
+}: StatusStripFreePlayProps) => {
   const [difficulty, setDifficulty] = useLocalStorage<number>(
     "freeplay:difficulty",
     1

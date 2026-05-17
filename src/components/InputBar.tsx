@@ -5,7 +5,11 @@ import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 
-export const InputBar = () => {
+type InputBarProps = {
+  targetReminder?: string | null;
+};
+
+export const InputBar = ({ targetReminder }: InputBarProps) => {
   const { selectedWord, setSelectedWord, graph, setGraph } =
     useContext(GraphContext);
   const [value, setValue] = useState("");
@@ -57,6 +61,12 @@ export const InputBar = () => {
     <div className="wj-inputbar">
       <div className="wj-inputbar__selected">
         Selected <b>{selectedWord}</b> →
+        {targetReminder && (
+          <>
+            {" reach "}
+            <b className="wj-inputbar__target">{targetReminder}</b>
+          </>
+        )}
       </div>
       <div className="wj-inputbar__field">
         <Input

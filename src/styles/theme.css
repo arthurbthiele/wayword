@@ -371,6 +371,9 @@ button {
   font-weight: 600;
   color: var(--color-ink);
 }
+.wj-inputbar__target {
+  color: var(--color-accent) !important;
+}
 .wj-inputbar__field {
   flex: 1;
   min-width: 0;
