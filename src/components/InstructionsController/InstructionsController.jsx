@@ -1,9 +1,12 @@
-import { useState } from "react";
 import { Instructions } from "./Instructions";
 import { ShowInstructionsButton } from "./ShowInstructionsButton";
+import { useLocalStorage } from "../../utilities/useLocalStorage";
 
 export const InstructionsController = () => {
-  const [showInstructions, setShowInstructions] = useState(true);
+  const [showInstructions, setShowInstructions] = useLocalStorage(
+    "showInstructions",
+    true
+  );
   const toggleShowInstructions = () => {
     setShowInstructions(!showInstructions);
   };

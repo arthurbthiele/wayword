@@ -1,18 +1,28 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect } from "react";
 import { Button } from "@material-ui/core";
 import { GraphContext } from "./GraphProvider";
 import { Text } from "./Text";
 import { fonts } from "../assets";
+import {
+  useLocalStorage,
+  clearLocalStorage,
+} from "../utilities/useLocalStorage";
 
 const minDifficulty = 1;
 const maxDifficulty = 15;
 
 export const TargetWord = () => {
-  const [target, setTarget] = useState(null);
-  const [difficultyLevel, setDifficultyLevel] = useState(3);
-  const [score, setScore] = useState(0);
+  const [target, setTarget] = useLocalStorage("target", null);
+  const [difficultyLevel, setDifficultyLevel] = useLocalStorage(
+    "difficulty",
+    1
+  );
+  const [score, setScore] = useLocalStorage("score", 0);
+  const [lastScoredTarget, setLastScoredTarget] = useLocalStorage(
+    "lastScoredTarget",
+    null
+  );
   const { graph, depths } = useContext(GraphContext);
-  const lastScoredTargetRef = useRef(null);
 
   const pickNewTarget = (level) => {
     const wordsOfThisDepth = Object.keys(depths).filter(
@@ -26,9 +36,11 @@ export const TargetWord = () => {
     }
   };
 
-  // Pick a fresh target on mount, and whenever difficulty changes.
+  // Pick a fresh target when difficulty changes, or on first ever load.
   useEffect(() => {
-    pickNewTarget(difficultyLevel);
+    if (target === null) {
+      pickNewTarget(difficultyLevel);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [difficultyLevel]);
 
@@ -36,22 +48,35 @@ export const TargetWord = () => {
   useEffect(() => {
     if (!target) return;
     const reachedTarget = graph.nodes.some((node) => node.id === target);
-    if (reachedTarget && lastScoredTargetRef.current !== target) {
-      lastScoredTargetRef.current = target;
+    if (reachedTarget && lastScoredTarget !== target) {
+      setLastScoredTarget(target);
       setScore((previousScore) => previousScore + difficultyLevel ** 2);
       pickNewTarget(difficultyLevel);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph.nodes, target, difficultyLevel]);
+  }, [graph.nodes, target, difficultyLevel, lastScoredTarget]);
 
   const onPlus = () => {
     if (difficultyLevel < maxDifficulty) {
       setDifficultyLevel(difficultyLevel + 1);
+      pickNewTarget(difficultyLevel + 1);
     }
   };
   const onMinus = () => {
     if (difficultyLevel > minDifficulty) {
       setDifficultyLevel(difficultyLevel - 1);
+      pickNewTarget(difficultyLevel - 1);
+    }
+  };
+
+  const onReset = () => {
+    if (
+      window.confirm(
+        "Reset your graph, score, and current target? This cannot be undone."
+      )
+    ) {
+      clearLocalStorage();
+      window.location.reload();
     }
   };
 
@@ -113,6 +138,16 @@ export const TargetWord = () => {
         </Text>
         <Text>Your score is: {score}</Text>
       </Text>
+      <div style={{ textAlign: "center", marginTop: 8 }}>
+        <Button
+          onClick={onReset}
+          variant="outlined"
+          color="secondary"
+          size="small"
+        >
+          Reset
+        </Button>
+      </div>
     </div>
   );
 };
