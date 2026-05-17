@@ -8,6 +8,10 @@ import { InputBar } from "./components/InputBar";
 import { VictoryPanelDaily } from "./components/VictoryPanelDaily";
 import { HelpModal } from "./components/HelpModal";
 import {
+  VictoryModalFreePlay,
+  type FreePlayHit,
+} from "./components/VictoryModalFreePlay";
+import {
   useLocalStorage,
   migrateLegacyFreePlayKeys,
 } from "./utilities/useLocalStorage";
@@ -44,6 +48,7 @@ const App = () => {
     "freeplay:target",
     null
   );
+  const [freePlayHit, setFreePlayHit] = useState<FreePlayHit | null>(null);
 
   return (
     <div className="wj-app">
@@ -76,6 +81,7 @@ const App = () => {
           <StatusStripFreePlay
             target={freePlayTarget}
             setTarget={setFreePlayTarget}
+            onTargetHit={setFreePlayHit}
           />
           <main className="wj-graph">
             <div className="wj-graph__inner">
@@ -86,6 +92,10 @@ const App = () => {
         </GraphProvider>
       )}
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <VictoryModalFreePlay
+        hit={freePlayHit}
+        onClose={() => setFreePlayHit(null)}
+      />
     </div>
   );
 };

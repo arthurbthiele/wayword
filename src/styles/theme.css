@@ -415,6 +415,7 @@ button {
 
 /* Victory panel (overlay above input). */
 .wj-victory {
+  position: relative;
   background: var(--color-paper-2);
   border-top: 1px solid var(--color-rule);
   padding: var(--space-5) var(--space-6);
@@ -422,6 +423,27 @@ button {
   flex-direction: column;
   gap: var(--space-3);
   animation: wj-victory-in 0.32s ease;
+}
+.wj-victory__close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wj-victory__close:hover {
+  background: rgba(31, 37, 51, 0.05);
+  color: var(--color-ink);
 }
 .wj-victory__headline {
   display: flex;
@@ -486,6 +508,56 @@ button {
 @keyframes wj-victory-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Free-play victory modal. */
+.wj-victory-modal {
+  text-align: center;
+}
+.wj-victory-modal__eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+.wj-victory-modal__title {
+  font-family: var(--font-serif);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-accent);
+  margin: 0;
+  text-transform: lowercase;
+}
+.wj-victory-modal__moves {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+.wj-victory-modal__path {
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-paper-2);
+  border-radius: var(--radius-md);
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  color: var(--color-ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1) var(--space-2);
+}
+.wj-victory-modal__arrow {
+  font-family: var(--font-sans);
+  color: var(--color-ink-faint);
+}
+.wj-victory-modal__actions {
+  margin-top: var(--space-5);
+  display: flex;
+  justify-content: center;
 }
 
 /* Help modal content. */

@@ -26,9 +26,14 @@ export const VictoryPanelDaily = () => {
     "daily:optimalPath",
     null
   );
+  const [dismissedDate, setDismissedDate] = useLocalStorage<string | null>(
+    "daily:victoryDismissedDate",
+    null
+  );
   const [copied, setCopied] = useState(false);
 
   const solvedToday = solvedDate === today;
+  const dismissed = dismissedDate === today;
   const userMoves = solvedPath ? solvedPath.length - 1 : 0;
   const optimalMoves = optimalPath ? optimalPath.length - 1 : null;
   const matchedOptimal =
@@ -53,7 +58,7 @@ export const VictoryPanelDaily = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.nodes, graph.edges, target, today, solvedToday]);
 
-  if (!solvedToday || !solvedPath) return null;
+  if (!solvedToday || !solvedPath || dismissed) return null;
 
   const onCopy = async () => {
     const suffix = matchedOptimal
@@ -104,6 +109,14 @@ export const VictoryPanelDaily = () => {
 
   return (
     <div className="wj-victory">
+      <button
+        type="button"
+        className="wj-victory__close"
+        onClick={() => setDismissedDate(today)}
+        aria-label="Dismiss"
+      >
+        ×
+      </button>
       <div className="wj-victory__headline">
         <div>
           <div className="wj-victory__title">{titleText}</div>

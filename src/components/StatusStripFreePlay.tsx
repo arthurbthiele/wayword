@@ -10,6 +10,8 @@ import { Button } from "./ui/Button";
 import { useLocalStorage } from "../utilities/useLocalStorage";
 import { legitimateWords } from "../dictionaryData/legitimate";
 import { logTargetPaths } from "../utilities/logTargetPaths";
+import { findShortestPathInGraph } from "../utilities/findPath";
+import type { FreePlayHit } from "./VictoryModalFreePlay";
 
 const MIN_DIFFICULTY = 1;
 const MAX_DIFFICULTY = 15;
@@ -17,11 +19,13 @@ const MAX_DIFFICULTY = 15;
 type StatusStripFreePlayProps = {
   target: string | null;
   setTarget: Dispatch<SetStateAction<string | null>>;
+  onTargetHit: (hit: FreePlayHit) => void;
 };
 
 export const StatusStripFreePlay = ({
   target,
   setTarget,
+  onTargetHit,
 }: StatusStripFreePlayProps) => {
   const [difficulty, setDifficulty] = useLocalStorage<number>(
     "freeplay:difficulty",
@@ -59,15 +63,22 @@ export const StatusStripFreePlay = ({
     if (target) logTargetPaths("free-play", target);
   }, [target]);
 
-  // Credit when target reached; pick next.
+  // Credit when target reached; fire the victory modal and pick next.
   useEffect(() => {
     if (!target) return;
     const reached = graph.nodes.some(
       (node: { id: string }) => node.id === target
     );
     if (reached && lastScored !== target) {
+      const path = findShortestPathInGraph(
+        graph.nodes,
+        graph.edges,
+        "a",
+        target
+      );
       setLastScored(target);
       setScore((previousScore) => previousScore + difficulty ** 2);
+      onTargetHit({ target, path: path ?? [target] });
       pickNewTarget(difficulty);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
