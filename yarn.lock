@@ -739,6 +739,11 @@ agent-base@^7.1.0, agent-base@^7.1.2:
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-7.1.4.tgz#e3cd76d4c548ee895d3c3fd8dc1f6c5b9032e7a8"
   integrity sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==
 
+an-array-of-english-words@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/an-array-of-english-words/-/an-array-of-english-words-2.0.0.tgz#2d9de64929b864f1eff5bd53dead275ff1ac0c32"
+  integrity sha512-FXnNvZSOI27kkKXeLSquhaTGP7z198UOQ4txaYO9fCfrjCh+D5SV7G7XqzEH0229+pAi4cjBEZ4WIQYgjKtO7Q==
+
 array-union@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/array-union/-/array-union-2.1.0.tgz"
@@ -1981,6 +1986,11 @@ why-is-node-running@^2.3.0:
   dependencies:
     siginfo "^2.0.0"
     stackback "0.0.2"
+
+wordlist-english@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/wordlist-english/-/wordlist-english-1.2.1.tgz#7a76da3c7ac26919d80d1a54056c796830febdf7"
+  integrity sha512-vaiQQiu95UeON0WZFtiTrWfZmIiUd2rhrhMCBeEzwq3oTVzHCX8naGCqv/smSspE9kH2sN+E8lZyV0JZjqSzGw==
 
 ws@^8.18.0:
   version "8.20.1"

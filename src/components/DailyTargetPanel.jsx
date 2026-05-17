@@ -12,6 +12,7 @@ import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
 } from "../utilities/findPath";
+import { legitimateWords } from "../dictionaryData/legitimate";
 
 export const DailyTargetPanel = () => {
   const today = getLocalDateString();
@@ -42,7 +43,7 @@ export const DailyTargetPanel = () => {
     setSolvedPath(
       findShortestPathInGraph(graph.nodes, graph.edges, "a", target)
     );
-    setOptimalPath(findShortestPathInDictionary("a", target));
+    setOptimalPath(findShortestPathInDictionary("a", target, legitimateWords));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.nodes, graph.edges, target, today, solvedToday]);
 

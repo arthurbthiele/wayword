@@ -7,6 +7,7 @@ import {
   useLocalStorage,
   clearLocalStorage,
 } from "../utilities/useLocalStorage";
+import { legitimateWords } from "../dictionaryData/legitimate";
 
 const minDifficulty = 1;
 const maxDifficulty = 15;
@@ -26,13 +27,13 @@ export const TargetWord = () => {
 
   const pickNewTarget = (level) => {
     const wordsOfThisDepth = Object.keys(depths).filter(
-      (word) => depths[word] === level
+      (word) => depths[word] === level && legitimateWords.has(word)
     );
     if (wordsOfThisDepth.length > 0) {
       const choiceIndex = Math.floor(Math.random() * wordsOfThisDepth.length);
       setTarget(wordsOfThisDepth[choiceIndex]);
     } else {
-      setTarget("There are no words of this depth");
+      setTarget("There are no legitimate words at this difficulty");
     }
   };
 

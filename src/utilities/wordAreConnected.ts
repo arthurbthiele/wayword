@@ -1,4 +1,4 @@
-import { wordGraph } from "../dictionaryData";
+import { wordGraph } from "../dictionaryData/wordGraph";
 
 export const wordsAreConnected = (
   word1: string,

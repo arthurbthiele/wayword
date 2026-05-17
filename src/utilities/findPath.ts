@@ -1,4 +1,4 @@
-import { wordGraph } from "../dictionaryData";
+import { wordGraph } from "../dictionaryData/wordGraph";
 import type { GraphNode } from "./wordDepths";
 
 /**
@@ -53,16 +53,21 @@ export const findShortestPathInGraph = (
 };
 
 /**
- * BFS shortest path between two words using the entire dictionary as the
- * graph (regardless of what the user has added). Useful for computing the
- * "optimal" path length to compare against the player's solution.
+ * BFS shortest path between two words using the dictionary as the graph.
+ * If `restrictTo` is provided, BFS only visits words in that set — used to
+ * compute the "optimal" path using only legitimate words (so the comparison
+ * shown to the player feels honest, not built from obscure intermediates).
  */
 export const findShortestPathInDictionary = (
   start: string,
-  target: string
+  target: string,
+  restrictTo?: ReadonlySet<string>
 ): string[] | null => {
   if (start === target) return [start];
   if (!(start in wordGraph) || !(target in wordGraph)) return null;
+  if (restrictTo && (!restrictTo.has(start) || !restrictTo.has(target))) {
+    return null;
+  }
 
   const previous = new Map<string, string>();
   const visited = new Set<string>([start]);
@@ -81,6 +86,7 @@ export const findShortestPathInDictionary = (
       return path;
     }
     for (const neighbour of wordGraph[current] ?? []) {
+      if (restrictTo && !restrictTo.has(neighbour)) continue;
       if (!visited.has(neighbour)) {
         visited.add(neighbour);
         previous.set(neighbour, current);

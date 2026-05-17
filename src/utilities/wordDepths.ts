@@ -1,4 +1,4 @@
-import { wordGraph } from "../dictionaryData";
+import { wordGraph } from "../dictionaryData/wordGraph";
 
 export type GraphNode = { id: string; label: string };
 export type Depths = Record<string, number>;

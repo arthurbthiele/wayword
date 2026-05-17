@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { wordGraph } from "../dictionaryData";
+import { wordGraph } from "../dictionaryData/wordGraph";
 import { wordsAreConnected } from "../utilities/wordAreConnected";
 import { TextField, Button } from "@material-ui/core";
 import { GraphContext } from "./GraphProvider";
