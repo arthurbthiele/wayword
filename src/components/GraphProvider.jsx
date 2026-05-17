@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { updateDepths } from "../utilities/wordDepths";
+import React, { useState, useMemo } from "react";
+import { computeDepths } from "../utilities/wordDepths";
 
 export const GraphContext = React.createContext();
 
@@ -9,9 +9,8 @@ export const GraphProvider = ({ children }) => {
     nodes: [{ id: "a", label: "a" }],
     edges: [],
   });
-  const depths = useRef({}).current;
 
-  updateDepths(depths, graph.nodes);
+  const depths = useMemo(() => computeDepths(graph.nodes), [graph.nodes]);
 
   return (
     <GraphContext.Provider

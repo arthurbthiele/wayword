@@ -1,20 +1,22 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { Button } from "@material-ui/core";
 import { GraphContext } from "./GraphProvider";
 import { Text } from "./Text";
 import { fonts } from "../assets";
 
+const minDifficulty = 1;
+const maxDifficulty = 15;
+
 export const TargetWord = () => {
-  const [target, setTarget] = useState();
+  const [target, setTarget] = useState(null);
   const [difficultyLevel, setDifficultyLevel] = useState(3);
   const [score, setScore] = useState(0);
   const { graph, depths } = useContext(GraphContext);
-  const minDifficulty = 1;
-  const maxDifficulty = 15;
+  const lastScoredTargetRef = useRef(null);
 
-  const updateTarget = (difficultyLevel) => {
+  const pickNewTarget = (level) => {
     const wordsOfThisDepth = Object.keys(depths).filter(
-      (word) => depths[word] === difficultyLevel
+      (word) => depths[word] === level
     );
     if (wordsOfThisDepth.length > 0) {
       const choiceIndex = Math.floor(Math.random() * wordsOfThisDepth.length);
@@ -24,23 +26,31 @@ export const TargetWord = () => {
     }
   };
 
-  if (graph.nodes.map((n) => n.id).includes(target)) {
-    setScore(score + difficultyLevel ** 2);
-  }
+  // Pick a fresh target on mount, and whenever difficulty changes.
+  useEffect(() => {
+    pickNewTarget(difficultyLevel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [difficultyLevel]);
 
-  if (!target || graph.nodes.map((n) => n.id).includes(target)) {
-    updateTarget(difficultyLevel);
-  }
+  // When the user adds the target word to their graph, award points and pick a new one.
+  useEffect(() => {
+    if (!target) return;
+    const reachedTarget = graph.nodes.some((node) => node.id === target);
+    if (reachedTarget && lastScoredTargetRef.current !== target) {
+      lastScoredTargetRef.current = target;
+      setScore((previousScore) => previousScore + difficultyLevel ** 2);
+      pickNewTarget(difficultyLevel);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graph.nodes, target, difficultyLevel]);
 
   const onPlus = () => {
     if (difficultyLevel < maxDifficulty) {
-      updateTarget(difficultyLevel + 1);
       setDifficultyLevel(difficultyLevel + 1);
     }
   };
   const onMinus = () => {
     if (difficultyLevel > minDifficulty) {
-      updateTarget(difficultyLevel - 1);
       setDifficultyLevel(difficultyLevel - 1);
     }
   };

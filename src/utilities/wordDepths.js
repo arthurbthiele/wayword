@@ -1,18 +1,19 @@
 import { wordGraph } from "../dictionaryData";
-import queue from "queue";
 
-export const updateDepths = (depths, currentGraphNodes) => {
-  const nodesToVisit = queue();
+export const computeDepths = (currentGraphNodes) => {
+  const depths = {};
+  const nodesToVisit = [];
+  let head = 0;
+
   currentGraphNodes.forEach((node) => {
-    const word = node.id;
-    depths[word] = 0;
-    nodesToVisit.push(word);
+    depths[node.id] = 0;
+    nodesToVisit.push(node.id);
   });
 
-  while (nodesToVisit.length > 0) {
-    const currentWord = nodesToVisit.shift();
+  while (head < nodesToVisit.length) {
+    const currentWord = nodesToVisit[head++];
     const currentDepth = depths[currentWord];
-    const adjacentWords = getAdjacentWords(currentWord);
+    const adjacentWords = wordGraph[currentWord] || [];
     adjacentWords.forEach((word) => {
       if (!(word in depths) || depths[word] > currentDepth + 1) {
         depths[word] = currentDepth + 1;
@@ -20,8 +21,6 @@ export const updateDepths = (depths, currentGraphNodes) => {
       }
     });
   }
-};
 
-const getAdjacentWords = (currentWord) => {
-  return wordGraph[currentWord];
+  return depths;
 };

@@ -21,7 +21,7 @@ Since the game centres around connections, we only include words that are reacha
 
 The dictionary was chosen to include most common words while excluding obvious non-words, like 'nonly'. This does mean, however, that some reasonably common words, like 'badger' or 'hexagon' are not in this dictionary. Suggestions for how to include all 'real words' while not including obvious non-words are appreciated.
 
-To make this structure 'game-like', a target word is chosen at random from all words that are currently at a distance equal to the difficulty level from the users current graph. These 'depths' are calculated using [Dijkstra's Algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm), with all edges inside the users current graph having length 0, and all edges outside it having length 1.
+To make this structure 'game-like', a target word is chosen at random from all words that are currently at a distance equal to the difficulty level from the users current graph. These 'depths' are calculated using a [breadth-first search](https://en.wikipedia.org/wiki/Breadth-first_search) seeded simultaneously from every word in the users current graph — every edge has unit length, so BFS gives the same shortest-path distances Dijkstra's algorithm would, more cheaply.
 
 After a target word is added to the graph by the user, a new target word is recalculated, and their score increases by the square of the difficulty level. We chose this scoring system to reflect that doubling the difficulty much more than doubles the time required to find the target word, and for its relative simplicity. A more accurate scoring system, which reflects the difficulty a brute-force search would have in finding a target, would be:
 
