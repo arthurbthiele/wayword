@@ -9,7 +9,7 @@ import confetti from "canvas-confetti";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
-import { getLocalDateString } from "../utilities/dailyTarget";
+import { getUtcDateString } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
@@ -54,7 +54,7 @@ export const VictoryPanelDaily = ({
   history,
   setHistory,
 }: VictoryPanelDailyProps) => {
-  const today = getLocalDateString();
+  const today = getUtcDateString();
   const { graph } = useContext(GraphContext);
 
   const [solvedDate, setSolvedDate] = useLocalStorage<string | null>(
@@ -134,8 +134,17 @@ export const VictoryPanelDaily = ({
 
   if (!solvedToday || !solvedPath || dismissed) return null;
 
-  const canNativeShare =
-    typeof navigator !== "undefined" && typeof navigator.share === "function";
+  // Native share on desktop opens a clunky OS share sheet (AirDrop / Notes /
+  // Reminders); on mobile it's the right primary action. Gate on coarse
+  // pointer so phones/tablets get share, laptops/desktops get clipboard.
+  const isCoarsePointer =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches;
+  const useNativeShare =
+    isCoarsePointer &&
+    typeof navigator !== "undefined" &&
+    typeof navigator.share === "function";
 
   const onShare = async () => {
     const suffix = matchedOptimal
@@ -147,7 +156,7 @@ export const VictoryPanelDaily = ({
           : "";
     const text = `Wayword ${today}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${solvedPath.join(" → ")}\n\n${SHARE_URL}`;
 
-    if (canNativeShare) {
+    if (useNativeShare) {
       try {
         await navigator.share({ title: "Wayword", text });
         return;
@@ -211,7 +220,7 @@ export const VictoryPanelDaily = ({
         </div>
         <div className="wj-victory__actions">
           <Button variant="primary" size="small" onClick={onShare}>
-            {copied ? "Copied!" : canNativeShare ? "Share" : "Copy result"}
+            {copied ? "Copied!" : useNativeShare ? "Share" : "Copy result"}
           </Button>
         </div>
       </div>

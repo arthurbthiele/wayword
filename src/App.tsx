@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { GraphProvider } from "./components/GraphProvider";
 import { Header, type GameMode } from "./components/Header";
 import { StatusStripDaily } from "./components/StatusStripDaily";
@@ -17,7 +17,7 @@ import {
   migrateDailyToV2,
   migrateLegacyFreePlayKeys,
 } from "./utilities/useLocalStorage";
-import { getDailyPair, getLocalDateString } from "./utilities/dailyTarget";
+import { getDailyPair, getUtcDateString } from "./utilities/dailyTarget";
 import {
   computeStreak,
   type DailyHistory,
@@ -47,7 +47,24 @@ const App = () => {
     () => computeStreak(dailyHistory),
     [dailyHistory]
   );
-  const today = getLocalDateString();
+  // `today` is held in state (not just computed in render) so we can refresh
+  // it when the user comes back to a stale tab — otherwise a tab left open
+  // across midnight UTC would keep showing yesterday's puzzle, and worse,
+  // re-save yesterday's graph state to today's storage key as soon as
+  // something triggers a re-render.
+  const [today, setToday] = useState(getUtcDateString);
+  useEffect(() => {
+    const refresh = () => setToday(getUtcDateString());
+    const onVisibility = () => {
+      if (!document.hidden) refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
   const dailyPair = useMemo(() => getDailyPair(today), [today]);
   const dailyInitialGraph = useMemo(
     () => ({
@@ -77,7 +94,7 @@ const App = () => {
       />
       {mode === "daily" ? (
         <GraphProvider
-          key="daily"
+          key={`daily-${today}`}
           keyPrefix={`daily:v2:${today}`}
           initialGraph={dailyInitialGraph}
           initialSelectedWord={dailyPair.start}

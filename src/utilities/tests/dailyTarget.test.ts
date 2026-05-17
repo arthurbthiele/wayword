@@ -1,4 +1,4 @@
-import { getTargetForDate, getLocalDateString } from "../dailyTarget";
+import { getTargetForDate, getUtcDateString } from "../dailyTarget";
 import { targetWords } from "../../dictionaryData/targets";
 
 describe("getTargetForDate", () => {
@@ -21,9 +21,15 @@ describe("getTargetForDate", () => {
   });
 });
 
-describe("getLocalDateString", () => {
-  it("formats a date as YYYY-MM-DD using local components", () => {
-    const date = new Date(2026, 4, 7); // May 7 (month is 0-indexed)
-    expect(getLocalDateString(date)).toBe("2026-05-07");
+describe("getUtcDateString", () => {
+  it("formats a date as YYYY-MM-DD using UTC components", () => {
+    const date = new Date(Date.UTC(2026, 4, 7)); // May 7 UTC
+    expect(getUtcDateString(date)).toBe("2026-05-07");
+  });
+
+  it("uses UTC, not local time, near midnight", () => {
+    // 2026-05-07 23:30:00 UTC — would be 2026-05-08 in any timezone east of UTC.
+    const date = new Date(Date.UTC(2026, 4, 7, 23, 30, 0));
+    expect(getUtcDateString(date)).toBe("2026-05-07");
   });
 });

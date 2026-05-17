@@ -3,13 +3,14 @@ import { legitimateWords } from "../dictionaryData/legitimate";
 import { wordGraph } from "../dictionaryData/wordGraph";
 
 /**
- * Today's date in the user's local timezone, formatted YYYY-MM-DD.
- * This is the key under which today's daily-challenge state is stored.
+ * Today's date in UTC, formatted YYYY-MM-DD. UTC (not local) so the daily
+ * puzzle rolls over at the same instant for everyone — otherwise two players
+ * in different timezones could see different puzzles when comparing scores.
  */
-export const getLocalDateString = (date: Date = new Date()): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+export const getUtcDateString = (date: Date = new Date()): string => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
@@ -31,7 +32,7 @@ const hashString = (input: string): number => hashStringWithSalt(input, 0);
  * target list (length, plural, optimal-path-4-7 filtered).
  */
 export const getTargetForDate = (
-  dateString: string = getLocalDateString()
+  dateString: string = getUtcDateString()
 ): string => {
   const index = hashString(dateString) % targetWords.length;
   return targetWords[index];
@@ -95,7 +96,7 @@ const isViableStart = (word: string): boolean =>
  * targets in range) and rerolls until it finds a viable pair.
  */
 export const getDailyPair = (
-  dateString: string = getLocalDateString()
+  dateString: string = getUtcDateString()
 ): { start: string; target: string } => {
   const sortedLegitimate = getSortedLegitimate();
   const viableStarts = sortedLegitimate.filter(isViableStart);
