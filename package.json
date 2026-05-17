@@ -1,5 +1,5 @@
 {
-  "name": "word-journey",
+  "name": "wayword",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -29,5 +29,5 @@
     "vitest": "^2.1.0",
     "wordlist-english": "^1.2.1"
   },
-  "homepage": "http://arthurbthiele.github.io/word-journey"
+  "homepage": "http://arthurbthiele.github.io/wayword"
 }
