@@ -25,11 +25,13 @@ migrateLegacyFreePlayKeys();
 const dailyInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
   edges: [] as { from: string; to: string }[],
+  parents: {} as Record<string, string>,
 };
 
 const freeplayInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
   edges: [] as { from: string; to: string }[],
+  parents: {} as Record<string, string>,
 };
 
 const App = () => {
@@ -41,6 +43,9 @@ const App = () => {
     "freeplay:target",
     null
   );
+  const [freePlayQualifyingPath, setFreePlayQualifyingPath] = useLocalStorage<
+    string[] | null
+  >("freeplay:qualifyingPath", null);
   const [freePlayHit, setFreePlayHit] = useState<FreePlayHit | null>(null);
 
   return (
@@ -74,6 +79,8 @@ const App = () => {
           <StatusStripFreePlay
             target={freePlayTarget}
             setTarget={setFreePlayTarget}
+            qualifyingPath={freePlayQualifyingPath}
+            setQualifyingPath={setFreePlayQualifyingPath}
             onTargetHit={setFreePlayHit}
           />
           <main className="wj-graph">

@@ -55,9 +55,17 @@ export const InputBar = ({ targetReminder }: InputBarProps) => {
     if (!canSubmit) return;
     const newNode = { id: trimmed, label: trimmed };
     const newEdge = { from: selectedWord, to: trimmed };
+    const existingParents = graph.parents ?? {};
+    // Only record a parent the first time a word is added — second-time
+    // additions (closed-loop edges) shouldn't overwrite the word's history.
+    const nextParents =
+      trimmed in existingParents
+        ? existingParents
+        : { ...existingParents, [trimmed]: selectedWord };
     setGraph({
       nodes: [...graph.nodes, newNode],
       edges: [...graph.edges, newEdge],
+      parents: nextParents,
     });
     setSelectedWord(trimmed);
     setValue("");

@@ -6,6 +6,7 @@ import { getLocalDateString, getTargetForDate } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
+  findUserPath,
 } from "../utilities/findPath";
 import { legitimateWords } from "../dictionaryData/legitimate";
 
@@ -49,9 +50,12 @@ export const VictoryPanelDaily = () => {
     );
     if (!reached) return;
     setSolvedDate(today);
-    setSolvedPath(
-      findShortestPathInGraph(graph.nodes, graph.edges, "a", target)
-    );
+    // Prefer the chronological path the user took (via parents); fall back to
+    // shortest-path-through-graph for legacy graphs without parent tracking.
+    const userPath =
+      findUserPath(graph.parents, "a", target) ??
+      findShortestPathInGraph(graph.nodes, graph.edges, "a", target);
+    setSolvedPath(userPath);
     setOptimalPath(
       findShortestPathInDictionary("a", target, legitimateWords)
     );

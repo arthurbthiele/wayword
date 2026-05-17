@@ -53,6 +53,70 @@ export const findShortestPathInGraph = (
 };
 
 /**
+ * Reconstructs the path the user actually took to reach `target`, by walking
+ * back through the `parents` map (which records the word that was selected
+ * when each word was added). Returns null if `target` can't be traced back
+ * to `start` via parents (e.g. on legacy graphs that pre-date parent tracking).
+ */
+export const findUserPath = (
+  parents: Record<string, string> | undefined,
+  start: string,
+  target: string
+): string[] | null => {
+  if (target === start) return [start];
+  if (!parents) return null;
+  const path: string[] = [target];
+  let current = target;
+  let safety = 500;
+  while (current !== start && parents[current] && safety-- > 0) {
+    current = parents[current];
+    path.unshift(current);
+  }
+  return current === start ? path : null;
+};
+
+/**
+ * Multi-source BFS through the full dictionary from any of `startNodeIds`
+ * to `target`. Returns the shortest path, beginning at whichever start node
+ * is closest. Used to show the "qualifying chain" — the puzzle the picker
+ * implicitly set when it chose a target at depth N from the user's graph.
+ */
+export const findShortestPathFromAnyToTarget = (
+  startNodeIds: string[],
+  target: string
+): string[] | null => {
+  if (startNodeIds.length === 0) return null;
+  if (startNodeIds.includes(target)) return [target];
+
+  const visited = new Set<string>(startNodeIds);
+  const previous = new Map<string, string>();
+  const queue: string[] = [...startNodeIds];
+  let head = 0;
+
+  while (head < queue.length) {
+    const word = queue[head++];
+    if (word === target) {
+      const path: string[] = [];
+      let step: string | undefined = word;
+      while (step !== undefined) {
+        path.unshift(step);
+        step = previous.get(step);
+      }
+      return path;
+    }
+    for (const neighbour of wordGraph[word] ?? []) {
+      if (!visited.has(neighbour)) {
+        visited.add(neighbour);
+        previous.set(neighbour, word);
+        queue.push(neighbour);
+      }
+    }
+  }
+
+  return null;
+};
+
+/**
  * BFS shortest path between two words using the dictionary as the graph.
  * If `restrictTo` is provided, BFS only visits words in that set — used to
  * compute the "optimal" path using only legitimate words (so the comparison

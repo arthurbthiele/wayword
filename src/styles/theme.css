@@ -536,8 +536,29 @@ button {
   font-size: var(--text-sm);
   color: var(--color-ink-muted);
 }
-.wj-victory-modal__path {
+.wj-victory-modal__section {
   margin-top: var(--space-5);
+  text-align: left;
+}
+.wj-victory-modal__label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-2);
+}
+.wj-victory-modal__label[title] {
+  text-decoration: underline dotted var(--color-rule);
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.wj-victory-modal__label[title] span[aria-hidden] {
+  opacity: 0.6;
+  font-size: 11px;
+}
+.wj-victory-modal__path {
   padding: var(--space-3) var(--space-4);
   background: var(--color-paper-2);
   border-radius: var(--radius-md);
@@ -547,8 +568,13 @@ button {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
   gap: var(--space-1) var(--space-2);
+}
+.wj-victory-modal__path--qualifying {
+  color: var(--color-accent);
+}
+.wj-victory-modal__path--qualifying .wj-victory-modal__arrow {
+  color: var(--color-accent-soft);
 }
 .wj-victory-modal__arrow {
   font-family: var(--font-sans);

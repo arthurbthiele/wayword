@@ -10,7 +10,10 @@ import { Button } from "./ui/Button";
 import { useLocalStorage } from "../utilities/useLocalStorage";
 import { legitimateWords } from "../dictionaryData/legitimate";
 import { logTargetPaths } from "../utilities/logTargetPaths";
-import { findShortestPathInGraph } from "../utilities/findPath";
+import {
+  findShortestPathFromAnyToTarget,
+  findUserPath,
+} from "../utilities/findPath";
 import type { FreePlayHit } from "./VictoryModalFreePlay";
 
 const MIN_DIFFICULTY = 1;
@@ -19,12 +22,16 @@ const MAX_DIFFICULTY = 15;
 type StatusStripFreePlayProps = {
   target: string | null;
   setTarget: Dispatch<SetStateAction<string | null>>;
+  qualifyingPath: string[] | null;
+  setQualifyingPath: Dispatch<SetStateAction<string[] | null>>;
   onTargetHit: (hit: FreePlayHit) => void;
 };
 
 export const StatusStripFreePlay = ({
   target,
   setTarget,
+  qualifyingPath,
+  setQualifyingPath,
   onTargetHit,
 }: StatusStripFreePlayProps) => {
   const [difficulty, setDifficulty] = useLocalStorage<number>(
@@ -52,9 +59,19 @@ export const StatusStripFreePlay = ({
     );
     if (candidates.length === 0) {
       setTarget(null);
+      setQualifyingPath(null);
       return;
     }
-    setTarget(candidates[Math.floor(Math.random() * candidates.length)]);
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    // Capture the puzzle that was implicitly set: the shortest path from any
+    // current graph node to the chosen target. This is the chain the
+    // difficulty-N pick is asking the player to discover.
+    const qPath = findShortestPathFromAnyToTarget(
+      graph.nodes.map((node: { id: string }) => node.id),
+      chosen
+    );
+    setTarget(chosen);
+    setQualifyingPath(qPath);
   };
 
   // Initial target on first ever load.
@@ -75,15 +92,14 @@ export const StatusStripFreePlay = ({
       (node: { id: string }) => node.id === target
     );
     if (reached && lastScored !== target) {
-      const path = findShortestPathInGraph(
-        graph.nodes,
-        graph.edges,
-        "a",
-        target
-      );
+      const userPath = findUserPath(graph.parents, "a", target);
       setLastScored(target);
       setScore((previousScore) => previousScore + difficulty ** 2);
-      onTargetHit({ target, path: path ?? [target] });
+      onTargetHit({
+        target,
+        userPath: userPath ?? [target],
+        qualifyingPath,
+      });
       pickNewTarget(difficulty);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

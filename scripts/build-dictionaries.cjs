@@ -119,9 +119,38 @@ const dictBList = englishWords
   .filter((w) => /^[a-z]+$/.test(w));
 
 const dictB = new Set(dictBList);
+
+// Manually promoted bridge words. SCOWL tier 10 misses some common English
+// that the bridge analysis (scripts/analyse-bridges.cjs) showed would each
+// merge a disconnected dict-A cluster into the legitimate set. Curated by
+// hand for clear-everyday-English readability.
+const dictAInclude = new Set([
+  // Tier 1: high-impact, very common.
+  "stale",
+  "lease",
+  "hone",
+  "heave",
+  "fling",
+  "stare",
+  // Tier 2: real and common, additional depth within bridged clusters.
+  "dove",
+  "drone",
+  "grove",
+  "liver",
+  "rider",
+  "rover",
+  "shone",
+  "slate",
+  "spate",
+  "sage",
+]);
+
 // Intersection with B ensures every dict-A word is a real English wordlist
 // entry; SCOWL is already clean, so this catches the very rare edge case.
-const dictA = new Set(dictAList.filter((w) => dictB.has(w)));
+const dictA = new Set([
+  ...dictAList.filter((w) => dictB.has(w)),
+  ...[...dictAInclude].filter((w) => dictB.has(w)),
+]);
 const union = new Set([...dictA, ...dictB]);
 
 console.log(
