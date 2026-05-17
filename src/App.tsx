@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { GraphProvider } from "./components/GraphProvider";
 import { Header, type GameMode } from "./components/Header";
 import { StatusStripDaily } from "./components/StatusStripDaily";
@@ -6,7 +6,7 @@ import { StatusStripFreePlay } from "./components/StatusStripFreePlay";
 import { Graph } from "./components/Graph";
 import { InputBar } from "./components/InputBar";
 import { VictoryPanelDaily } from "./components/VictoryPanelDaily";
-import { HelpFab } from "./components/HelpFab";
+import { HelpModal } from "./components/HelpModal";
 import {
   useLocalStorage,
   migrateLegacyFreePlayKeys,
@@ -34,11 +34,16 @@ const freeplayInitialGraph = {
 
 const App = () => {
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
+  const [helpOpen, setHelpOpen] = useState(false);
   const today = getLocalDateString();
 
   return (
     <div className="wj-app">
-      <Header mode={mode} setMode={setMode} />
+      <Header
+        mode={mode}
+        setMode={setMode}
+        onOpenHelp={() => setHelpOpen(true)}
+      />
       {mode === "daily" ? (
         <GraphProvider
           keyPrefix={`daily:${today}`}
@@ -69,7 +74,7 @@ const App = () => {
           <InputBar />
         </GraphProvider>
       )}
-      <HelpFab />
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 };

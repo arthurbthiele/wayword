@@ -7,9 +7,10 @@ export type GameMode = "daily" | "freeplay";
 type HeaderProps = {
   mode: GameMode;
   setMode: (mode: GameMode) => void;
+  onOpenHelp: () => void;
 };
 
-export const Header = ({ mode, setMode }: HeaderProps) => {
+export const Header = ({ mode, setMode, onOpenHelp }: HeaderProps) => {
   const onReset = () => {
     const prefix = mode === "daily" ? "daily:" : "freeplay:";
     const label =
@@ -28,11 +29,7 @@ export const Header = ({ mode, setMode }: HeaderProps) => {
         word <span>journey</span>
       </h1>
 
-      <div
-        className="wj-mode-toggle"
-        role="tablist"
-        aria-label="Game mode"
-      >
+      <div className="wj-mode-toggle" role="tablist" aria-label="Game mode">
         <button
           type="button"
           role="tab"
@@ -52,6 +49,15 @@ export const Header = ({ mode, setMode }: HeaderProps) => {
       </div>
 
       <div className="wj-header__actions">
+        <button
+          type="button"
+          className="wj-header__icon-button"
+          onClick={onOpenHelp}
+          aria-label="How to play"
+          title="How to play"
+        >
+          ?
+        </button>
         <Button variant="ghost" size="small" onClick={onReset}>
           Reset
         </Button>

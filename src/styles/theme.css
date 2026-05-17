@@ -373,27 +373,23 @@ body {
   color: var(--color-ink-muted);
 }
 
-/* Help button (floating bottom-right). */
-.wj-help-fab {
-  position: fixed;
-  right: var(--space-5);
-  bottom: 84px;
-  width: 36px;
-  height: 36px;
+/* Header icon button (used for help). */
+.wj-header__icon-button {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid var(--color-rule);
   background: var(--color-paper);
   color: var(--color-ink-muted);
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.12s ease, color 0.12s ease;
-  z-index: 50;
+  line-height: 1;
+  transition: border-color 0.12s ease, color 0.12s ease;
 }
-.wj-help-fab:hover {
-  box-shadow: var(--shadow-md);
+.wj-header__icon-button:hover {
+  border-color: var(--color-ink-muted);
   color: var(--color-ink);
 }
 
@@ -571,5 +567,114 @@ body {
 /* react-graph-vis container — keep neutral and let the graph render itself. */
 .vis-network {
   outline: none;
+}
+
+/* -----------------------------------------------------------------------
+ * Mobile (≤640px). The desktop layout uses three horizontal sections in
+ * the header / status / input bar; at narrow widths most of these wrap
+ * or stack and we cut horizontal padding.
+ * --------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .wj-header {
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2) var(--space-3);
+  }
+  .wj-header__brand {
+    font-size: var(--text-xl);
+    flex: 1 1 auto;
+    order: 1;
+  }
+  .wj-header__actions {
+    order: 2;
+    gap: var(--space-2);
+  }
+  .wj-mode-toggle {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: stretch;
+  }
+  .wj-mode-toggle button {
+    flex: 1;
+    padding: var(--space-2);
+  }
+
+  .wj-status {
+    padding: var(--space-3) var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+  .wj-status__word {
+    font-size: var(--text-2xl);
+  }
+  .wj-status__label {
+    font-size: 10px;
+  }
+  .wj-status__meta {
+    font-size: var(--text-xs);
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .wj-inputbar {
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+  }
+  .wj-inputbar__selected {
+    order: 1;
+    flex-basis: 100%;
+    font-size: var(--text-xs);
+  }
+  .wj-inputbar__field {
+    order: 2;
+    flex: 1 1 auto;
+    min-width: 160px;
+  }
+  .wj-inputbar .wj-button {
+    order: 3;
+    flex-shrink: 0;
+  }
+  .wj-inputbar__hint {
+    order: 4;
+    flex-basis: 100%;
+    font-size: var(--text-xs);
+    white-space: normal;
+  }
+
+  .wj-victory {
+    padding: var(--space-4);
+    gap: var(--space-2);
+  }
+  .wj-victory__headline {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .wj-victory__title {
+    font-size: var(--text-xl);
+  }
+  .wj-victory__subtitle {
+    font-size: var(--text-xs);
+  }
+  .wj-victory__path {
+    font-size: var(--text-base);
+    gap: var(--space-1) var(--space-2);
+  }
+  .wj-victory__actions .wj-button {
+    flex: 1;
+  }
+
+  .wj-modal {
+    padding: var(--space-5) var(--space-4);
+    width: calc(100% - var(--space-4));
+    max-height: calc(100vh - var(--space-4));
+  }
+  .wj-help h2 {
+    font-size: var(--text-xl);
+  }
+  .wj-explainer__chain {
+    font-size: var(--text-lg);
+    gap: var(--space-2);
+  }
 }
 
