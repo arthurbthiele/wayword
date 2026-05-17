@@ -25,7 +25,7 @@ import { graphEntries_x } from "./graphLetter_x";
 import { graphEntries_y } from "./graphLetter_y";
 import { graphEntries_z } from "./graphLetter_z";
 
-export const wordGraph = {
+export const wordGraph: Record<string, string[]> = {
   ...graphEntries_a,
   ...graphEntries_b,
   ...graphEntries_c,

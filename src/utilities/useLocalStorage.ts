@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 
 const storagePrefix = "wordJourney:";
 
-export const useLocalStorage = (key, initialValue) => {
+export const useLocalStorage = <T>(
+  key: string,
+  initialValue: T
+): [T, Dispatch<SetStateAction<T>>] => {
   const fullKey = storagePrefix + key;
-  const [value, setValue] = useState(() => {
+  const [value, setValue] = useState<T>(() => {
     try {
       const stored = window.localStorage.getItem(fullKey);
-      return stored !== null ? JSON.parse(stored) : initialValue;
+      return stored !== null ? (JSON.parse(stored) as T) : initialValue;
     } catch {
       return initialValue;
     }
@@ -24,7 +27,7 @@ export const useLocalStorage = (key, initialValue) => {
   return [value, setValue];
 };
 
-export const clearLocalStorage = () => {
+export const clearLocalStorage = (): void => {
   try {
     for (let i = window.localStorage.length - 1; i >= 0; i--) {
       const key = window.localStorage.key(i);

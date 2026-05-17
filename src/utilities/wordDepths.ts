@@ -1,8 +1,11 @@
 import { wordGraph } from "../dictionaryData";
 
-export const computeDepths = (currentGraphNodes) => {
-  const depths = {};
-  const nodesToVisit = [];
+export type GraphNode = { id: string; label: string };
+export type Depths = Record<string, number>;
+
+export const computeDepths = (currentGraphNodes: GraphNode[]): Depths => {
+  const depths: Depths = {};
+  const nodesToVisit: string[] = [];
   let head = 0;
 
   currentGraphNodes.forEach((node) => {
