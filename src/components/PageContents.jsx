@@ -1,13 +1,12 @@
 import { InstructionsController } from "./InstructionsController";
 import { Graph } from "./Graph";
 import { WordInput } from "./WordInput";
-import { TargetWord } from "./TargetWord";
 
-export const PageContents = () => (
+export const PageContents = ({ targetPanel }) => (
   <>
     <Graph />
     <WordInput />
-    <TargetWord />
+    {targetPanel}
     <InstructionsController />
   </>
 );

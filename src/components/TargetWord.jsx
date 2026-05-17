@@ -12,14 +12,14 @@ const minDifficulty = 1;
 const maxDifficulty = 15;
 
 export const TargetWord = () => {
-  const [target, setTarget] = useLocalStorage("target", null);
+  const [target, setTarget] = useLocalStorage("freeplay:target", null);
   const [difficultyLevel, setDifficultyLevel] = useLocalStorage(
-    "difficulty",
+    "freeplay:difficulty",
     1
   );
-  const [score, setScore] = useLocalStorage("score", 0);
+  const [score, setScore] = useLocalStorage("freeplay:score", 0);
   const [lastScoredTarget, setLastScoredTarget] = useLocalStorage(
-    "lastScoredTarget",
+    "freeplay:lastScoredTarget",
     null
   );
   const { graph, depths } = useContext(GraphContext);
@@ -72,10 +72,10 @@ export const TargetWord = () => {
   const onReset = () => {
     if (
       window.confirm(
-        "Reset your graph, score, and current target? This cannot be undone."
+        "Reset your free-play graph, score, and current target? This cannot be undone. Your daily-challenge state is not affected."
       )
     ) {
-      clearLocalStorage();
+      clearLocalStorage("freeplay:");
       window.location.reload();
     }
   };

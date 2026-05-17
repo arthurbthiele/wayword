@@ -13,13 +13,15 @@ export const Instructions = () => (
       }}
     >
       <p>
-        Welcome! The graph already shows a tiny example: <b>a → at → art</b>.
-        The bold word is the one you have selected.
+        Welcome! Pick any word in your graph by clicking it — the bold one is
+        the one you currently have selected. Then type a word that is
+        'connected' to it in the input field at top left, and press enter to
+        add it.
       </p>
       <p>
-        Pick any word in your graph by clicking it. Then type a word that is
-        'connected' to it in the input field at top left, and press enter to add
-        it.
+        Use the toggle at the top to switch between <b>Daily</b> (today's
+        challenge: reach the target from 'a') and <b>Free play</b> (open-ended
+        practice with rotating targets and difficulty).
       </p>
       Two words are connected if they differ by the addition, removal, or
       exchange of one letter: <br />
