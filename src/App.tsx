@@ -58,6 +58,7 @@ const App = () => {
       />
       {mode === "daily" ? (
         <GraphProvider
+          key="daily"
           keyPrefix={`daily:v2:${today}`}
           initialGraph={dailyInitialGraph}
           initialSelectedWord={dailyPair.start}
@@ -79,6 +80,7 @@ const App = () => {
         </GraphProvider>
       ) : (
         <GraphProvider
+          key="freeplay"
           keyPrefix="freeplay"
           initialGraph={freeplayInitialGraph}
           initialSelectedWord="a"
