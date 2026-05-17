@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
-import { getLocalDateString, getTargetForDate } from "../utilities/dailyTarget";
+import { getLocalDateString } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
@@ -10,9 +10,16 @@ import {
 } from "../utilities/findPath";
 import { legitimateWords } from "../dictionaryData/legitimate";
 
-export const VictoryPanelDaily = () => {
+type VictoryPanelDailyProps = {
+  start: string;
+  target: string;
+};
+
+export const VictoryPanelDaily = ({
+  start,
+  target,
+}: VictoryPanelDailyProps) => {
   const today = getLocalDateString();
-  const target = getTargetForDate(today);
   const { graph } = useContext(GraphContext);
 
   const [solvedDate, setSolvedDate] = useLocalStorage<string | null>(
@@ -39,8 +46,7 @@ export const VictoryPanelDaily = () => {
   const optimalMoves = optimalPath ? optimalPath.length - 1 : null;
   const matchedOptimal =
     optimalMoves !== null && userMoves === optimalMoves;
-  const beatOptimal =
-    optimalMoves !== null && userMoves < optimalMoves;
+  const beatOptimal = optimalMoves !== null && userMoves < optimalMoves;
 
   // When the user adds today's target to their graph, lock the solve in.
   useEffect(() => {
@@ -53,14 +59,14 @@ export const VictoryPanelDaily = () => {
     // Prefer the chronological path the user took (via parents); fall back to
     // shortest-path-through-graph for legacy graphs without parent tracking.
     const userPath =
-      findUserPath(graph.parents, "a", target) ??
-      findShortestPathInGraph(graph.nodes, graph.edges, "a", target);
+      findUserPath(graph.parents, start, target) ??
+      findShortestPathInGraph(graph.nodes, graph.edges, start, target);
     setSolvedPath(userPath);
     setOptimalPath(
-      findShortestPathInDictionary("a", target, legitimateWords)
+      findShortestPathInDictionary(start, target, legitimateWords)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph.nodes, graph.edges, target, today, solvedToday]);
+  }, [graph.nodes, graph.edges, start, target, today, solvedToday]);
 
   if (!solvedToday || !solvedPath || dismissed) return null;
 
@@ -72,7 +78,7 @@ export const VictoryPanelDaily = () => {
         : optimalMoves !== null
           ? ` (common-word optimal: ${optimalMoves})`
           : "";
-    const text = `Word Journey ${today}: ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${solvedPath.join(" → ")}`;
+    const text = `Word Journey ${today}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${solvedPath.join(" → ")}`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -108,8 +114,7 @@ export const VictoryPanelDaily = () => {
     return `Common-word optimal was ${optimalMoves} ${optimalMoves === 1 ? "move" : "moves"}.`;
   })();
 
-  const commonWordExplainer =
-    "Shortest path from 'a' to the target using only common everyday words. You can sometimes find a shorter route by routing through less common ones.";
+  const commonWordExplainer = `Shortest path from '${start}' to '${target}' using only common everyday words. You can sometimes find a shorter route by routing through less common ones.`;
 
   return (
     <div className="wj-victory">

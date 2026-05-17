@@ -28,6 +28,28 @@ export const useLocalStorage = <T>(
 };
 
 /**
+ * One-time clear of daily state when the daily scheme changes (e.g. the
+ * v1 → v2 jump that introduced random start words). Daily state was tied
+ * to start='a'; carrying it forward would conflict with the new puzzle.
+ */
+export const migrateDailyToV2 = (): void => {
+  const flagKey = storagePrefix + "dailyMigrated:v2";
+  if (window.localStorage.getItem(flagKey) !== null) return;
+  const dailyPrefix = storagePrefix + "daily:";
+  try {
+    for (let i = window.localStorage.length - 1; i >= 0; i--) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(dailyPrefix)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+    window.localStorage.setItem(flagKey, "true");
+  } catch {
+    // Ignore.
+  }
+};
+
+/**
  * One-time migration of pre-daily-mode keys. Earlier versions stored
  * free-play state without a mode prefix; daily mode introduced the
  * `freeplay:` prefix so the two modes can persist independently.

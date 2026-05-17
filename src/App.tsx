@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { GraphProvider } from "./components/GraphProvider";
 import { Header, type GameMode } from "./components/Header";
 import { StatusStripDaily } from "./components/StatusStripDaily";
@@ -6,27 +6,20 @@ import { StatusStripFreePlay } from "./components/StatusStripFreePlay";
 import { Graph } from "./components/Graph";
 import { InputBar } from "./components/InputBar";
 import { VictoryPanelDaily } from "./components/VictoryPanelDaily";
+import {
+  VictoryBannerFreePlay,
+  type FreePlayHit,
+} from "./components/VictoryBannerFreePlay";
 import { HelpModal } from "./components/HelpModal";
 import {
-  VictoryModalFreePlay,
-  type FreePlayHit,
-} from "./components/VictoryModalFreePlay";
-import {
   useLocalStorage,
+  migrateDailyToV2,
   migrateLegacyFreePlayKeys,
 } from "./utilities/useLocalStorage";
-import {
-  getLocalDateString,
-  getTargetForDate,
-} from "./utilities/dailyTarget";
+import { getDailyPair, getLocalDateString } from "./utilities/dailyTarget";
 
 migrateLegacyFreePlayKeys();
-
-const dailyInitialGraph = {
-  nodes: [{ id: "a", label: "a" }],
-  edges: [] as { from: string; to: string }[],
-  parents: {} as Record<string, string>,
-};
+migrateDailyToV2();
 
 const freeplayInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
@@ -38,7 +31,15 @@ const App = () => {
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
   const [helpOpen, setHelpOpen] = useState(false);
   const today = getLocalDateString();
-  const dailyTarget = getTargetForDate(today);
+  const dailyPair = useMemo(() => getDailyPair(today), [today]);
+  const dailyInitialGraph = useMemo(
+    () => ({
+      nodes: [{ id: dailyPair.start, label: dailyPair.start }],
+      edges: [] as { from: string; to: string }[],
+      parents: {} as Record<string, string>,
+    }),
+    [dailyPair.start]
+  );
   const [freePlayTarget, setFreePlayTarget] = useLocalStorage<string | null>(
     "freeplay:target",
     null
@@ -57,18 +58,24 @@ const App = () => {
       />
       {mode === "daily" ? (
         <GraphProvider
-          keyPrefix={`daily:${today}`}
+          keyPrefix={`daily:v2:${today}`}
           initialGraph={dailyInitialGraph}
-          initialSelectedWord="a"
+          initialSelectedWord={dailyPair.start}
         >
-          <StatusStripDaily />
+          <StatusStripDaily
+            start={dailyPair.start}
+            target={dailyPair.target}
+          />
           <main className="wj-graph">
             <div className="wj-graph__inner">
               <Graph />
             </div>
           </main>
-          <VictoryPanelDaily />
-          <InputBar targetReminder={dailyTarget} />
+          <VictoryPanelDaily
+            start={dailyPair.start}
+            target={dailyPair.target}
+          />
+          <InputBar targetReminder={dailyPair.target} />
         </GraphProvider>
       ) : (
         <GraphProvider
@@ -88,14 +95,14 @@ const App = () => {
               <Graph />
             </div>
           </main>
+          <VictoryBannerFreePlay
+            hit={freePlayHit}
+            onClose={() => setFreePlayHit(null)}
+          />
           <InputBar targetReminder={freePlayTarget} />
         </GraphProvider>
       )}
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
-      <VictoryModalFreePlay
-        hit={freePlayHit}
-        onClose={() => setFreePlayHit(null)}
-      />
     </div>
   );
 };

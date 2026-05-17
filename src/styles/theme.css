@@ -321,6 +321,12 @@ button {
   text-transform: lowercase;
   font-feature-settings: "ss01" 1;
 }
+.wj-status__arrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  color: var(--color-ink-faint);
+  margin: 0 var(--space-1);
+}
 .wj-status__meta {
   display: flex;
   align-items: baseline;
@@ -508,82 +514,6 @@ button {
 @keyframes wj-victory-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Free-play victory modal. */
-.wj-victory-modal {
-  text-align: center;
-}
-.wj-victory-modal__eyebrow {
-  font-size: var(--text-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
-  font-weight: 600;
-  margin-bottom: var(--space-2);
-}
-.wj-victory-modal__title {
-  font-family: var(--font-serif);
-  font-size: var(--text-4xl);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--color-accent);
-  margin: 0;
-  text-transform: lowercase;
-}
-.wj-victory-modal__moves {
-  margin-top: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-}
-.wj-victory-modal__section {
-  margin-top: var(--space-5);
-  text-align: left;
-}
-.wj-victory-modal__label {
-  display: block;
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-ink-muted);
-  margin-bottom: var(--space-2);
-}
-.wj-victory-modal__label[title] {
-  text-decoration: underline dotted var(--color-rule);
-  text-underline-offset: 3px;
-  cursor: help;
-}
-.wj-victory-modal__label[title] span[aria-hidden] {
-  opacity: 0.6;
-  font-size: 11px;
-}
-.wj-victory-modal__path {
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-paper-2);
-  border-radius: var(--radius-md);
-  font-family: var(--font-serif);
-  font-size: var(--text-lg);
-  color: var(--color-ink);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-2);
-}
-.wj-victory-modal__path--qualifying {
-  color: var(--color-accent);
-}
-.wj-victory-modal__path--qualifying .wj-victory-modal__arrow {
-  color: var(--color-accent-soft);
-}
-.wj-victory-modal__arrow {
-  font-family: var(--font-sans);
-  color: var(--color-ink-faint);
-}
-.wj-victory-modal__actions {
-  margin-top: var(--space-5);
-  display: flex;
-  justify-content: center;
 }
 
 /* Help modal content. */

@@ -14,7 +14,7 @@ import {
   findShortestPathFromAnyToTarget,
   findUserPath,
 } from "../utilities/findPath";
-import type { FreePlayHit } from "./VictoryModalFreePlay";
+import type { FreePlayHit } from "./VictoryBannerFreePlay";
 
 const MIN_DIFFICULTY = 1;
 const MAX_DIFFICULTY = 15;
