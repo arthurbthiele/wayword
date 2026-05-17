@@ -8,9 +8,17 @@ type HeaderProps = {
   mode: GameMode;
   setMode: (mode: GameMode) => void;
   onOpenHelp: () => void;
+  onOpenStats: () => void;
+  streak?: number;
 };
 
-export const Header = ({ mode, setMode, onOpenHelp }: HeaderProps) => {
+export const Header = ({
+  mode,
+  setMode,
+  onOpenHelp,
+  onOpenStats,
+  streak,
+}: HeaderProps) => {
   const onReset = () => {
     const prefix = mode === "daily" ? "daily:" : "freeplay:";
     const label =
@@ -49,6 +57,9 @@ export const Header = ({ mode, setMode, onOpenHelp }: HeaderProps) => {
       </div>
 
       <div className="wj-header__actions">
+        <Button variant="ghost" size="small" onClick={onOpenStats}>
+          {streak && streak > 0 ? `Streak ${streak}` : "Stats"}
+        </Button>
         <button
           type="button"
           className="wj-header__icon-button"

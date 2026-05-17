@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
@@ -9,15 +15,20 @@ import {
   findUserPath,
 } from "../utilities/findPath";
 import { legitimateWords } from "../dictionaryData/legitimate";
+import type { DailyHistory } from "../utilities/dailyStats";
 
 type VictoryPanelDailyProps = {
   start: string;
   target: string;
+  history: DailyHistory;
+  setHistory: Dispatch<SetStateAction<DailyHistory>>;
 };
 
 export const VictoryPanelDaily = ({
   start,
   target,
+  history,
+  setHistory,
 }: VictoryPanelDailyProps) => {
   const today = getLocalDateString();
   const { graph } = useContext(GraphContext);
@@ -62,9 +73,27 @@ export const VictoryPanelDaily = ({
       findUserPath(graph.parents, start, target) ??
       findShortestPathInGraph(graph.nodes, graph.edges, start, target);
     setSolvedPath(userPath);
-    setOptimalPath(
-      findShortestPathInDictionary(start, target, legitimateWords)
+    const optimal = findShortestPathInDictionary(
+      start,
+      target,
+      legitimateWords
     );
+    setOptimalPath(optimal);
+
+    // Record this solve in the history map (used by the stats modal and the
+    // streak indicator in the header). Idempotent — if today's already in,
+    // keep the original entry.
+    if (!(today in history)) {
+      setHistory({
+        ...history,
+        [today]: {
+          start,
+          target,
+          userMoves: userPath ? userPath.length - 1 : 0,
+          optimalMoves: optimal ? optimal.length - 1 : null,
+        },
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.nodes, graph.edges, start, target, today, solvedToday]);
 

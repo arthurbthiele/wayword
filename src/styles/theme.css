@@ -520,6 +520,114 @@ button {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Stats modal. */
+.wj-stats h2 {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  margin: 0 0 var(--space-4);
+  color: var(--color-ink);
+}
+.wj-stats h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  margin: var(--space-5) 0 var(--space-3);
+}
+.wj-stats__bignums {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.wj-stats__bignum {
+  text-align: center;
+  background: var(--color-paper-2);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-2);
+}
+.wj-stats__bignum-value {
+  font-family: var(--font-serif);
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  color: var(--color-accent);
+  line-height: 1;
+}
+.wj-stats__bignum-label {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+}
+.wj-stats__summary {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  margin: 0 0 var(--space-3);
+}
+.wj-stats__empty {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+.wj-stats__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.wj-stats__table td {
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--color-rule);
+}
+.wj-stats__table tr:last-child td {
+  border-bottom: none;
+}
+.wj-stats__td-date {
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.wj-stats__td-pair {
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+}
+.wj-stats__td-pair .wj-stats__arrow {
+  color: var(--color-ink-faint);
+  margin: 0 var(--space-1);
+}
+.wj-stats__td-moves {
+  text-align: right;
+  white-space: nowrap;
+}
+.wj-stats__badge {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  background: var(--color-paper-2);
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+.wj-stats__badge--good {
+  background: rgba(90, 122, 74, 0.16);
+  color: var(--color-good);
+}
+
+@media (max-width: 640px) {
+  .wj-stats__bignums {
+    gap: var(--space-2);
+  }
+  .wj-stats__bignum-value {
+    font-size: var(--text-2xl);
+  }
+  .wj-stats__td-pair {
+    font-size: var(--text-sm);
+  }
+}
+
 /* Help modal content. */
 .wj-help h2 {
   font-family: var(--font-serif);

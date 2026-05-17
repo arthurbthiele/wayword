@@ -11,12 +11,17 @@ import {
   type FreePlayHit,
 } from "./components/VictoryBannerFreePlay";
 import { HelpModal } from "./components/HelpModal";
+import { StatsModal } from "./components/StatsModal";
 import {
   useLocalStorage,
   migrateDailyToV2,
   migrateLegacyFreePlayKeys,
 } from "./utilities/useLocalStorage";
 import { getDailyPair, getLocalDateString } from "./utilities/dailyTarget";
+import {
+  computeStreak,
+  type DailyHistory,
+} from "./utilities/dailyStats";
 
 migrateLegacyFreePlayKeys();
 migrateDailyToV2();
@@ -30,6 +35,15 @@ const freeplayInitialGraph = {
 const App = () => {
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
   const [helpOpen, setHelpOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [dailyHistory, setDailyHistory] = useLocalStorage<DailyHistory>(
+    "daily:history",
+    {}
+  );
+  const streak = useMemo(
+    () => computeStreak(dailyHistory),
+    [dailyHistory]
+  );
   const today = getLocalDateString();
   const dailyPair = useMemo(() => getDailyPair(today), [today]);
   const dailyInitialGraph = useMemo(
@@ -55,6 +69,8 @@ const App = () => {
         mode={mode}
         setMode={setMode}
         onOpenHelp={() => setHelpOpen(true)}
+        onOpenStats={() => setStatsOpen(true)}
+        streak={mode === "daily" ? streak : undefined}
       />
       {mode === "daily" ? (
         <GraphProvider
@@ -75,6 +91,8 @@ const App = () => {
           <VictoryPanelDaily
             start={dailyPair.start}
             target={dailyPair.target}
+            history={dailyHistory}
+            setHistory={setDailyHistory}
           />
           <InputBar targetReminder={dailyPair.target} />
         </GraphProvider>
@@ -105,6 +123,11 @@ const App = () => {
         </GraphProvider>
       )}
       <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <StatsModal
+        open={statsOpen}
+        onClose={() => setStatsOpen(false)}
+        history={dailyHistory}
+      />
     </div>
   );
 };
