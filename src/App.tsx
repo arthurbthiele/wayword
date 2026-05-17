@@ -34,7 +34,11 @@ const freeplayInitialGraph = {
 
 const App = () => {
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [hasSeenHelp, setHasSeenHelp] = useLocalStorage<boolean>(
+    "hasSeenHelp",
+    false
+  );
+  const [helpOpen, setHelpOpen] = useState(!hasSeenHelp);
   const [statsOpen, setStatsOpen] = useState(false);
   // Stored under `stats:` rather than `daily:` so the per-mode Reset
   // button (which clears its mode's prefix) doesn't wipe the long-term
@@ -78,9 +82,9 @@ const App = () => {
     "freeplay:target",
     null
   );
-  const [freePlayQualifyingPath, setFreePlayQualifyingPath] = useLocalStorage<
-    string[] | null
-  >("freeplay:qualifyingPath", null);
+  const [freePlayPickGraphNodes, setFreePlayPickGraphNodes] = useLocalStorage<
+    string[]
+  >("freeplay:pickGraphNodes", []);
   const [freePlayHit, setFreePlayHit] = useState<FreePlayHit | null>(null);
 
   return (
@@ -126,8 +130,8 @@ const App = () => {
           <StatusStripFreePlay
             target={freePlayTarget}
             setTarget={setFreePlayTarget}
-            qualifyingPath={freePlayQualifyingPath}
-            setQualifyingPath={setFreePlayQualifyingPath}
+            pickGraphNodes={freePlayPickGraphNodes}
+            setPickGraphNodes={setFreePlayPickGraphNodes}
             onTargetHit={setFreePlayHit}
           />
           <main className="wj-graph">
@@ -142,7 +146,13 @@ const App = () => {
           <InputBar targetReminder={freePlayTarget} />
         </GraphProvider>
       )}
-      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <HelpModal
+        open={helpOpen}
+        onClose={() => {
+          setHelpOpen(false);
+          if (!hasSeenHelp) setHasSeenHelp(true);
+        }}
+      />
       <StatsModal
         open={statsOpen}
         onClose={() => setStatsOpen(false)}

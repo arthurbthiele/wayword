@@ -3,16 +3,18 @@ import React from "react";
 export type FreePlayHit = {
   target: string;
   /**
-   * The chronological path the user actually took, reconstructed from each
-   * word's parent (the word selected when they typed it).
+   * The path the user took to reach this target: walks the parents map back
+   * from the target until reaching a word that was already in the graph at
+   * pick time. The graph could have been huge or just {'a'} — either way
+   * this is what the player actually did for *this* target.
    */
   userPath: string[];
   /**
-   * The "qualifying" chain — the shortest path through the full dictionary
-   * from any of the user's graph nodes (at pick time) to the target. The
-   * puzzle the difficulty-N pick implicitly set.
+   * Shortest legitimate-only path from any pick-time graph node to the
+   * target. Same framing as daily's "common-word optimal" — a fair
+   * comparison composed of words the player would recognise.
    */
-  qualifyingPath: string[] | null;
+  optimalPath: string[] | null;
   /**
    * Optional celebratory message: set when this hit cleared the last
    * available target at the current difficulty.
@@ -43,12 +45,13 @@ export const VictoryBannerFreePlay = ({
   if (!hit) return null;
 
   const userMoves = Math.max(0, hit.userPath.length - 1);
-  const qualifyingMoves = hit.qualifyingPath
-    ? Math.max(0, hit.qualifyingPath.length - 1)
-    : null;
+  const showOptimal =
+    hit.optimalPath !== null &&
+    hit.optimalPath.length > 1 &&
+    // Don't double-show the same chain.
+    hit.optimalPath.join("→") !== hit.userPath.join("→");
 
-  const qualifyingExplainer =
-    "Shortest chain from your graph to the target through the full dictionary at the moment the target was picked. This is the puzzle the difficulty rolled.";
+  const optimalExplainer = `Shortest path from your graph to '${hit.target}' using only common everyday words. You can sometimes find a shorter route by routing through less common ones.`;
 
   return (
     <div className="wj-victory">
@@ -82,17 +85,12 @@ export const VictoryBannerFreePlay = ({
         </div>
       )}
 
-      {hit.qualifyingPath && hit.qualifyingPath.length > 1 && (
+      {showOptimal && hit.optimalPath && (
         <div>
-          <span
-            className="wj-victory__path-label"
-            title={qualifyingExplainer}
-          >
-            Qualifying chain ({qualifyingMoves}{" "}
-            {qualifyingMoves === 1 ? "move" : "moves"}){" "}
-            <span aria-hidden="true">ⓘ</span>
+          <span className="wj-victory__path-label" title={optimalExplainer}>
+            Common-word optimal <span aria-hidden="true">ⓘ</span>
           </span>
-          {renderPath(hit.qualifyingPath, "wj-victory__path--optimal")}
+          {renderPath(hit.optimalPath, "wj-victory__path--optimal")}
         </div>
       )}
     </div>

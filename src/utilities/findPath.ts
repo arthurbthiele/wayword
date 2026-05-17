@@ -76,15 +76,36 @@ export const findUserPath = (
 };
 
 /**
+ * Walks the `parents` map back from `target` until it hits a word in
+ * `frontier`, then returns the path forward to `target`. Used in free play
+ * to show the chain of words the user typed since the target was picked —
+ * frontier = the graph snapshot at pick time.
+ */
+export const findRouteFromFrontier = (
+  parents: Record<string, string> | undefined,
+  frontier: ReadonlySet<string>,
+  target: string
+): string[] | null => {
+  if (!parents) return null;
+  if (frontier.has(target)) return [target];
+  const path: string[] = [target];
+  let current = target;
+  let safety = 500;
+  while (!frontier.has(current) && parents[current] && safety-- > 0) {
+    current = parents[current];
+    path.unshift(current);
+  }
+  return frontier.has(current) ? path : null;
+};
+
+/**
  * Multi-source BFS through the dictionary from any of `startNodeIds` to
  * `target`. Returns the shortest path, starting at whichever start node is
- * closest. Used to show the "qualifying chain" — the puzzle the picker
- * implicitly set when it chose a target at depth N from the user's graph.
+ * closest.
  *
  * If `restrictTo` is provided, only words in that set are traversable
- * (and only start nodes within it are considered seeds). Use this to show
- * a legitimate-only qualifying chain rather than one routed through
- * obscure B-only words.
+ * (and only start nodes within it are considered seeds). Use this to keep
+ * the chain composed of legitimate words rather than obscure B-only ones.
  */
 export const findShortestPathFromAnyToTarget = (
   startNodeIds: string[],

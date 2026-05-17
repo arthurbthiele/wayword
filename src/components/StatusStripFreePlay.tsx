@@ -11,8 +11,8 @@ import { useLocalStorage } from "../utilities/useLocalStorage";
 import { legitimateWords } from "../dictionaryData/legitimate";
 import { logTargetPaths } from "../utilities/logTargetPaths";
 import {
+  findRouteFromFrontier,
   findShortestPathFromAnyToTarget,
-  findUserPath,
 } from "../utilities/findPath";
 import type { FreePlayHit } from "./VictoryBannerFreePlay";
 
@@ -22,16 +22,16 @@ const MAX_DIFFICULTY = 15;
 type StatusStripFreePlayProps = {
   target: string | null;
   setTarget: Dispatch<SetStateAction<string | null>>;
-  qualifyingPath: string[] | null;
-  setQualifyingPath: Dispatch<SetStateAction<string[] | null>>;
+  pickGraphNodes: string[];
+  setPickGraphNodes: Dispatch<SetStateAction<string[]>>;
   onTargetHit: (hit: FreePlayHit) => void;
 };
 
 export const StatusStripFreePlay = ({
   target,
   setTarget,
-  qualifyingPath,
-  setQualifyingPath,
+  pickGraphNodes,
+  setPickGraphNodes,
   onTargetHit,
 }: StatusStripFreePlayProps) => {
   const [difficulty, setDifficulty] = useLocalStorage<number>(
@@ -59,22 +59,15 @@ export const StatusStripFreePlay = ({
     );
     if (candidates.length === 0) {
       setTarget(null);
-      setQualifyingPath(null);
+      setPickGraphNodes([]);
       return false;
     }
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    // Capture the puzzle that was implicitly set: the shortest LEGITIMATE
-    // path from any of the user's current legitimate graph nodes to the
-    // chosen target. Restricting to legitimate words means the chain shown
-    // is composed of words the player would recognise — no `ae`/`ne` routed
-    // through obscure B-only entries.
-    const qPath = findShortestPathFromAnyToTarget(
-      graph.nodes.map((node: { id: string }) => node.id),
-      chosen,
-      legitimateWords
-    );
+    // Snapshot the graph at the moment the target was picked, so when the
+    // user reaches it we can walk back their additions and show the chain
+    // they typed since the target appeared.
     setTarget(chosen);
-    setQualifyingPath(qPath);
+    setPickGraphNodes(graph.nodes.map((node: { id: string }) => node.id));
     return true;
   };
 
@@ -96,7 +89,18 @@ export const StatusStripFreePlay = ({
       (node: { id: string }) => node.id === target
     );
     if (reached && lastScored !== target) {
-      const userPath = findUserPath(graph.parents, "a", target);
+      const routeFromPick = findRouteFromFrontier(
+        graph.parents,
+        new Set(pickGraphNodes),
+        target
+      );
+      // Same shape as daily's "common-word optimal": shortest legitimate-only
+      // path from any of the pick-time graph nodes to the target.
+      const optimalPath = findShortestPathFromAnyToTarget(
+        pickGraphNodes,
+        target,
+        legitimateWords
+      );
       setLastScored(target);
       setScore((previousScore) => previousScore + difficulty ** 2);
       const foundNext = pickNewTarget(difficulty);
@@ -105,8 +109,8 @@ export const StatusStripFreePlay = ({
         : `You've reached every legitimate word at difficulty ${difficulty}. Try a different difficulty!`;
       onTargetHit({
         target,
-        userPath: userPath ?? [target],
-        qualifyingPath,
+        userPath: routeFromPick ?? [target],
+        optimalPath,
         milestone,
       });
     }

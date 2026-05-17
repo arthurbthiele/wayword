@@ -25,7 +25,7 @@ const steps: Step[] = [
   },
 ];
 
-const STEP_DURATION_MS = 1600;
+const STEP_DURATION_MS = 3200;
 
 export const AnimatedExplainer = () => {
   const [stepIndex, setStepIndex] = useState(0);
