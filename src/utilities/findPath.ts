@@ -76,21 +76,32 @@ export const findUserPath = (
 };
 
 /**
- * Multi-source BFS through the full dictionary from any of `startNodeIds`
- * to `target`. Returns the shortest path, beginning at whichever start node
- * is closest. Used to show the "qualifying chain" — the puzzle the picker
+ * Multi-source BFS through the dictionary from any of `startNodeIds` to
+ * `target`. Returns the shortest path, starting at whichever start node is
+ * closest. Used to show the "qualifying chain" — the puzzle the picker
  * implicitly set when it chose a target at depth N from the user's graph.
+ *
+ * If `restrictTo` is provided, only words in that set are traversable
+ * (and only start nodes within it are considered seeds). Use this to show
+ * a legitimate-only qualifying chain rather than one routed through
+ * obscure B-only words.
  */
 export const findShortestPathFromAnyToTarget = (
   startNodeIds: string[],
-  target: string
+  target: string,
+  restrictTo?: ReadonlySet<string>
 ): string[] | null => {
   if (startNodeIds.length === 0) return null;
-  if (startNodeIds.includes(target)) return [target];
+  if (restrictTo && !restrictTo.has(target)) return null;
+  const seeds = restrictTo
+    ? startNodeIds.filter((id) => restrictTo.has(id))
+    : startNodeIds;
+  if (seeds.length === 0) return null;
+  if (seeds.includes(target)) return [target];
 
-  const visited = new Set<string>(startNodeIds);
+  const visited = new Set<string>(seeds);
   const previous = new Map<string, string>();
-  const queue: string[] = [...startNodeIds];
+  const queue: string[] = [...seeds];
   let head = 0;
 
   while (head < queue.length) {
@@ -105,6 +116,7 @@ export const findShortestPathFromAnyToTarget = (
       return path;
     }
     for (const neighbour of wordGraph[word] ?? []) {
+      if (restrictTo && !restrictTo.has(neighbour)) continue;
       if (!visited.has(neighbour)) {
         visited.add(neighbour);
         previous.set(neighbour, word);

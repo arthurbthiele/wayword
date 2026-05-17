@@ -63,12 +63,15 @@ export const StatusStripFreePlay = ({
       return false;
     }
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    // Capture the puzzle that was implicitly set: the shortest path from any
-    // current graph node to the chosen target. This is the chain the
-    // difficulty-N pick is asking the player to discover.
+    // Capture the puzzle that was implicitly set: the shortest LEGITIMATE
+    // path from any of the user's current legitimate graph nodes to the
+    // chosen target. Restricting to legitimate words means the chain shown
+    // is composed of words the player would recognise — no `ae`/`ne` routed
+    // through obscure B-only entries.
     const qPath = findShortestPathFromAnyToTarget(
       graph.nodes.map((node: { id: string }) => node.id),
-      chosen
+      chosen,
+      legitimateWords
     );
     setTarget(chosen);
     setQualifyingPath(qPath);
