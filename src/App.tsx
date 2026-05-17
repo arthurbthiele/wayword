@@ -36,8 +36,11 @@ const App = () => {
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
   const [helpOpen, setHelpOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  // Stored under `stats:` rather than `daily:` so the per-mode Reset
+  // button (which clears its mode's prefix) doesn't wipe the long-term
+  // streak/history record.
   const [dailyHistory, setDailyHistory] = useLocalStorage<DailyHistory>(
-    "daily:history",
+    "stats:dailyHistory",
     {}
   );
   const streak = useMemo(
