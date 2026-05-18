@@ -579,12 +579,9 @@ button {
 .wj-tree__hidden {
   visibility: hidden;
 }
-.wj-tree--optimal {
-  color: var(--color-accent);
-}
-.wj-tree--optimal .wj-tree__arrow {
-  color: var(--color-accent-soft);
-}
+/* The optimal tree uses the same colour as the user's tree — the label
+   above is enough to distinguish them, and the previous terracotta
+   variant made the arrows nearly invisible. */
 .wj-victory__path--optimal {
   color: var(--color-accent);
 }
