@@ -167,15 +167,15 @@ export const VictoryPanelDaily = ({
       if (pathSet.has(edge.to) && !pathSet.has(edge.from))
         hasDetour[edge.to] = true;
     }
-    const block = solvedPath
+    const emojiBlock = solvedPath
       .map((word, index) => {
         if (index === 0) return "📍";
         if (index === solvedPath.length - 1) return "🎯";
         return hasDetour[word] ? "🟠" : "🟢";
       })
       .join(" → ");
-    const pathLine = includePath ? `\n${solvedPath.join(" → ")}` : "";
-    return `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${block}${pathLine}\n\n${SHARE_URL}`;
+    const middle = includePath ? solvedPath.join(" → ") : emojiBlock;
+    return `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${middle}\n\n${SHARE_URL}`;
   };
 
   const onShare = async (kind: "score" | "path") => {
