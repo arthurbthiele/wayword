@@ -87,6 +87,16 @@ export const VictoryPanelTriple = ({
   );
   const [copiedKind, setCopiedKind] = useState<"score" | "path" | null>(null);
 
+  // Optimal Steiner tree through the legitimate dictionary. Computed
+  // here (rather than stored) — it's a few BFS passes on a cached
+  // adjacency, runs in a few ms. Memoised. Lives at the top of the
+  // component (above the early return below) because hooks must be
+  // called in the same order on every render.
+  const optimalTree = useMemo(
+    () => findSteinerTree(start, t1, t2),
+    [start, t1, t2]
+  );
+
   const solvedToday = solvedDate === today;
   const dismissed = dismissedDate === today;
   const matchedOptimal =
@@ -211,15 +221,6 @@ export const VictoryPanelTriple = ({
     }
     return `Common-word optimal was ${optimalEdges} ${optimalEdges === 1 ? "word" : "words"}.`;
   })();
-
-  // Optimal Steiner tree through the legitimate dictionary. Computed
-  // here rather than stored: it's a few BFS passes on a cached
-  // adjacency, runs in a few ms. Memoised to avoid recomputing on every
-  // render.
-  const optimalTree = useMemo(
-    () => findSteinerTree(start, t1, t2),
-    [start, t1, t2]
-  );
 
   // Render a tree as two stacked rows. The top row shows the trunk
   // (start → joint) followed by branch1 (→ target1). The bottom row
