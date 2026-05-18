@@ -554,6 +554,37 @@ button {
   font-family: var(--font-sans);
   font-size: var(--text-base);
 }
+/* Triple's two-line indented tree visualisation. The bottom row repeats
+   the trunk invisibly so the second branch's arrow lines up with the
+   joint on the top row, while the visible text only appears once. */
+.wj-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  color: var(--color-ink);
+}
+.wj-tree__row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.wj-tree__arrow {
+  color: var(--color-ink-faint);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+.wj-tree__hidden {
+  visibility: hidden;
+}
+.wj-tree--optimal {
+  color: var(--color-accent);
+}
+.wj-tree--optimal .wj-tree__arrow {
+  color: var(--color-accent-soft);
+}
 .wj-victory__path--optimal {
   color: var(--color-accent);
 }

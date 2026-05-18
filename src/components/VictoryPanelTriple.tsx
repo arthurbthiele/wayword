@@ -3,6 +3,7 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import confetti from "canvas-confetti";
@@ -10,7 +11,10 @@ import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
 import { getDayNumber, getUtcDateString } from "../utilities/dailyTarget";
-import { findSteinerTreeInGraph } from "../utilities/tripleTarget";
+import {
+  findSteinerTree,
+  findSteinerTreeInGraph,
+} from "../utilities/tripleTarget";
 import type { TripleHistory } from "../utilities/dailyStats";
 
 const SHARE_URL = "https://wayword.fun/triple";
@@ -208,16 +212,88 @@ export const VictoryPanelTriple = ({
     return `Common-word optimal was ${optimalEdges} ${optimalEdges === 1 ? "word" : "words"}.`;
   })();
 
-  const renderPath = (path: string[], extraClass: string = "") => (
-    <div className={`wj-victory__path ${extraClass}`.trim()}>
-      {path.map((word, index) => (
-        <React.Fragment key={`${index}-${word}`}>
-          {index > 0 && <span className="arrow">→</span>}
-          <span>{word}</span>
-        </React.Fragment>
-      ))}
-    </div>
+  // Optimal Steiner tree through the legitimate dictionary. Computed
+  // here rather than stored: it's a few BFS passes on a cached
+  // adjacency, runs in a few ms. Memoised to avoid recomputing on every
+  // render.
+  const optimalTree = useMemo(
+    () => findSteinerTree(start, t1, t2),
+    [start, t1, t2]
   );
+
+  // Render a tree as two stacked rows. The top row shows the trunk
+  // (start → joint) followed by branch1 (→ target1). The bottom row
+  // shows the same trunk *invisibly* (so it occupies the same width)
+  // followed by branch2 (→ target2), so the second branch's arrow
+  // visually lines up just after the joint in the top row.
+  //
+  // trunk includes the joint as its last element. branch1 / branch2
+  // exclude the joint.
+  const renderTree = (
+    trunk: string[],
+    branch1: string[],
+    branch2: string[],
+    extraClass: string = ""
+  ) => {
+    const renderRow = (
+      words: { word: string; visible: boolean }[],
+      keyPrefix: string
+    ) => (
+      <div className={`wj-tree__row ${extraClass}`.trim()}>
+        {words.map((cell, index) => (
+          <React.Fragment key={`${keyPrefix}-${index}-${cell.word}`}>
+            {index > 0 && (
+              <span
+                className={`wj-tree__arrow${
+                  cell.visible ? "" : " wj-tree__hidden"
+                }`}
+                aria-hidden={!cell.visible}
+              >
+                →
+              </span>
+            )}
+            <span
+              className={`wj-tree__word${
+                cell.visible ? "" : " wj-tree__hidden"
+              }`}
+              aria-hidden={!cell.visible}
+            >
+              {cell.word}
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+    const top = [
+      ...trunk.map((word) => ({ word, visible: true })),
+      ...branch1.map((word) => ({ word, visible: true })),
+    ];
+    // When the joint coincides with t2 the second branch is empty and we
+    // skip the bottom row entirely (rendering it would just be an empty
+    // line of invisible trunk).
+    const bottom =
+      branch2.length > 0
+        ? [
+            ...trunk.map((word) => ({ word, visible: false })),
+            ...branch2.map((word) => ({ word, visible: true })),
+          ]
+        : null;
+    return (
+      <div className="wj-tree">
+        {renderRow(top, "top")}
+        {bottom && renderRow(bottom, "bot")}
+      </div>
+    );
+  };
+
+  const userBranch1 = branchToT1.slice(1);
+  const userBranch2 = branchToT2.slice(1);
+  const optimalTrunk = optimalTree
+    ? [...optimalTree.branchToStart].reverse()
+    : null;
+  const optimalBranch1 = optimalTree ? optimalTree.branchToT1.slice(1) : null;
+  const optimalBranch2 = optimalTree ? optimalTree.branchToT2.slice(1) : null;
+  const commonWordExplainer = `Shortest tree joining your three words using only common everyday words. You can sometimes shave a few words by routing through less common ones.`;
 
   return (
     <div className="wj-victory">
@@ -255,13 +331,29 @@ export const VictoryPanelTriple = ({
       </div>
 
       <div>
-        <span className="wj-victory__path-label">Your path to {t1}</span>
-        {renderPath(pathToT1)}
+        <span className="wj-victory__path-label">Your tree</span>
+        {renderTree(trunk, userBranch1, userBranch2)}
       </div>
-      <div>
-        <span className="wj-victory__path-label">Your path to {t2}</span>
-        {renderPath(pathToT2)}
-      </div>
+
+      {!matchedOptimal &&
+        optimalTrunk &&
+        optimalBranch1 &&
+        optimalBranch2 && (
+          <div>
+            <span
+              className="wj-victory__path-label"
+              title={commonWordExplainer}
+            >
+              Common-word optimal <span aria-hidden="true">ⓘ</span>
+            </span>
+            {renderTree(
+              optimalTrunk,
+              optimalBranch1,
+              optimalBranch2,
+              "wj-tree--optimal"
+            )}
+          </div>
+        )}
 
       <div className="wj-victory__continue">
         <button
