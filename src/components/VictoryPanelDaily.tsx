@@ -157,14 +157,27 @@ export const VictoryPanelDaily = ({
           ? ` (common-word optimal: ${optimalMoves})`
           : "";
     // Render the solve as a Wordle-style emoji block so the share text
-    // doesn't spoil the actual word chain. One green dot per word on the
-    // solve path; an arrow + one red dot per detour word (a node the user
-    // added that wasn't on their final path).
-    const pathDots = solvedPath.map(() => "🟢").join(" → ");
-    const detours = Math.max(0, graph.nodes.length - solvedPath.length);
-    const detourBlock =
-      detours > 0 ? `\n⬇\n${Array(detours).fill("🔴").join(" ")}` : "";
-    const text = `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${pathDots}${detourBlock}\n\n${SHARE_URL}`;
+    // doesn't spoil the actual word chain. Top row: one 🟢 per word on the
+    // solve path. Bottom row (only when at least one path word has any
+    // "useless" edge — an edge to a node off the final path): 🔴 below
+    // each path word that had such an edge, ⬜ below ones that didn't, so
+    // the columns line up in chat clients (which aren't monospace, but
+    // emoji are roughly equal-width).
+    const pathSet = new Set(solvedPath);
+    const hasDetour: Record<string, boolean> = {};
+    for (const edge of graph.edges ?? []) {
+      if (pathSet.has(edge.from) && !pathSet.has(edge.to))
+        hasDetour[edge.from] = true;
+      if (pathSet.has(edge.to) && !pathSet.has(edge.from))
+        hasDetour[edge.to] = true;
+    }
+    const pathRow = "🟢".repeat(solvedPath.length);
+    const anyDetour = Object.keys(hasDetour).length > 0;
+    const detourRow = solvedPath
+      .map((word) => (hasDetour[word] ? "🔴" : "⬜"))
+      .join("");
+    const block = anyDetour ? `${pathRow}\n${detourRow}` : pathRow;
+    const text = `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${block}\n\n${SHARE_URL}`;
 
     if (useNativeShare) {
       try {
