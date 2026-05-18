@@ -1,6 +1,10 @@
 import { targetWords } from "../dictionaryData/targets";
-import { legitimateWords } from "../dictionaryData/legitimate";
-import { getWordGraph } from "../dictionaryData/wordGraphRef";
+import {
+  bfsDistancesLegitimate,
+  getSortedLegitimate,
+  isTrivialPlural,
+  isViableStart,
+} from "./legitimateGraph";
 
 /**
  * Today's date in UTC, formatted YYYY-MM-DD. UTC (not local) so the daily
@@ -30,8 +34,9 @@ export const getDayNumber = (
 };
 
 // FNV-1a 32-bit with an optional salt so the same date string can produce
-// independent picks for different "slots" (e.g. start vs target).
-const hashStringWithSalt = (input: string, salt: number): number => {
+// independent picks for different "slots" (e.g. start vs target). Exported
+// because the Triple generator uses the same deterministic-from-date pattern.
+export const hashStringWithSalt = (input: string, salt: number): number => {
   let hash = 2166136261 ^ salt;
   for (let i = 0; i < input.length; i++) {
     hash ^= input.charCodeAt(i);
@@ -57,53 +62,6 @@ export const getTargetForDate = (
 
 const MIN_LEGITIMATE_DISTANCE = 4;
 const MAX_LEGITIMATE_DISTANCE = 7;
-
-let cachedLegitimateAdjacency: Map<string, string[]> | null = null;
-let cachedSortedLegitimate: string[] | null = null;
-
-const buildLegitimateAdjacency = (): Map<string, string[]> => {
-  if (cachedLegitimateAdjacency) return cachedLegitimateAdjacency;
-  const wordGraph = getWordGraph();
-  const adjacency = new Map<string, string[]>();
-  for (const word of legitimateWords) {
-    const neighbours = (wordGraph[word] ?? []).filter((n) =>
-      legitimateWords.has(n)
-    );
-    adjacency.set(word, neighbours);
-  }
-  cachedLegitimateAdjacency = adjacency;
-  return adjacency;
-};
-
-const getSortedLegitimate = (): string[] => {
-  if (cachedSortedLegitimate) return cachedSortedLegitimate;
-  cachedSortedLegitimate = [...legitimateWords].sort();
-  return cachedSortedLegitimate;
-};
-
-const bfsDistancesLegitimate = (start: string): Map<string, number> => {
-  const adjacency = buildLegitimateAdjacency();
-  const distances = new Map<string, number>([[start, 0]]);
-  const queue: string[] = [start];
-  let head = 0;
-  while (head < queue.length) {
-    const word = queue[head++];
-    const distance = distances.get(word) ?? 0;
-    for (const neighbour of adjacency.get(word) ?? []) {
-      if (!distances.has(neighbour)) {
-        distances.set(neighbour, distance + 1);
-        queue.push(neighbour);
-      }
-    }
-  }
-  return distances;
-};
-
-const isTrivialPlural = (word: string): boolean =>
-  word.endsWith("s") && legitimateWords.has(word.slice(0, -1));
-
-const isViableStart = (word: string): boolean =>
-  word.length >= 3 && !isTrivialPlural(word);
 
 /**
  * Deterministic (start, target) pair for the daily puzzle. Both are in the

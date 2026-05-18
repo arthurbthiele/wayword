@@ -342,6 +342,48 @@ button {
   color: var(--color-good);
   font-weight: 600;
 }
+/* Triple status strip stacks: top row (label + words + count), then a
+   small hint reminding the player of the goal. */
+.wj-status--triple {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+}
+.wj-status__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+.wj-status__hint {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+/* Triple targets: comma-separated word list with an inline ✓ checkmark on
+   each one the user has added to their graph. */
+.wj-status__triple-targets {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+.wj-status__triple-target {
+  transition: color 0.18s ease;
+}
+.wj-status__triple-target--reached {
+  color: var(--color-good);
+}
+.wj-status__triple-comma {
+  font-family: var(--font-serif);
+  font-size: var(--text-3xl);
+  color: var(--color-ink-faint);
+  margin-right: var(--space-1);
+}
+.wj-status__check {
+  margin-left: 4px;
+  font-size: 0.7em;
+  color: var(--color-good);
+}
 
 /* Graph area. */
 .wj-graph {
@@ -553,6 +595,38 @@ button {
   font-weight: 600;
   margin: 0 0 var(--space-4);
   color: var(--color-ink);
+}
+.wj-stats__tabs {
+  display: inline-flex;
+  background: var(--color-paper-2);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 2px;
+  margin-bottom: var(--space-4);
+}
+.wj-stats__tabs button {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: 6px var(--space-4);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.wj-stats__tabs button:hover {
+  color: var(--color-ink);
+}
+.wj-stats__tabs button[aria-pressed="true"] {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sm);
+}
+.wj-stats__arrow-sep {
+  color: var(--color-ink-faint);
+  margin: 0 var(--space-1);
 }
 .wj-stats h3 {
   font-family: var(--font-sans);

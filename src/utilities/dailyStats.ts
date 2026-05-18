@@ -9,11 +9,29 @@ export type DailyHistoryEntry = {
 
 export type DailyHistory = Record<string, DailyHistoryEntry>;
 
+export type TripleHistoryEntry = {
+  start: string;
+  t1: string;
+  t2: string;
+  // For Triple, `userMoves` = words the player added on the joining tree,
+  // `optimalMoves` = edges in the optimal Steiner tree. Same shape as
+  // daily so the stats helpers below work for both.
+  userMoves: number;
+  optimalMoves: number | null;
+};
+
+export type TripleHistory = Record<string, TripleHistoryEntry>;
+
 /**
  * Current consecutive-day streak. If today's puzzle isn't in history yet,
  * we don't break the streak — we just start counting from yesterday.
+ *
+ * Accepts either DailyHistory or TripleHistory (anything keyed by
+ * YYYY-MM-DD date strings).
  */
-export const computeStreak = (history: DailyHistory): number => {
+export const computeStreak = (
+  history: Record<string, unknown>
+): number => {
   const now = new Date();
   const todayStr = getUtcDateString(now);
   const cursor = new Date(now);
@@ -37,7 +55,9 @@ export type DailyStats = {
   averageOverOptimal: number | null;
 };
 
-export const computeStats = (history: DailyHistory): DailyStats => {
+export const computeStats = (
+  history: Record<string, { userMoves: number; optimalMoves: number | null }>
+): DailyStats => {
   const entries = Object.values(history);
   let optimalOrBetter = 0;
   let totalDiff = 0;

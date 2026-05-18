@@ -28,6 +28,16 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
         words.
       </p>
 
+      <h3>Triple</h3>
+      <p>
+        A harder daily: one start word and two targets. The goal is to
+        join all three by adding the fewest possible words to your graph.
+        You can branch wherever you like — shared trunks are fine, even
+        encouraged — but each new word you type counts. You'll see your
+        score against the best possible joining tree using only common
+        words.
+      </p>
+
       <h3>Free play</h3>
       <p>
         Free play lets you explore from 'a' at your own pace. A new target

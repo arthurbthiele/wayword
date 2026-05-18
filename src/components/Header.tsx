@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "./ui/Button";
 import { clearLocalStorage } from "../utilities/useLocalStorage";
 
-export type GameMode = "daily" | "freeplay";
+export type GameMode = "daily" | "freeplay" | "triple";
 
 type HeaderProps = {
   mode: GameMode;
@@ -20,13 +20,25 @@ export const Header = ({
   streak,
 }: HeaderProps) => {
   const onReset = () => {
-    const prefix = mode === "daily" ? "daily:" : "freeplay:";
-    const label =
-      mode === "daily"
-        ? "Reset your daily-challenge progress for today? Your free-play state is not affected."
-        : "Reset your free-play graph, score, and current target? Your daily state is not affected.";
-    if (window.confirm(label)) {
-      clearLocalStorage(prefix);
+    const resetConfig = {
+      daily: {
+        prefix: "daily:",
+        label:
+          "Reset your Daily progress for today? Triple and Free play state are not affected.",
+      },
+      freeplay: {
+        prefix: "freeplay:",
+        label:
+          "Reset your Free play graph, score, and current target? Daily modes are not affected.",
+      },
+      triple: {
+        prefix: "triple:",
+        label:
+          "Reset your Triple progress for today? Daily and Free play state are not affected.",
+      },
+    }[mode];
+    if (window.confirm(resetConfig.label)) {
+      clearLocalStorage(resetConfig.prefix);
       window.location.reload();
     }
   };
@@ -45,6 +57,14 @@ export const Header = ({
           onClick={() => setMode("daily")}
         >
           Daily
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-pressed={mode === "triple"}
+          onClick={() => setMode("triple")}
+        >
+          Triple
         </button>
         <button
           type="button"
