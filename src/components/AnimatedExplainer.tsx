@@ -12,16 +12,12 @@ const steps: Step[] = [
     caption: "Add a letter to get 'at'.",
   },
   {
-    chain: ["a", "at", "art"],
-    caption: "Add another to get 'art'.",
+    chain: ["a", "at", "cat"],
+    caption: "Add another to get 'cat'.",
   },
   {
-    chain: ["a", "at", "art", "cart"],
-    caption: "Add a 'c' to get 'cart'.",
-  },
-  {
-    chain: ["a", "at", "art", "cart", "card"],
-    caption: "Or change a letter — 'cart' → 'card'.",
+    chain: ["a", "at", "cat", "bat"],
+    caption: "Or change a letter — 'cat' → 'bat'.",
   },
 ];
 
