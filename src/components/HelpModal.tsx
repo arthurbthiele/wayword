@@ -22,16 +22,17 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
 
       <h3>Daily</h3>
       <p>
-        A fresh start word and target word every day. Get from one to the
-        other in as few moves as you can — when you solve it, you'll see
-        your path and the common-word optimal.
+        Every day brings a fresh start word and target word. Get from one
+        to the other in as few moves as you can; when you solve it, you'll
+        see your route alongside the best possible path using only common
+        words.
       </p>
 
       <h3>Free play</h3>
       <p>
-        Open-ended exploration starting from 'a'. A new target appears at
-        your chosen difficulty; reach it to score points (the harder the
-        difficulty, the more points) and a new target is picked.
+        Free play lets you explore from 'a' at your own pace. A new target
+        appears at your chosen difficulty — reach it to score points (more
+        points at higher difficulties), and another target appears.
       </p>
 
       <h3>Tips</h3>

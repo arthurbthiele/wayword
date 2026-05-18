@@ -75,7 +75,7 @@ export const VictoryPanelDaily = ({
     "daily:victoryDismissedDate",
     null
   );
-  const [copied, setCopied] = useState(false);
+  const [copiedKind, setCopiedKind] = useState<"score" | "path" | null>(null);
 
   const solvedToday = solvedDate === today;
   const dismissed = dismissedDate === today;
@@ -148,7 +148,7 @@ export const VictoryPanelDaily = ({
     typeof navigator !== "undefined" &&
     typeof navigator.share === "function";
 
-  const onShare = async () => {
+  const buildShareText = (includePath: boolean): string => {
     const suffix = matchedOptimal
       ? " — common-word optimal!"
       : beatOptimal
@@ -156,8 +156,7 @@ export const VictoryPanelDaily = ({
         : optimalMoves !== null
           ? ` (common-word optimal: ${optimalMoves})`
           : "";
-    // Render the solve as an emoji block so the share text doesn't spoil
-    // the actual word chain. 📍 / 🎯 mark start and target; middle path
+    // Spoiler-free emoji block. 📍 / 🎯 mark start and target; middle path
     // words are 🟢 normally, 🟠 if that word had at least one "useless"
     // edge (one to a node off the final solve path).
     const pathSet = new Set(solvedPath);
@@ -175,8 +174,12 @@ export const VictoryPanelDaily = ({
         return hasDetour[word] ? "🟠" : "🟢";
       })
       .join(" → ");
-    const text = `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${block}\n\n${SHARE_URL}`;
+    const pathLine = includePath ? `\n${solvedPath.join(" → ")}` : "";
+    return `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${block}${pathLine}\n\n${SHARE_URL}`;
+  };
 
+  const onShare = async (kind: "score" | "path") => {
+    const text = buildShareText(kind === "path");
     if (useNativeShare) {
       try {
         await navigator.share({ title: "Wayword", text });
@@ -187,8 +190,8 @@ export const VictoryPanelDaily = ({
     }
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedKind(kind);
+      setTimeout(() => setCopiedKind(null), 2000);
     } catch {
       window.prompt("Copy to clipboard:", text);
     }
@@ -240,8 +243,19 @@ export const VictoryPanelDaily = ({
           )}
         </div>
         <div className="wj-victory__actions">
-          <Button variant="primary" size="small" onClick={onShare}>
-            {copied ? "Copied!" : useNativeShare ? "Share" : "Copy result"}
+          <Button
+            variant="primary"
+            size="small"
+            onClick={() => onShare("score")}
+          >
+            {copiedKind === "score" ? "Copied!" : "Share"}
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => onShare("path")}
+          >
+            {copiedKind === "path" ? "Copied!" : "Share with path"}
           </Button>
         </div>
       </div>
@@ -264,13 +278,12 @@ export const VictoryPanelDaily = ({
       )}
 
       <div className="wj-victory__continue">
-        Done for today?{" "}
         <button
           type="button"
           className="wj-victory__link"
           onClick={onSwitchToFreePlay}
         >
-          Keep playing in free play →
+          Keep playing in free play, if you like →
         </button>
       </div>
     </div>
