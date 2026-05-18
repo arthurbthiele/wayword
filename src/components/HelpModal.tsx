@@ -42,8 +42,16 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
       </ul>
 
       <p style={{ marginTop: 24, fontSize: 13, color: "var(--color-ink-muted)" }}>
-        Feedback or word suggestions? <a href="https://forms.gle/KmDLHJ3Mas3kzcjz7">Use this form</a> or
-        email <a href="mailto:feedback@wayword.fun">feedback@wayword.fun</a>.
+        Feedback or word suggestions?{" "}
+        <a
+          href="https://forms.gle/KmDLHJ3Mas3kzcjz7"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Use this form
+        </a>{" "}
+        or email{" "}
+        <a href="mailto:feedback@wayword.fun">feedback@wayword.fun</a>.
       </p>
     </div>
   </Modal>
