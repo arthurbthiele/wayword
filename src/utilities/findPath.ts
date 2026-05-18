@@ -1,4 +1,4 @@
-import { wordGraph } from "../dictionaryData/wordGraph";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 import type { GraphNode } from "./wordDepths";
 
 /**
@@ -120,6 +120,7 @@ export const findShortestPathFromAnyToTarget = (
   if (seeds.length === 0) return null;
   if (seeds.includes(target)) return [target];
 
+  const wordGraph = getWordGraph();
   const visited = new Set<string>(seeds);
   const previous = new Map<string, string>();
   const queue: string[] = [...seeds];
@@ -161,6 +162,7 @@ export const findShortestPathInDictionary = (
   restrictTo?: ReadonlySet<string>
 ): string[] | null => {
   if (start === target) return [start];
+  const wordGraph = getWordGraph();
   if (!(start in wordGraph) || !(target in wordGraph)) return null;
   if (restrictTo && (!restrictTo.has(start) || !restrictTo.has(target))) {
     return null;

@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState } from "react";
-import { wordGraph } from "../dictionaryData/wordGraph";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 import { wordsAreConnected } from "../utilities/wordAreConnected";
 import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
@@ -16,7 +16,7 @@ export const InputBar = ({ targetReminder }: InputBarProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const trimmed = value.trim().toLowerCase();
-  const isDictionaryWord = trimmed.length > 0 && trimmed in wordGraph;
+  const isDictionaryWord = trimmed.length > 0 && trimmed in getWordGraph();
   const isConnected =
     isDictionaryWord && wordsAreConnected(trimmed, selectedWord);
   const canSubmit = trimmed.length > 0 && isDictionaryWord && isConnected;

@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from "react";
 import { GraphContext } from "./GraphProvider";
 import { logTargetPaths } from "../utilities/logTargetPaths";
+import { getDayNumber } from "../utilities/dailyTarget";
 
 type StatusStripDailyProps = {
   start: string;
@@ -18,11 +19,12 @@ export const StatusStripDaily = ({ start, target }: StatusStripDailyProps) => {
   const solved = graph.nodes.some(
     (node: { id: string }) => node.id === target
   );
+  const dayNumber = getDayNumber();
 
   return (
     <div className="wj-status">
       <div className="wj-status__target">
-        <span className="wj-status__label">Today</span>
+        <span className="wj-status__label">#{dayNumber}</span>
         <span className="wj-status__word">{start}</span>
         <span className="wj-status__arrow">→</span>
         <span className="wj-status__word">{target}</span>

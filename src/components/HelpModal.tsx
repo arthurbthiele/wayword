@@ -12,24 +12,26 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
     <div className="wj-help">
       <h2>How to play</h2>
       <p>
-        Build a chain of words starting from 'a'. Each new word must be one
-        letter different from a word already in your graph — by{" "}
-        <b>adding</b>, <b>removing</b>, or <b>changing</b> a single letter.
+        Build a chain of words from a starting word to a target. Each new
+        word must be one letter different from a word already in your graph
+        — by <b>adding</b>, <b>removing</b>, or <b>changing</b> a single
+        letter.
       </p>
 
       <AnimatedExplainer />
 
       <h3>Daily</h3>
       <p>
-        A fresh target word every day. Reach it from 'a' in as few moves as
-        you can — when you solve it, you'll see your path and the optimal one.
+        A fresh start word and target word every day. Get from one to the
+        other in as few moves as you can — when you solve it, you'll see
+        your path and the common-word optimal.
       </p>
 
       <h3>Free play</h3>
       <p>
-        Open-ended exploration. A new target appears at your chosen difficulty.
-        Reach it to score points (the harder the difficulty, the more points)
-        and a new target is picked.
+        Open-ended exploration starting from 'a'. A new target appears at
+        your chosen difficulty; reach it to score points (the harder the
+        difficulty, the more points) and a new target is picked.
       </p>
 
       <h3>Tips</h3>

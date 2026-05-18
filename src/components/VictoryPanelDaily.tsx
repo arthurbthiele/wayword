@@ -9,7 +9,7 @@ import confetti from "canvas-confetti";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
-import { getUtcDateString } from "../utilities/dailyTarget";
+import { getDayNumber, getUtcDateString } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
@@ -46,6 +46,7 @@ type VictoryPanelDailyProps = {
   target: string;
   history: DailyHistory;
   setHistory: Dispatch<SetStateAction<DailyHistory>>;
+  onSwitchToFreePlay: () => void;
 };
 
 export const VictoryPanelDaily = ({
@@ -53,6 +54,7 @@ export const VictoryPanelDaily = ({
   target,
   history,
   setHistory,
+  onSwitchToFreePlay,
 }: VictoryPanelDailyProps) => {
   const today = getUtcDateString();
   const { graph } = useContext(GraphContext);
@@ -154,7 +156,7 @@ export const VictoryPanelDaily = ({
         : optimalMoves !== null
           ? ` (common-word optimal: ${optimalMoves})`
           : "";
-    const text = `Wayword ${today}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${solvedPath.join(" → ")}\n\n${SHARE_URL}`;
+    const text = `Wayword #${getDayNumber(today)}: ${start.toUpperCase()} → ${target.toUpperCase()} in ${userMoves} moves${suffix}\n${solvedPath.join(" → ")}\n\n${SHARE_URL}`;
 
     if (useNativeShare) {
       try {
@@ -241,6 +243,17 @@ export const VictoryPanelDaily = ({
           {renderPath(optimalPath, "wj-victory__path--optimal")}
         </div>
       )}
+
+      <div className="wj-victory__continue">
+        Done for today?{" "}
+        <button
+          type="button"
+          className="wj-victory__link"
+          onClick={onSwitchToFreePlay}
+        >
+          Keep playing in free play →
+        </button>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { wordGraph } from "../dictionaryData/wordGraph";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 export const wordsAreConnected = (
   word1: string,
@@ -7,5 +7,6 @@ export const wordsAreConnected = (
   if (!word2 || typeof word2 !== "string") {
     return false;
   }
-  return wordGraph[word2].includes(word1);
+  const neighbours = getWordGraph()[word2];
+  return neighbours ? neighbours.includes(word1) : false;
 };

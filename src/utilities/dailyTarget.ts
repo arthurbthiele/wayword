@@ -1,6 +1,6 @@
 import { targetWords } from "../dictionaryData/targets";
 import { legitimateWords } from "../dictionaryData/legitimate";
-import { wordGraph } from "../dictionaryData/wordGraph";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 /**
  * Today's date in UTC, formatted YYYY-MM-DD. UTC (not local) so the daily
@@ -12,6 +12,21 @@ export const getUtcDateString = (date: Date = new Date()): string => {
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+};
+
+// Day 1 of daily-challenge mode. The day number is computed as days elapsed
+// from this date in UTC, +1 (so launch day == #1).
+export const LAUNCH_DATE = "2026-05-17";
+
+const MS_PER_DAY = 86400000;
+
+export const getDayNumber = (
+  dateString: string = getUtcDateString()
+): number => {
+  const launch = Date.parse(`${LAUNCH_DATE}T00:00:00Z`);
+  const date = Date.parse(`${dateString}T00:00:00Z`);
+  if (Number.isNaN(launch) || Number.isNaN(date)) return 1;
+  return Math.max(1, Math.floor((date - launch) / MS_PER_DAY) + 1);
 };
 
 // FNV-1a 32-bit with an optional salt so the same date string can produce
@@ -48,6 +63,7 @@ let cachedSortedLegitimate: string[] | null = null;
 
 const buildLegitimateAdjacency = (): Map<string, string[]> => {
   if (cachedLegitimateAdjacency) return cachedLegitimateAdjacency;
+  const wordGraph = getWordGraph();
   const adjacency = new Map<string, string[]>();
   for (const word of legitimateWords) {
     const neighbours = (wordGraph[word] ?? []).filter((n) =>

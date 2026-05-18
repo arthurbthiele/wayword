@@ -12,19 +12,13 @@ import {
 } from "./components/VictoryBannerFreePlay";
 import { HelpModal } from "./components/HelpModal";
 import { StatsModal } from "./components/StatsModal";
-import {
-  useLocalStorage,
-  migrateDailyToV2,
-  migrateLegacyFreePlayKeys,
-} from "./utilities/useLocalStorage";
+import { useLocalStorage } from "./utilities/useLocalStorage";
 import { getDailyPair, getUtcDateString } from "./utilities/dailyTarget";
 import {
   computeStreak,
   type DailyHistory,
 } from "./utilities/dailyStats";
-
-migrateLegacyFreePlayKeys();
-migrateDailyToV2();
+import { setWordGraph } from "./dictionaryData/wordGraphRef";
 
 const freeplayInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
@@ -33,6 +27,22 @@ const freeplayInitialGraph = {
 };
 
 const App = () => {
+  // The wordGraph data file is ~1.6 MB gzipped on its own; loading it via
+  // a dynamic import lets the app shell paint immediately while the
+  // dictionary streams in as a separate chunk.
+  const [dictReady, setDictReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    import("./dictionaryData/wordGraph").then(({ wordGraph }) => {
+      if (cancelled) return;
+      setWordGraph(wordGraph);
+      setDictReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [mode, setMode] = useLocalStorage<GameMode>("mode", "daily");
   const [hasSeenHelp, setHasSeenHelp] = useLocalStorage<boolean>(
     "hasSeenHelp",
@@ -69,14 +79,20 @@ const App = () => {
       window.removeEventListener("focus", refresh);
     };
   }, []);
-  const dailyPair = useMemo(() => getDailyPair(today), [today]);
+  const dailyPair = useMemo(
+    () => (dictReady ? getDailyPair(today) : null),
+    [today, dictReady]
+  );
   const dailyInitialGraph = useMemo(
-    () => ({
-      nodes: [{ id: dailyPair.start, label: dailyPair.start }],
-      edges: [] as { from: string; to: string }[],
-      parents: {} as Record<string, string>,
-    }),
-    [dailyPair.start]
+    () =>
+      dailyPair
+        ? {
+            nodes: [{ id: dailyPair.start, label: dailyPair.start }],
+            edges: [] as { from: string; to: string }[],
+            parents: {} as Record<string, string>,
+          }
+        : null,
+    [dailyPair?.start]
   );
   const [freePlayTarget, setFreePlayTarget] = useLocalStorage<string | null>(
     "freeplay:target",
@@ -96,7 +112,11 @@ const App = () => {
         onOpenStats={() => setStatsOpen(true)}
         streak={mode === "daily" ? streak : undefined}
       />
-      {mode === "daily" ? (
+      {!dictReady || !dailyPair || !dailyInitialGraph ? (
+        <main className="wj-graph">
+          <div className="wj-graph__inner wj-loading">Loading dictionary…</div>
+        </main>
+      ) : mode === "daily" ? (
         <GraphProvider
           key={`daily-${today}`}
           keyPrefix={`daily:v2:${today}`}
@@ -117,6 +137,7 @@ const App = () => {
             target={dailyPair.target}
             history={dailyHistory}
             setHistory={setDailyHistory}
+            onSwitchToFreePlay={() => setMode("freeplay")}
           />
           <InputBar targetReminder={dailyPair.target} />
         </GraphProvider>

@@ -1,4 +1,4 @@
-import { wordGraph } from "../dictionaryData/wordGraph";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 export type GraphNode = { id: string; label: string };
 export type Depths = Record<string, number>;
@@ -15,6 +15,7 @@ export const computeDepths = (
   currentGraphNodes: GraphNode[],
   restrictTo?: ReadonlySet<string>
 ): Depths => {
+  const wordGraph = getWordGraph();
   const depths: Depths = {};
   const nodesToVisit: string[] = [];
   let head = 0;
