@@ -228,6 +228,10 @@ button {
 .wj-app {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
+  /* `minmax(0, 1fr)` lets the column shrink below content size — without
+   * it, the vis-network canvas (initially rendered at a fixed pixel
+   * width) forces the whole grid wider than the viewport on mobile. */
+  grid-template-columns: minmax(0, 1fr);
   /* 100vh on mobile excludes browser chrome that's actually visible,
    * pushing our bottom row off-screen. 100dvh tracks the actual visible
    * viewport (and recalculates as Safari's toolbars hide/show). */
@@ -583,9 +587,22 @@ button {
   color: var(--color-accent);
   font-weight: 600;
 }
+@media (max-width: 640px) {
+  .wj-tree {
+    font-size: var(--text-base);
+    /* Last-resort horizontal scroll for very long chains. Most Triple
+     * trees fit at the smaller mobile font; if one doesn't, the user
+     * can swipe rather than getting clipped text. */
+    overflow-x: auto;
+  }
+}
 /* The optimal tree uses the same colour as the user's tree — the label
    above is enough to distinguish them, and the previous terracotta
    variant made the arrows nearly invisible. */
+.wj-victory__path-terminal {
+  color: var(--color-accent);
+  font-weight: 600;
+}
 .wj-victory__path--optimal {
   color: var(--color-accent);
 }

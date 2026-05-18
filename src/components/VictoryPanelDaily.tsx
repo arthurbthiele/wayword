@@ -197,12 +197,19 @@ export const VictoryPanelDaily = ({
     }
   };
 
-  const renderPath = (path: string[], extraClass: string = "") => (
-    <div className={`wj-victory__path ${extraClass}`.trim()}>
+  const terminals = new Set([start, target]);
+  const renderPath = (path: string[]) => (
+    <div className="wj-victory__path">
       {path.map((word, index) => (
         <React.Fragment key={`${index}-${word}`}>
           {index > 0 && <span className="arrow">→</span>}
-          <span>{word}</span>
+          <span
+            className={
+              terminals.has(word) ? "wj-victory__path-terminal" : undefined
+            }
+          >
+            {word}
+          </span>
         </React.Fragment>
       ))}
     </div>
@@ -273,7 +280,7 @@ export const VictoryPanelDaily = ({
           >
             Common-word optimal <span aria-hidden="true">ⓘ</span>
           </span>
-          {renderPath(optimalPath, "wj-victory__path--optimal")}
+          {renderPath(optimalPath)}
         </div>
       )}
 
