@@ -579,6 +579,10 @@ button {
 .wj-tree__hidden {
   visibility: hidden;
 }
+.wj-tree__word--terminal {
+  color: var(--color-accent);
+  font-weight: 600;
+}
 /* The optimal tree uses the same colour as the user's tree — the label
    above is enough to distinguish them, and the previous terracotta
    variant made the arrows nearly invisible. */

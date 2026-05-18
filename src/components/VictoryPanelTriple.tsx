@@ -229,6 +229,8 @@ export const VictoryPanelTriple = ({
   //
   // trunk includes the joint as its last element. branch1 / branch2
   // exclude the joint.
+  const terminals = new Set([start, t1, t2]);
+
   const renderTree = (
     trunk: string[],
     branch1: string[],
@@ -240,28 +242,31 @@ export const VictoryPanelTriple = ({
       keyPrefix: string
     ) => (
       <div className={`wj-tree__row ${extraClass}`.trim()}>
-        {words.map((cell, index) => (
-          <React.Fragment key={`${keyPrefix}-${index}-${cell.word}`}>
-            {index > 0 && (
+        {words.map((cell, index) => {
+          const isTerminal = terminals.has(cell.word);
+          return (
+            <React.Fragment key={`${keyPrefix}-${index}-${cell.word}`}>
+              {index > 0 && (
+                <span
+                  className={`wj-tree__arrow${
+                    cell.visible ? "" : " wj-tree__hidden"
+                  }`}
+                  aria-hidden={!cell.visible}
+                >
+                  →
+                </span>
+              )}
               <span
-                className={`wj-tree__arrow${
+                className={`wj-tree__word${
                   cell.visible ? "" : " wj-tree__hidden"
-                }`}
+                }${isTerminal ? " wj-tree__word--terminal" : ""}`}
                 aria-hidden={!cell.visible}
               >
-                →
+                {cell.word}
               </span>
-            )}
-            <span
-              className={`wj-tree__word${
-                cell.visible ? "" : " wj-tree__hidden"
-              }`}
-              aria-hidden={!cell.visible}
-            >
-              {cell.word}
-            </span>
-          </React.Fragment>
-        ))}
+            </React.Fragment>
+          );
+        })}
       </div>
     );
     const top = [
