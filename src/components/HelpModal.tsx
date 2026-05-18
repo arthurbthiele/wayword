@@ -43,7 +43,7 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
 
       <p style={{ marginTop: 24, fontSize: 13, color: "var(--color-ink-muted)" }}>
         Feedback or word suggestions? <a href="https://forms.gle/KmDLHJ3Mas3kzcjz7">Use this form</a> or
-        email arthurbthiele@gmail.com.
+        email <a href="mailto:feedback@wayword.fun">feedback@wayword.fun</a>.
       </p>
     </div>
   </Modal>

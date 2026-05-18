@@ -4,7 +4,7 @@ A daily word-ladder puzzle. Get from one word to another by adding,
 removing, or changing one letter at a time. Originally written in 2021
 as an exercise in React; rebuilt in 2026 with a daily-puzzle frame.
 
-Hosted at [arthurbthiele.github.io/wayword](https://arthurbthiele.github.io/wayword/).
+Hosted at [wayword.fun](https://wayword.fun/).
 
 ## How it works
 

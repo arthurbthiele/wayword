@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  base: "/wayword/",
+  base: "/",
   // react-graph-vis transitively imports an old uuid that references Node's
   // `global`. Browsers don't have it; map it to globalThis at build time.
   define: {

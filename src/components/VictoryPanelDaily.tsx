@@ -18,7 +18,7 @@ import {
 import { legitimateWords } from "../dictionaryData/legitimate";
 import type { DailyHistory } from "../utilities/dailyStats";
 
-const SHARE_URL = "https://arthurbthiele.github.io/wayword/";
+const SHARE_URL = "https://wayword.fun/";
 // Themed confetti colours — terracotta accent + cream paper + navy ink.
 const CONFETTI_COLOURS = [
   "#c25a2a",
