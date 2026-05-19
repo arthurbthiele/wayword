@@ -819,63 +819,69 @@ button {
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-4);
 }
-.wj-explainer__chain {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  min-height: 56px;
-  font-family: var(--font-serif);
-  font-size: var(--text-xl);
+.wj-explainer__canvas {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 2 / 1;
+  margin: 0 auto;
 }
-.wj-explainer__step {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
+.wj-explainer__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.wj-explainer__edge {
+  stroke: var(--color-rule);
+  stroke-width: 1.5;
 }
 .wj-explainer__node {
+  position: absolute;
+  transform: translate(-50%, -50%);
   background: var(--color-paper-2);
-  border-radius: 999px;
-  padding: var(--space-1) var(--space-4);
   border: 1px solid var(--color-rule);
-  transition: background-color 0.4s ease, border-color 0.4s ease,
-    color 0.4s ease, opacity 0.4s ease;
-  opacity: 0;
-  animation: wj-explainer-node 0.5s ease forwards;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  color: var(--color-ink);
+  white-space: nowrap;
+  line-height: 1.2;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    color 0.3s ease;
+  animation: wj-explainer-node-in 0.4s ease;
 }
 .wj-explainer__node--active {
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: white;
 }
-.wj-explainer__edge {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--color-ink-faint);
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  opacity: 0;
-  animation: wj-explainer-edge 0.5s ease forwards;
+.wj-explainer__cursor {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  line-height: 1;
+  pointer-events: none;
+  /* Glide between positions, fade in/out. Cubic-bezier matches a
+     "deliberate hand movement" rather than a linear sweep. */
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    top 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
-.wj-explainer__edge::before {
-  content: "→";
-  font-size: var(--text-xl);
-  color: var(--color-ink-faint);
+.wj-explainer__cursor--hidden {
+  opacity: 0;
 }
 .wj-explainer__caption {
   text-align: center;
   font-size: var(--text-sm);
   color: var(--color-ink-muted);
   margin-top: var(--space-3);
-  min-height: 1.2em;
+  min-height: 2.4em;
 }
-@keyframes wj-explainer-node {
-  to { opacity: 1; }
-}
-@keyframes wj-explainer-edge {
-  to { opacity: 1; }
+@keyframes wj-explainer-node-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* react-graph-vis container — keep neutral and let the graph render itself. */
@@ -988,9 +994,9 @@ button {
   .wj-help h2 {
     font-size: var(--text-xl);
   }
-  .wj-explainer__chain {
-    font-size: var(--text-lg);
-    gap: var(--space-2);
+  .wj-explainer__node {
+    font-size: var(--text-sm);
+    padding: 3px 10px;
   }
 }
 
