@@ -16,10 +16,17 @@ export const InputBar = ({ targetReminder }: InputBarProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const trimmed = value.trim().toLowerCase();
+  const wordInGraph =
+    trimmed.length > 0 &&
+    graph.nodes.some((node: { id: string }) => node.id === trimmed);
   const isDictionaryWord = trimmed.length > 0 && trimmed in getWordGraph();
   const isConnected =
-    isDictionaryWord && wordsAreConnected(trimmed, selectedWord);
-  const canSubmit = trimmed.length > 0 && isDictionaryWord && isConnected;
+    (isDictionaryWord || wordInGraph) &&
+    wordsAreConnected(trimmed, selectedWord);
+  // Typing a word already in the graph always works as a jump (regardless
+  // of adjacency to the currently-selected word). New words still need to
+  // be one edit from the selected word.
+  const canSubmit = wordInGraph || (isDictionaryWord && isConnected);
 
   const hint = (() => {
     if (trimmed.length === 0) return null;
@@ -27,6 +34,20 @@ export const InputBar = ({ targetReminder }: InputBarProps) => {
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
           Click a word in your graph to pick where to add from
+        </span>
+      );
+    }
+    if (wordInGraph) {
+      if (trimmed === selectedWord) {
+        return (
+          <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
+            '{trimmed}' is already selected
+          </span>
+        );
+      }
+      return (
+        <span className="wj-inputbar__hint wj-inputbar__hint--good">
+          ↻ Jump to '{trimmed}' in your graph
         </span>
       );
     }
@@ -53,29 +74,36 @@ export const InputBar = ({ targetReminder }: InputBarProps) => {
 
   const submit = () => {
     if (!canSubmit) return;
-    const newNode = { id: trimmed, label: trimmed };
-    const newEdge = { from: selectedWord, to: trimmed };
-    const existingParents = graph.parents ?? {};
-    const nodeAlreadyExists = graph.nodes.some(
-      (node: { id: string }) => node.id === trimmed
-    );
-    // Don't append a duplicate node; vis-network rejects duplicate ids. We
-    // still add the edge, which is how the closed-loop feature works.
-    const nextNodes = nodeAlreadyExists
-      ? graph.nodes
-      : [...graph.nodes, newNode];
-    // Only record a parent the first time a word is added — second-time
-    // additions (closed-loop edges) shouldn't overwrite the word's history.
-    const nextParents =
-      trimmed in existingParents
-        ? existingParents
-        : { ...existingParents, [trimmed]: selectedWord };
-    setGraph({
-      nodes: nextNodes,
-      edges: [...graph.edges, newEdge],
-      parents: nextParents,
-    });
-    setSelectedWord(trimmed);
+    if (wordInGraph) {
+      // Word's already in the graph — jump to it. If it's also adjacent
+      // to the currently-selected word and we don't yet have an edge
+      // between them, add the edge (closed-loop feature). Edges are
+      // treated as undirected for dedup.
+      if (isConnected && trimmed !== selectedWord) {
+        const edgeExists = graph.edges.some(
+          (e: { from: string; to: string }) =>
+            (e.from === selectedWord && e.to === trimmed) ||
+            (e.from === trimmed && e.to === selectedWord)
+        );
+        if (!edgeExists) {
+          setGraph({
+            ...graph,
+            edges: [...graph.edges, { from: selectedWord, to: trimmed }],
+          });
+        }
+      }
+      setSelectedWord(trimmed);
+    } else {
+      // New word — add node, edge, and record its parent for chronological
+      // path reconstruction.
+      const existingParents = graph.parents ?? {};
+      setGraph({
+        nodes: [...graph.nodes, { id: trimmed, label: trimmed }],
+        edges: [...graph.edges, { from: selectedWord, to: trimmed }],
+        parents: { ...existingParents, [trimmed]: selectedWord },
+      });
+      setSelectedWord(trimmed);
+    }
     setValue("");
     inputRef.current?.focus();
   };
