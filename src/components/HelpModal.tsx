@@ -52,7 +52,7 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
         <li>Your progress is saved in your browser. Use Reset to start over.</li>
       </ul>
 
-      <p style={{ marginTop: 24, fontSize: 13, color: "var(--color-ink-muted)" }}>
+      <p style={{ marginTop: 24, marginBottom: 10, fontSize: 13, color: "var(--color-ink-muted)" }}>
         Feedback or word suggestions?{" "}
         <a
           href="https://forms.gle/KmDLHJ3Mas3kzcjz7"
@@ -63,6 +63,31 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
         </a>{" "}
         or email{" "}
         <a href="mailto:feedback@wayword.fun">feedback@wayword.fun</a>.
+      </p>
+
+      <p style={{ fontSize: 11, color: "var(--color-ink-faint)", lineHeight: 1.55, margin: 0 }}>
+        © 2026 Wayword. Word lists are built from{" "}
+        <a
+          href="https://wordlist.aspell.net/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          SCOWL
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://github.com/words/an-array-of-english-words"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          an-array-of-english-words
+        </a>
+        . Full credits and licenses at{" "}
+        <a href="/attributions.txt" target="_blank" rel="noopener noreferrer">
+          /attributions.txt
+        </a>
+        . We use Cloudflare Web Analytics, which is cookieless; your game
+        progress lives only in your browser.
       </p>
     </div>
   </Modal>

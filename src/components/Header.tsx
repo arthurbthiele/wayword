@@ -93,6 +93,9 @@ export const Header = ({
         <Button variant="ghost" size="small" onClick={onOpenStats}>
           {streak && streak > 0 ? `Streak ${streak}` : "Stats"}
         </Button>
+        <Button variant="ghost" size="small" onClick={onReset}>
+          Reset
+        </Button>
         <button
           type="button"
           className="wj-header__icon-button"
@@ -102,9 +105,6 @@ export const Header = ({
         >
           ?
         </button>
-        <Button variant="ghost" size="small" onClick={onReset}>
-          Reset
-        </Button>
       </div>
     </header>
   );
