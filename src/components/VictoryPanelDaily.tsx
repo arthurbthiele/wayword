@@ -47,6 +47,12 @@ type VictoryPanelDailyProps = {
   history: DailyHistory;
   setHistory: Dispatch<SetStateAction<DailyHistory>>;
   onSwitchToFreePlay: () => void;
+  dismissed: boolean;
+  onDismiss: () => void;
+  // solvedDate is lifted to App so InputBar visibility can share the same
+  // signal — see the comment in App.tsx.
+  solvedDate: string | null;
+  setSolvedDate: Dispatch<SetStateAction<string | null>>;
 };
 
 export const VictoryPanelDaily = ({
@@ -55,14 +61,14 @@ export const VictoryPanelDaily = ({
   history,
   setHistory,
   onSwitchToFreePlay,
+  dismissed,
+  onDismiss,
+  solvedDate,
+  setSolvedDate,
 }: VictoryPanelDailyProps) => {
   const today = getUtcDateString();
   const { graph } = useContext(GraphContext);
 
-  const [solvedDate, setSolvedDate] = useLocalStorage<string | null>(
-    "daily:solvedDate",
-    null
-  );
   const [solvedPath, setSolvedPath] = useLocalStorage<string[] | null>(
     "daily:solvedPath",
     null
@@ -71,10 +77,8 @@ export const VictoryPanelDaily = ({
     "daily:optimalPath",
     null
   );
-  // Dismiss is session-only — refresh brings the panel back. Keeping the
-  // dismissal in localStorage made it impossible to retrieve your solve
-  // result once dismissed (raised by @official-kircheis on Tumblr).
-  const [dismissed, setDismissed] = useState(false);
+  // Dismissed state is owned by App (so it can gate the InputBar too) and
+  // is session-only — see App.tsx.
   const [copiedKind, setCopiedKind] = useState<"score" | "path" | null>(null);
 
   const solvedToday = solvedDate === today;
@@ -248,7 +252,7 @@ export const VictoryPanelDaily = ({
       <button
         type="button"
         className="wj-victory__close"
-        onClick={() => setDismissed(true)}
+        onClick={onDismiss}
         aria-label="Dismiss"
       >
         ×

@@ -183,6 +183,34 @@ const App = () => {
   >("freeplay:pickGraphNodes", []);
   const [freePlayHit, setFreePlayHit] = useState<FreePlayHit | null>(null);
 
+  // Victory-panel state lives here (rather than inside each panel) so we can
+  // hide the InputBar while the panel is visible — there's nothing to type
+  // after solving, and on mobile the disabled input + "Selected X → reach X"
+  // tautology eat valuable vertical space.
+  //
+  // `solvedDate` is lifted (not `today in history`) because Reset clears
+  // `daily:*` but intentionally preserves `stats:dailyHistory` — using
+  // history as the "solved today" signal would falsely hide the InputBar
+  // after a Reset+reload. Dismissed resets on mode switch so a
+  // previously-dismissed panel reappears when you come back.
+  const [dailySolvedDate, setDailySolvedDate] = useLocalStorage<string | null>(
+    "daily:solvedDate",
+    null
+  );
+  const [tripleSolvedDate, setTripleSolvedDate] = useLocalStorage<
+    string | null
+  >("triple:solvedDate", null);
+  const [dailyDismissed, setDailyDismissed] = useState(false);
+  const [tripleDismissed, setTripleDismissed] = useState(false);
+  useEffect(() => {
+    setDailyDismissed(false);
+    setTripleDismissed(false);
+  }, [mode]);
+  const dailySolved = dailySolvedDate === today;
+  const tripleSolved = tripleSolvedDate === today;
+  const hideInputForDaily = dailySolved && !dailyDismissed;
+  const hideInputForTriple = tripleSolved && !tripleDismissed;
+
   return (
     <div className="wj-app">
       <Header
@@ -210,6 +238,11 @@ const App = () => {
           <StatusStripDaily
             start={dailyPair.start}
             target={dailyPair.target}
+            onShowResult={
+              dailySolved && dailyDismissed
+                ? () => setDailyDismissed(false)
+                : undefined
+            }
           />
           <main className="wj-graph">
             <div className="wj-graph__inner">
@@ -222,8 +255,14 @@ const App = () => {
             history={dailyHistory}
             setHistory={setDailyHistory}
             onSwitchToFreePlay={() => setMode("freeplay")}
+            dismissed={dailyDismissed}
+            onDismiss={() => setDailyDismissed(true)}
+            solvedDate={dailySolvedDate}
+            setSolvedDate={setDailySolvedDate}
           />
-          <InputBar targetReminder={dailyPair.target} />
+          {!hideInputForDaily && (
+            <InputBar targetReminder={dailyPair.target} />
+          )}
         </GraphProvider>
       ) : mode === "triple" ? (
         <GraphProvider
@@ -236,6 +275,11 @@ const App = () => {
             start={dailyTriple.start}
             t1={dailyTriple.t1}
             t2={dailyTriple.t2}
+            onShowResult={
+              tripleSolved && tripleDismissed
+                ? () => setTripleDismissed(false)
+                : undefined
+            }
           />
           <main className="wj-graph">
             <div className="wj-graph__inner">
@@ -250,10 +294,16 @@ const App = () => {
             history={tripleHistory}
             setHistory={setTripleHistory}
             onSwitchToFreePlay={() => setMode("freeplay")}
+            dismissed={tripleDismissed}
+            onDismiss={() => setTripleDismissed(true)}
+            solvedDate={tripleSolvedDate}
+            setSolvedDate={setTripleSolvedDate}
           />
-          <InputBar
-            targetReminder={`${dailyTriple.t1} + ${dailyTriple.t2}`}
-          />
+          {!hideInputForTriple && (
+            <InputBar
+              targetReminder={`${dailyTriple.t1} + ${dailyTriple.t2}`}
+            />
+          )}
         </GraphProvider>
       ) : (
         <GraphProvider

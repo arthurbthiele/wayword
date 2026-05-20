@@ -2,17 +2,23 @@ import React, { useContext, useEffect } from "react";
 import { GraphContext } from "./GraphProvider";
 import { logTargetPaths } from "../utilities/logTargetPaths";
 import { getDayNumber } from "../utilities/dailyTarget";
+import { Button } from "./ui/Button";
 
 type StatusStripTripleProps = {
   start: string;
   t1: string;
   t2: string;
+  // When defined, render a "Show result" button in the meta slot — App
+  // passes this only when the puzzle is solved and the victory panel was
+  // dismissed.
+  onShowResult?: () => void;
 };
 
 export const StatusStripTriple = ({
   start,
   t1,
   t2,
+  onShowResult,
 }: StatusStripTripleProps) => {
   const { graph } = useContext(GraphContext);
 
@@ -62,11 +68,17 @@ export const StatusStripTriple = ({
           </span>
         </div>
         <div className="wj-status__meta">
-          {!solved && (
-            <span>
-              <strong>{moveCount}</strong>{" "}
-              {moveCount === 1 ? "word" : "words"} added
-            </span>
+          {onShowResult ? (
+            <Button variant="primary" size="small" onClick={onShowResult}>
+              Show result
+            </Button>
+          ) : (
+            !solved && (
+              <span>
+                <strong>{moveCount}</strong>{" "}
+                {moveCount === 1 ? "word" : "words"} added
+              </span>
+            )
           )}
         </div>
       </div>

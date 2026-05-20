@@ -297,7 +297,11 @@ button {
 /* Status strip. */
 .wj-status {
   display: flex;
-  align-items: baseline;
+  /* `center` (rather than `baseline`) so the "Show result" button — which
+   * sits in the meta slot when the puzzle is solved and dismissed — vertical-
+   * centres against the puzzle title on the left. Inner text alignment within
+   * each side is still handled by the children's own flex rules. */
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
   padding: var(--space-3) var(--space-6);
@@ -516,6 +520,9 @@ button {
   font-size: var(--text-2xl);
   font-weight: 600;
   color: var(--color-ink);
+  /* Reserve clearance for the absolutely-positioned × at top-right so a
+   * wrapped title doesn't run under it. */
+  padding-right: 40px;
 }
 .wj-victory__subtitle {
   font-size: var(--text-sm);

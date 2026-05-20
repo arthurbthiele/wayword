@@ -47,6 +47,12 @@ type VictoryPanelTripleProps = {
   history: TripleHistory;
   setHistory: Dispatch<SetStateAction<TripleHistory>>;
   onSwitchToFreePlay: () => void;
+  dismissed: boolean;
+  onDismiss: () => void;
+  // solvedDate is lifted to App so InputBar visibility can share the same
+  // signal — see the comment in App.tsx.
+  solvedDate: string | null;
+  setSolvedDate: Dispatch<SetStateAction<string | null>>;
 };
 
 export const VictoryPanelTriple = ({
@@ -57,14 +63,14 @@ export const VictoryPanelTriple = ({
   history,
   setHistory,
   onSwitchToFreePlay,
+  dismissed,
+  onDismiss,
+  solvedDate,
+  setSolvedDate,
 }: VictoryPanelTripleProps) => {
   const today = getUtcDateString();
   const { graph } = useContext(GraphContext);
 
-  const [solvedDate, setSolvedDate] = useLocalStorage<string | null>(
-    "triple:solvedDate",
-    null
-  );
   const [userTreeSize, setUserTreeSize] = useLocalStorage<number | null>(
     "triple:userTreeSize",
     null
@@ -81,9 +87,8 @@ export const VictoryPanelTriple = ({
     "triple:branchToT2",
     null
   );
-  // Dismiss is session-only — refresh brings the panel back. See the
-  // matching change in VictoryPanelDaily.
-  const [dismissed, setDismissed] = useState(false);
+  // Dismissed state is owned by App (so it can gate the InputBar too) and
+  // is session-only — see App.tsx.
   const [copiedKind, setCopiedKind] = useState<"score" | "path" | null>(null);
 
   // Optimal Steiner tree through the legitimate dictionary. Computed
@@ -314,7 +319,7 @@ export const VictoryPanelTriple = ({
       <button
         type="button"
         className="wj-victory__close"
-        onClick={() => setDismissed(true)}
+        onClick={onDismiss}
         aria-label="Dismiss"
       >
         ×
