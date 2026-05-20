@@ -145,6 +145,16 @@ export const VictoryPanelTriple = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.nodes, graph.edges, start, t1, t2, today, solvedToday]);
 
+  // Blur whatever has focus when the panel becomes visible — see the
+  // matching effect in VictoryPanelDaily for rationale.
+  useEffect(() => {
+    if (solvedToday && !dismissed) {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
+  }, [solvedToday, dismissed]);
+
   if (
     !solvedToday ||
     dismissed ||

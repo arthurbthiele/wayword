@@ -133,6 +133,18 @@ export const VictoryPanelDaily = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.nodes, graph.edges, start, target, today, solvedToday]);
 
+  // Blur whatever has focus when the panel becomes visible. On mobile this
+  // retracts the soft keyboard so the share buttons + victory content aren't
+  // covered. Fires on the just-solved transition AND on page-refresh-while-
+  // solved (mount with solvedToday=true).
+  useEffect(() => {
+    if (solvedToday && !dismissed) {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
+  }, [solvedToday, dismissed]);
+
   if (!solvedToday || !solvedPath || dismissed) return null;
 
   // Native share on desktop opens a clunky OS share sheet (AirDrop / Notes /
