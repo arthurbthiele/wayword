@@ -9,11 +9,35 @@ Things that visibly affect players right now — mostly from Arthur's
 play sessions and Tumblr feedback. Mobile-heavy because ~90% of usage
 is mobile. Higher priority than the regular polish / feature queue.
 
-- **Removing a letter isn't visibly explained.** The how-to-play
+- **Removing a letter isn't visibly explained.** *Reinforced 2026-05-21
+  by four more separate users (saraluckyj, true-bluesargent,
+  a-lil-freakin-nerd, gayboss-too-close-to-the-sun) — now the
+  single most-repeated UX issue in our feedback.* The how-to-play
   explainer animates add and change but doesn't surface remove —
   several players appear unaware that removing a letter is allowed.
   Update the explainer animation (or copy) to walk through all three
   operations equally.
+- **Graph auto-zooms-out on every new word added.** Distinct from the
+  double-tap-zoom item below. vis-network's auto-fit re-runs on every
+  node insertion, snapping the view to fit all nodes — which on
+  mobile feels jarring and shrinks the active area you're working in.
+  Reported clearly by popcorn8784 on Tumblr, hinted at by others.
+  Probably: pin the zoom level after the first few nodes; only re-fit
+  when the graph would actually overflow the viewport.
+- **"Common-word optimal" computation is opaque to players.** Multiple
+  reports (firewatchers, sapphic-and-stupid, two Google-form
+  respondents, businesstiramisu earlier) — players don't understand
+  what the displayed optimal path represents. Most-concrete symptom:
+  a free-play user with `tale` in their graph reached `tape`; the
+  optimal display showed `name → same → sake → take → tape` (4 moves
+  from name) — *not* `tale → tape` (1 move). Confirmed: `tale` is in
+  Dict B but not Dict A, so the algorithm strictly cannot route
+  through it. The behaviour is *correct*; the label and explainer
+  text don't communicate that "optimal" is constrained to a specific
+  ~1k common-word set. Options: better label (e.g. "shortest path
+  using only common words — may not include words you've typed"),
+  richer ⓘ tooltip, or rethink whether to compute optimal through
+  `user_graph ∪ Dict_A` instead of `Dict_A` alone.
 - **Mobile: solutions row side-scrolls alone.** When the path or
   optimal-path overflows the viewport, only the row scrolls — the
   surrounding container stays put. Should scroll as a unit so the
@@ -58,6 +82,13 @@ is mobile. Higher priority than the regular polish / feature queue.
   Cheap to compute (one BFS through the full wordGraph at solve
   time). Also partially addresses `@xenostalgic` and another
   reblogger asking for an edit-distance reference number.
+- **Historical day replay.** Google-form request: "Having an option to
+  play historical days would be excellent." Blocked on the date →
+  puzzle override map (see Architecture/refactors below) — without
+  puzzle-pinning, historical replay would silently change as the dict
+  evolves, which defeats the point. Cheap once that infrastructure
+  exists; needs a small UI surface (history list / date picker) in
+  the daily mode.
   add from anywherer and add all edges?
 
 ### Smaller
@@ -65,6 +96,20 @@ is mobile. Higher priority than the regular polish / feature queue.
   finds no candidates at the requested difficulty, optionally degrade
   to the next-lower difficulty (with a console note) instead of
   setting target to null.
+- **Undo button in free play.** Google-form request: when you go down
+  a dead-end branch you currently have to manually re-click an earlier
+  node or reset. A single undo (remove the last-added node + edge)
+  would be a real quality-of-life win.
+- **Setting to suppress / auto-collapse the common-word-optimal
+  section** in the victory panel. Google-form request: "ability to
+  toggle off the 'common-word optimal' part… it's pretty distracting."
+  Could be a preferences toggle, or just auto-collapse it (one-click
+  to expand) for users who don't want it surfaced every solve.
+- **Free-play challenge sub-mode** (defined end-state) — torchbearess
+  on Tumblr: "if you play in free version there's no definitive end
+  of game, which is a thing I need." A "reach N targets" or "hit
+  difficulty X" challenge would give the close-out moment some
+  players want without changing the existing open-ended free play.
 
 ## Tumblr feature requests (parking lot)
 
@@ -127,6 +172,11 @@ items above.
   `scripts/build-dictionaries.cjs`. The Tumblr feedback form (and
   email at feedback@wayword.fun) keeps surfacing missing words and
   ones players think shouldn't be there. Grow lists incrementally.
+  Specific recent reports worth checking: `radar` (dykesville
+  flagged as missing — Dict B probably should include) and `stet`
+  (starcrossed-sky — genuine editing term). dykesville offered to
+  help curate, which is a small but real signal we have at least
+  one willing reviewer.
 - **More bridge words.** `scripts/analyse-bridges.cjs` finds B-words
   that, if promoted to A, would expand `legitimate`. Worth re-running
   periodically as the SCOWL / word-list sources evolve.
