@@ -58,6 +58,7 @@ is mobile. Higher priority than the regular polish / feature queue.
   Cheap to compute (one BFS through the full wordGraph at solve
   time). Also partially addresses `@xenostalgic` and another
   reblogger asking for an edit-distance reference number.
+  add from anywherer and add all edges?
 
 ### Smaller
 - **Auto-fallback difficulty** in free play. When `pickNewTarget`
@@ -142,6 +143,15 @@ items above.
 - **Rename internal localStorage prefix** from `wordJourney:` to
   `wayword:`. Cosmetic — invisible to users — but matches the brand.
   Trade-off: clears everyone's saves unless we ship a migration.
+- **Date → puzzle override map.** Currently `getDailyPair(date)` and
+  the triple equivalent compute the puzzle deterministically from
+  `hash(date) % viableStarts.length`. That means any dictionary
+  change can re-roll the puzzle for past dates. For long-term
+  stability — especially across dict swaps — we'll want a per-date
+  override map (likely a `dailyOverrides.json`-style file) so that
+  once a date has been played, its puzzle is pinned regardless of
+  later dictionary changes. Wait until we have an actual
+  migration-shaped need before designing the shape.
 
 ## Things we explored and decided against (notes for future-us)
 

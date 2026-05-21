@@ -33,90 +33,118 @@ const outDir = path.join(__dirname, "..", "src", "dictionaryData");
 
 // --- 1. Build the two source dictionaries ------------------------------------
 
-// SCOWL is well-curated but ships a handful of entries we don't want as
-// targets/optimal-path nodes. No swears or vulgarity in dict A; "hes" is
-// the apostropheless contraction "he's"; "cs" is an abbreviation. Defensive:
-// includes some profanity that isn't in tier 10 today but might appear if
-// SCOWL changes versions.
-const dictAExclude = new Set([
+// Slurs — racial, ethnic, ableist, LGBTQ+, antisemitic. Excluded from BOTH
+// dict A and dict B, so they don't exist in the playable graph at all
+// (not typeable as input, not a target, not in an optimal path). Includes
+// the contested-but-still-slur-dominant words we discussed (`fag`, `homo`,
+// `gyp`, `tranny`, `spastic`). Some entries are defensive — not necessarily
+// in today's source word lists but listed so future tier expansion or
+// source-package upgrades can't accidentally re-introduce them.
+//
+// Words intentionally NOT in this list (kept in both dicts because their
+// dominant modern interpretation is non-slur): `queer`, `chink` (as in
+// "chink in armour"), `slope`, `tinker`, `poof`. See TRADEMARK / IDEAS for
+// context on the per-word judgement calls.
+const slurExcludeBoth = new Set([
+  // Anti-Black
+  "nigger", "niggers",
+  "coon", "coons",
+  "darkie", "darkies", "darky",
+  "sambo", "sambos",
+  "jigaboo", "jigaboos",
+  "golliwog", "golliwogs",
+  // Anti-Italian / Mediterranean / Hispanic
+  "wog", "wogs",
+  "wop", "wops",
+  "dago", "dagos",
+  "spic", "spics",
+  "moolies",
+  "beaner", "beaners",
+  "wetback", "wetbacks",
+  // Anti-Asian
+  "gook", "gooks",
+  "jap", "japs",
+  "zipperhead",
+  // Anti-Middle-Eastern / South-Asian / Romani / Egyptian
+  "paki", "pakis",
+  "raghead", "ragheads",
+  "towelhead", "towelheads",
+  "gippo", "gippos",
+  "pikey", "pikeys",
+  // Anti-European-immigrant
+  "kraut", "krauts",
+  "mick", "micks",
+  "polack", "polacks",
+  // Antisemitic
+  "kike", "kikes",
+  "hymie", "hymies",
+  "yid", "yids",
+  "sheeny", "sheenies", "sheenie",
+  // Anti-LGBTQ+
+  "faggot", "faggots",
+  "fag", "fags",
+  "poofter", "poofters",
+  "homo", "homos",
+  "shemale", "shemales",
+  "tranny", "trannies",
+  // Ableist
+  "retard", "retards", "retarded",
+  "spaz", "spazzes",
+  "spastic",
+  "mong", "mongs",
+  "mongol", "mongols", "mongoloid",
+  // Misogynistic
+  "bint", "bints",
+  // Anti-Romani (etymology) — "to cheat" usage is fading
+  "gyp", "gyps", "gypped", "gypping",
+]);
+
+// Excluded from dict A only — vulgar / profane / dual-meaning words that
+// remain typeable (in dict B) but never surface as optimal-path steps or
+// daily targets. "hes" is the apostropheless contraction "he's"; "cs" is
+// an abbreviation.
+const dictAOnlyExclude = new Set([
   "cs",
   "hes",
-  "hell",
-  "hellish",
-  "cum",
-  "cums",
-  "ass",
-  "asses",
-  "asshole",
-  "assholes",
-  "fuck",
-  "fucks",
-  "fucking",
-  "fucked",
-  "shit",
-  "shits",
-  "shitty",
-  "shitting",
-  "damn",
-  "damned",
-  "damning",
-  "piss",
-  "pisses",
-  "pissing",
-  "pissed",
-  "crap",
-  "craps",
-  "crappy",
-  "bitch",
-  "bitches",
-  "bitching",
-  "bitchy",
-  "bastard",
-  "bastards",
-  "whore",
-  "whores",
-  "dick",
-  "dicks",
-  "cock",
-  "cocks",
-  "cocky",
-  "tit",
-  "tits",
-  "titty",
-  "boob",
-  "boobs",
-  "porn",
-  "porno",
-  "sex",
-  "sexy",
-  "sexual",
-  "sexually",
-  // Slurs — never in dict A under any circumstances.
-  "nigger",
-  "niggers",
-  "fag",
-  "fags",
-  "faggot",
-  "faggots",
-  "kike",
-  "spic",
-  "gook",
-  "chink",
-  "paki",
-  "retard",
-  "retards",
-  "retarded",
-  "cunt",
-  "cunts",
+  // Profanity / vulgarity
+  "hell", "hellish",
+  "cum", "cums",
+  "ass", "asses", "asshole", "assholes",
+  "fuck", "fucks", "fucking", "fucked",
+  "shit", "shits", "shitty", "shitting",
+  "damn", "damned", "damning",
+  "piss", "pisses", "pissing", "pissed",
+  "crap", "craps", "crappy",
+  "bitch", "bitches", "bitching", "bitchy",
+  "bastard", "bastards",
+  "whore", "whores",
+  "dick", "dicks",
+  "cock", "cocks", "cocky",
+  "tit", "tits", "titty",
+  "boob", "boobs",
+  "porn", "porno",
+  "sex", "sexy", "sexual", "sexually",
+  "cunt", "cunts",
+  // Reclaimed / dual-meaning / less-common words — typeable but not
+  // appropriate as daily targets or optimal-path steps. See IDEAS.
+  "dyke", "dykes",
+  "twink", "twinks",
+  "nip", "nips",
+  "cripple", "cripples",
 ]);
 
 const dictAList = scowlSize10
   .map((w) => w.toLowerCase())
-  .filter((w) => /^[a-z]+$/.test(w) && !dictAExclude.has(w));
+  .filter(
+    (w) =>
+      /^[a-z]+$/.test(w) &&
+      !slurExcludeBoth.has(w) &&
+      !dictAOnlyExclude.has(w)
+  );
 
 const dictBList = englishWords
   .map((w) => w.toLowerCase())
-  .filter((w) => /^[a-z]+$/.test(w));
+  .filter((w) => /^[a-z]+$/.test(w) && !slurExcludeBoth.has(w));
 
 const dictB = new Set(dictBList);
 
