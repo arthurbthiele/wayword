@@ -19,61 +19,61 @@ type Step = {
 };
 
 const POSITIONS: Record<string, { x: number; y: number }> = {
-  a: { x: 60, y: 60 },
-  at: { x: 150, y: 60 },
-  cat: { x: 240, y: 60 },
-  bat: { x: 330, y: 60 },
-  rat: { x: 150, y: 150 },
+  kid: { x: 60, y: 60 },
+  kind: { x: 150, y: 60 },
+  wind: { x: 240, y: 60 },
+  win: { x: 330, y: 60 },
+  find: { x: 150, y: 150 },
 };
 
 const ALL_EDGES: [string, string][] = [
-  ["a", "at"],
-  ["at", "cat"],
-  ["cat", "bat"],
-  ["at", "rat"],
+  ["kid", "kind"],
+  ["kind", "wind"],
+  ["wind", "win"],
+  ["kind", "find"],
 ];
 
 const steps: readonly Step[] = [
   {
-    nodesPresent: ["a"],
-    selected: "a",
-    caption: "Start with the puzzle's first word.",
+    nodesPresent: ["kid"],
+    selected: "kid",
+    caption: "Start with the puzzle's first word",
     cursorAt: null,
   },
   {
-    nodesPresent: ["a", "at"],
-    selected: "at",
-    caption: "Add a letter.",
+    nodesPresent: ["kid", "kind"],
+    selected: "kind",
+    caption: "Add a letter",
     cursorAt: null,
   },
   {
-    nodesPresent: ["a", "at", "cat"],
-    selected: "cat",
-    caption: "Add another.",
+    nodesPresent: ["kid", "kind", "wind"],
+    selected: "wind",
+    caption: "Change a letter",
     cursorAt: null,
   },
   {
-    nodesPresent: ["a", "at", "cat", "bat"],
-    selected: "bat",
-    caption: "Or change a letter — 'cat' → 'bat'.",
+    nodesPresent: ["kid", "kind", "wind", "win"],
+    selected: "win",
+    caption: "Or remove a letter",
     cursorAt: null,
   },
   {
-    nodesPresent: ["a", "at", "cat", "bat"],
-    selected: "bat",
+    nodesPresent: ["kid", "kind", "wind", "win"],
+    selected: "win",
     caption: "Click any word to branch from there…",
-    cursorAt: "at",
+    cursorAt: "kind",
   },
   {
-    nodesPresent: ["a", "at", "cat", "bat"],
-    selected: "at",
+    nodesPresent: ["kid", "kind", "wind", "win"],
+    selected: "kind",
     caption: "Click any word to branch from there…",
-    cursorAt: "at",
+    cursorAt: "kind",
   },
   {
-    nodesPresent: ["a", "at", "cat", "bat", "rat"],
-    selected: "rat",
-    caption: "Now your next word branches from 'at'.",
+    nodesPresent: ["kid", "kind", "wind", "win", "find"],
+    selected: "find",
+    caption: "Now your next word branches from 'kind'",
     cursorAt: null,
     // Hold an extra beat on the payoff before the loop restarts.
     durationMs: 4000,
