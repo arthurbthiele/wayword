@@ -245,7 +245,7 @@ export const VictoryPanelDaily = ({
     return `Common-word optimal was ${optimalMoves} ${optimalMoves === 1 ? "move" : "moves"}.`;
   })();
 
-  const commonWordExplainer = `Shortest path from '${start}' to '${target}' using only common everyday words. You can sometimes find a shorter route by routing through less common ones.`;
+  const commonWordExplainer = `The shortest path from '${start}' to '${target}' using only common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;
 
   return (
     <div className="wj-victory">
@@ -293,7 +293,7 @@ export const VictoryPanelDaily = ({
             className="wj-victory__path-label"
             title={commonWordExplainer}
           >
-            Common-word optimal <span aria-hidden="true">ⓘ</span>
+            Shortest common-word path <span aria-hidden="true">ⓘ</span>
           </span>
           {renderPath(optimalPath)}
         </div>

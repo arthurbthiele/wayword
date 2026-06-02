@@ -51,7 +51,7 @@ export const VictoryBannerFreePlay = ({
     // Don't double-show the same chain.
     hit.optimalPath.join("→") !== hit.userPath.join("→");
 
-  const optimalExplainer = `Shortest path from your graph to '${hit.target}' using only common everyday words. You can sometimes find a shorter route by routing through less common ones.`;
+  const optimalExplainer = `From the closest common word in your graph to '${hit.target}', using only common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;
 
   return (
     <div className="wj-victory">
@@ -88,7 +88,7 @@ export const VictoryBannerFreePlay = ({
       {showOptimal && hit.optimalPath && (
         <div>
           <span className="wj-victory__path-label" title={optimalExplainer}>
-            Common-word optimal <span aria-hidden="true">ⓘ</span>
+            Shortest path from your graph <span aria-hidden="true">ⓘ</span>
           </span>
           {renderPath(hit.optimalPath, "wj-victory__path--optimal")}
         </div>

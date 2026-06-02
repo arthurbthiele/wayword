@@ -13,6 +13,7 @@ import {
   type FreePlayHit,
 } from "./components/VictoryBannerFreePlay";
 import { HelpModal } from "./components/HelpModal";
+import { FreePlayIntroModal } from "./components/FreePlayIntroModal";
 import { StatsModal } from "./components/StatsModal";
 import { DevPanel } from "./components/DevPanel";
 import {
@@ -126,6 +127,17 @@ const App = () => {
   );
   const [helpOpen, setHelpOpen] = useState(!hasSeenHelp);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [hasSeenFreePlayIntro, setHasSeenFreePlayIntro] =
+    useLocalStorage<boolean>("hasSeenFreePlayIntro", false);
+  const [freePlayIntroOpen, setFreePlayIntroOpen] = useState(false);
+  // Open the free-play intro the first time the user lands on free play.
+  // Tracked independently of the help-modal flag so existing players who've
+  // seen Help but never used free play still get the explainer.
+  useEffect(() => {
+    if (mode === "freeplay" && !hasSeenFreePlayIntro && !helpOpen) {
+      setFreePlayIntroOpen(true);
+    }
+  }, [mode, hasSeenFreePlayIntro, helpOpen]);
   // Stored under `stats:` rather than `daily:` so the per-mode Reset
   // button (which clears its mode's prefix) doesn't wipe the long-term
   // streak/history record.
@@ -394,7 +406,10 @@ const App = () => {
             hit={freePlayHit}
             onClose={() => setFreePlayHit(null)}
           />
-          <InputBar targetReminder={freePlayTarget} />
+          <InputBar
+            targetReminder={freePlayTarget}
+            autoFocus={!freePlayIntroOpen}
+          />
         </GraphProvider>
       )}
       <HelpModal
@@ -402,6 +417,13 @@ const App = () => {
         onClose={() => {
           setHelpOpen(false);
           if (!hasSeenHelp) setHasSeenHelp(true);
+        }}
+      />
+      <FreePlayIntroModal
+        open={freePlayIntroOpen}
+        onClose={() => {
+          setFreePlayIntroOpen(false);
+          if (!hasSeenFreePlayIntro) setHasSeenFreePlayIntro(true);
         }}
       />
       <StatsModal
