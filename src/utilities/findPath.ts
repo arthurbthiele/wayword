@@ -53,49 +53,56 @@ export const findShortestPathInGraph = (
 };
 
 /**
- * Reconstructs the path the user actually took to reach `target`, by walking
- * back through the `parents` map (which records the word that was selected
- * when each word was added). Returns null if `target` can't be traced back
- * to `start` via parents (e.g. on legacy graphs that pre-date parent tracking).
+ * Multi-source BFS through the user's graph from any of `startNodeIds` to
+ * `target`. Returns the shortest such path. Used in free play, where the
+ * "starting frontier" is the graph snapshot at pick time and the
+ * just-reached `target` is the end.
  */
-export const findUserPath = (
-  parents: Record<string, string> | undefined,
-  start: string,
+export const findShortestPathInGraphFromAny = (
+  graphNodes: GraphNode[],
+  graphEdges: { from: string; to: string }[],
+  startNodeIds: readonly string[],
   target: string
 ): string[] | null => {
-  if (target === start) return [start];
-  if (!parents) return null;
-  const path: string[] = [target];
-  let current = target;
-  let safety = 500;
-  while (current !== start && parents[current] && safety-- > 0) {
-    current = parents[current];
-    path.unshift(current);
-  }
-  return current === start ? path : null;
-};
+  if (startNodeIds.length === 0) return null;
+  const nodeIds = new Set(graphNodes.map((node) => node.id));
+  if (!nodeIds.has(target)) return null;
+  const seeds = startNodeIds.filter((id) => nodeIds.has(id));
+  if (seeds.length === 0) return null;
+  if (seeds.includes(target)) return [target];
 
-/**
- * Walks the `parents` map back from `target` until it hits a word in
- * `frontier`, then returns the path forward to `target`. Used in free play
- * to show the chain of words the user typed since the target was picked —
- * frontier = the graph snapshot at pick time.
- */
-export const findRouteFromFrontier = (
-  parents: Record<string, string> | undefined,
-  frontier: ReadonlySet<string>,
-  target: string
-): string[] | null => {
-  if (!parents) return null;
-  if (frontier.has(target)) return [target];
-  const path: string[] = [target];
-  let current = target;
-  let safety = 500;
-  while (!frontier.has(current) && parents[current] && safety-- > 0) {
-    current = parents[current];
-    path.unshift(current);
+  const adjacency = new Map<string, Set<string>>();
+  for (const id of nodeIds) adjacency.set(id, new Set());
+  for (const edge of graphEdges) {
+    adjacency.get(edge.from)?.add(edge.to);
+    adjacency.get(edge.to)?.add(edge.from);
   }
-  return frontier.has(current) ? path : null;
+
+  const previous = new Map<string, string>();
+  const visited = new Set<string>(seeds);
+  const queue: string[] = [...seeds];
+  let head = 0;
+
+  while (head < queue.length) {
+    const current = queue[head++];
+    if (current === target) {
+      const path: string[] = [];
+      let step: string | undefined = target;
+      while (step !== undefined) {
+        path.unshift(step);
+        step = previous.get(step);
+      }
+      return path;
+    }
+    for (const neighbour of adjacency.get(current) ?? []) {
+      if (!visited.has(neighbour)) {
+        visited.add(neighbour);
+        previous.set(neighbour, current);
+        queue.push(neighbour);
+      }
+    }
+  }
+  return null;
 };
 
 /**

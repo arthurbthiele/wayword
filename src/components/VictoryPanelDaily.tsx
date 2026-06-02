@@ -13,7 +13,6 @@ import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
-  findUserPath,
 } from "../utilities/findPath";
 import { legitimateWords } from "../dictionaryData/legitimate";
 import type { DailyHistory } from "../utilities/dailyStats";
@@ -96,12 +95,17 @@ export const VictoryPanelDaily = ({
     );
     if (!reached) return;
 
-    // Prefer the chronological path the user took (via parents); fall back
-    // to shortest-path-through-graph for legacy graphs without parent
-    // tracking.
-    const userPath =
-      findUserPath(graph.parents, start, target) ??
-      findShortestPathInGraph(graph.nodes, graph.edges, start, target);
+    // Shortest path through the user's graph. We use the graph's actual
+    // edges rather than the order-of-addition `parents` map — once the
+    // graph has multiple routes converging on the same node, parents only
+    // remembers the *first* one taken, which can be longer than a route
+    // the user later constructed.
+    const userPath = findShortestPathInGraph(
+      graph.nodes,
+      graph.edges,
+      start,
+      target
+    );
     const optimal = findShortestPathInDictionary(
       start,
       target,

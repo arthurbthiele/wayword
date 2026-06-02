@@ -9,61 +9,71 @@ Things that visibly affect players right now — mostly from Arthur's
 play sessions and Tumblr feedback. Mobile-heavy because ~90% of usage
 is mobile. Higher priority than the regular polish / feature queue.
 
-- **Removing a letter isn't visibly explained.** *Reinforced 2026-05-21
-  by four more separate users (saraluckyj, true-bluesargent,
-  a-lil-freakin-nerd, gayboss-too-close-to-the-sun) — now the
-  single most-repeated UX issue in our feedback.* The how-to-play
-  explainer animates add and change but doesn't surface remove —
-  several players appear unaware that removing a letter is allowed.
-  Update the explainer animation (or copy) to walk through all three
-  operations equally.
+- **Score path uses longer route when graph has joined back on a
+  shared node.** Form respondent (31 May): played
+  `spend→spent→sent→set→sit`, but had also built the longer
+  `spend→pend→pen→pin→pit→sit` route earlier. Game scored them on
+  the 6-move route. Arthur has noticed the same while playing. The
+  path reconstruction follows `parents` map which doesn't reflect
+  shortest-route-to-node once the graph has multiple paths converging
+  on the same node. Should always score with the shortest path
+  through the user's graph from start to the just-reached word.
+- **Daily goes blank after Reset.** Form respondent (27 May): hit
+  Reset on Daily, page renders blank; Triple tab works; clicking
+  Daily tab back goes blank again. Reproducible-sounding; could be a
+  reset-flow regression or a state-key mismatch after the v2 prefix
+  change. Worth a repro session.
 - **Graph auto-zooms-out on every new word added.** Distinct from the
   double-tap-zoom item below. vis-network's auto-fit re-runs on every
   node insertion, snapping the view to fit all nodes — which on
   mobile feels jarring and shrinks the active area you're working in.
   Reported clearly by popcorn8784 on Tumblr, hinted at by others.
   Probably: pin the zoom level after the first few nodes; only re-fit
-  when the graph would actually overflow the viewport.
-- **"Common-word optimal" computation is opaque to players.** Multiple
-  reports (firewatchers, sapphic-and-stupid, two Google-form
-  respondents, businesstiramisu earlier) — players don't understand
-  what the displayed optimal path represents. Most-concrete symptom:
-  a free-play user with `tale` in their graph reached `tape`; the
-  optimal display showed `name → same → sake → take → tape` (4 moves
-  from name) — *not* `tale → tape` (1 move). Confirmed: `tale` is in
-  Dict B but not Dict A, so the algorithm strictly cannot route
-  through it. The behaviour is *correct*; the label and explainer
-  text don't communicate that "optimal" is constrained to a specific
-  ~1k common-word set. Options: better label (e.g. "shortest path
-  using only common words — may not include words you've typed"),
-  richer ⓘ tooltip, or rethink whether to compute optimal through
-  `user_graph ∪ Dict_A` instead of `Dict_A` alone.
+  when the graph would actually overflow the viewport. Almost
+  certainly tied to `id={safeGraph.edges.length}` on `<GraphVis>` in
+  `Graph.jsx`, which forces a network remount on every edge change.
+- **"Common-word optimal" still has a residual surprise.** *Label
+  rewritten 2026-06-02 ("Shortest common-word path" / "Shortest path
+  from your graph") + first-time Free play intro modal shipped, which
+  resolves the framing for new users.* The underlying behaviour
+  surprise — that the seed for the multi-source BFS is restricted to
+  Dict A words in `pickGraphNodes`, so a player's selected word may
+  not appear in the optimal path — remains. Form respondent (25 May)
+  hit it: had `ton→won→worn`, was shown `a→an→on→won→worn` as
+  optimal. Options: include all graph nodes as seeds (and traverse
+  Dict A from there); or accept the limitation and lean further on
+  copy.
 - **Mobile: solutions row side-scrolls alone.** When the path or
   optimal-path overflows the viewport, only the row scrolls — the
   surrounding container stays put. Should scroll as a unit so the
   whole solutions box travels with the path.
-- **Graph: double-tap zooms out too far.** vis-network's default
-  fit-to-content seems to overshoot. Pin the zoom level the recentre
-  lands on.
+- **ⓘ tooltip doesn't work on mobile.** Form respondent (23 May)
+  flagged explicitly. `title=` attribute is desktop-only; mobile
+  shows the icon but tapping does nothing. Need a custom
+  tap-to-expand tooltip (or open the relevant Help section). See
+  also the "Custom tooltip" polish item.
 - **Triple backtracking still reads as unclear.** Even after the
   help-page update, multiple Tumblr players hit "the extra back-edge
   that doesn't count for scoring" confusion (`@more-eels-please`,
   `@world-wide-spider`). Probably needs an in-context hint the first
   time the user clicks an existing node in the triple graph.
-- **Click "wayword" in the header should do something.** Convention
-  on most sites. Options: scroll-to-top + close any open modal, jump
-  to `/daily`, or open a small About menu. Pick one — probably the
-  first.
-- **Spot-check edge `pair ↔ air`.** A Tumblr reblogger asked
-  "Shouldn't pair and air be connected here?" If the edge is in the
-  graph but not visually apparent, that's a rendering issue. If it
-  isn't in `wordGraph.ts`, that's a data bug. Worth a sample audit
-  of L1-distance neighbours for common short words while we're in
-  there.
+- **"Less common words" subtitle reads ambiguously.** Form
+  respondent (22 May): does it mean "rarer words" or "fewer
+  common-words"? Swap to "rarer words" (or similar) in the
+  `beatOptimal` subtitle copy. One-line fix.
 
 ## Features
 
 ### Bigger / nicer
+- **Custom puzzles via URL.** Form respondent (19 May): something like
+  `wayword.fun/custom?start=dog&target=clear`. Lets players share
+  challenges with friends after the daily. Validation tricky (need to
+  ensure start→target is solvable; need to set difficulty bounds);
+  share-text infra mostly reusable.
+- **Dark mode.** Form respondent (27 May) ("dark mode im begging").
+  Theme-token plumbing is already CSS-variable based, so a dark
+  palette + media-query / toggle is mostly mechanical. Header would
+  need a small toggle UI.
 - **Share image** instead of text. A small SVG/PNG showing the user's
   path (or just the move count and `START → TARGET`) for posting to
   socials. The current copy-result text is fine but visually flat.
@@ -92,6 +102,27 @@ is mobile. Higher priority than the regular polish / feature queue.
   add from anywherer and add all edges?
 
 ### Smaller
+- **Surface the daily reset time.** Form respondent (23 May) — they
+  can't tell when the daily flips. Since we just moved to local-
+  midnight (2026-06-02), the answer is "your midnight, in whatever
+  timezone you're in" — worth saying somewhere visible (footer of
+  daily strip, or in Help).
+- **Show optimal path even on matched-optimal solves.** Form
+  respondent (25 May): they and their partner both hit the optimal
+  count but with different paths; both wanted to see the reference
+  optimal. Currently the optimal path is hidden when `matchedOptimal`
+  is true. Show it always, just suppress the "you beat optimal" copy.
+- **Spoiler-formatted share string.** Form respondent (27 May): wants
+  to share path with Discord's `||spoiler||` syntax so friends can
+  un-spoiler after solving themselves. Add a third share option or a
+  toggle.
+- **Searchable free-play graph.** Form respondent (23 May): in free
+  play with a big graph, typing a few letters could highlight nodes
+  in your graph containing those letters. Quality-of-life for
+  long-running graphs.
+- **Click word for definition.** Form respondent (23 May): click any
+  word in the graph (or the victory path) to open a definition
+  (wiktionary / google). Small, fun, on-theme.
 - **Auto-fallback difficulty** in free play. When `pickNewTarget`
   finds no candidates at the requested difficulty, optionally degrade
   to the next-lower difficulty (with a console note) instead of
@@ -234,9 +265,34 @@ items above.
   layout rooted at the start word might be more readable. Open
   whether it's worth losing the organic feel.
 
-## Shipped since last IDEAS pass (2026-05-17 → 2026-05-20)
+## Shipped since last IDEAS pass (2026-05-17 → 2026-06-02)
 
 Kept here briefly so we can see how the queue's moving.
+
+**2026-06-02 session:**
+- Dict redesign: SCOWL ≤20 for Dict A, ≤20 + length-filtered higher
+  tiers for Dict B. Dict A 1,023 → 3,158; Dict B 82,902 → 25,846.
+- Local-midnight rollover (replacing UTC).
+- Per-date override mechanism (`puzzleOverrides.ts`) for daily +
+  triple. Pins for 2026-06-01 / 06-02 to preserve continuity across
+  the dict swap.
+- Triple picker: `MIN_PAIRWISE_TARGET_DIST = 2` to prevent
+  degenerate target pairs (e.g. RID + GRID).
+- `migrateStaleGraphState`: targeted localStorage migration that
+  only clears dates where the stored start word no longer matches
+  the picker. Avoids wiping in-progress state.
+- DevPanel (visible at `?dev=1`) + `scripts/preview-puzzles.cjs` for
+  upcoming-puzzle inspection.
+- Help explainer: reworked to walk through remove-letter explicitly
+  (kid → kind → wind → win → find).
+- Slur removal pass on the playable graph (Dict A and B).
+- Graph double-tap: tighter manual fit + single-node handling.
+- Header "wayword" click → jumps to Daily (+ keyboard focus ring).
+- Optimal-path labels rewritten: "Shortest common-word path"
+  (Daily) / "Shortest path from your graph" (Free play); tooltip
+  reframed as congratulatory.
+- First-time Free play intro modal (web-not-chain framing).
+- `CLAUDE.md` agent orientation doc + README dict-section fixes.
 
 - Day-N counter ("Wayword #N") in status strip + share string
 - Continue-playing-freely link in daily victory

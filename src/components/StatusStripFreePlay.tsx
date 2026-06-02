@@ -11,7 +11,7 @@ import { useLocalStorage } from "../utilities/useLocalStorage";
 import { legitimateWords } from "../dictionaryData/legitimate";
 import { logTargetPaths } from "../utilities/logTargetPaths";
 import {
-  findRouteFromFrontier,
+  findShortestPathInGraphFromAny,
   findShortestPathFromAnyToTarget,
 } from "../utilities/findPath";
 import type { FreePlayHit } from "./VictoryBannerFreePlay";
@@ -89,9 +89,10 @@ export const StatusStripFreePlay = ({
       (node: { id: string }) => node.id === target
     );
     if (reached && lastScored !== target) {
-      const routeFromPick = findRouteFromFrontier(
-        graph.parents,
-        new Set(pickGraphNodes),
+      const routeFromPick = findShortestPathInGraphFromAny(
+        graph.nodes,
+        graph.edges,
+        pickGraphNodes,
         target
       );
       // Same shape as daily's "common-word optimal": shortest legitimate-only
