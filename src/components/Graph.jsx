@@ -5,6 +5,7 @@ import React, {
   useRef,
   useEffect,
   useMemo,
+  useCallback,
 } from "react";
 import { GraphContext } from "./GraphProvider";
 
@@ -28,7 +29,60 @@ export const Graph = () => {
   const containerRef = useRef(null);
   const initialFitDoneRef = useRef(false);
 
-  // Keep vis-network's canvas in sync with its container.
+  // Centre the graph at a comfortable scale. Used for both the one-shot
+  // initial fit and the double-tap recenter.
+  const recenterGraph = useCallback(
+    (animate) => {
+      if (!network || !containerRef.current) return;
+      const nodeIds = safeGraph.nodes.map((n) => n.id);
+      if (nodeIds.length === 0) return;
+
+      const animation = animate ? { duration: 300 } : false;
+
+      // 1-2 nodes: bounding box is small / degenerate. We can't use focus()
+      // here on initial mount — the node may not yet be positioned by
+      // vis-network when this runs, leaving the camera off-screen. fit()
+      // is robust to that, and a 1.2 maxZoomLevel keeps the word at a
+      // readable size rather than filling the canvas.
+      if (nodeIds.length <= 2) {
+        network.fit({ minZoomLevel: 1.0, maxZoomLevel: 1.2, animation });
+        return;
+      }
+
+      // Compute a tight fit manually. vis-network's fit() leaves more margin
+      // than we want.
+      const positions = network.getPositions(nodeIds);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const id of nodeIds) {
+        const p = positions[id];
+        if (!p) continue;
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+
+      // Padding accounts for node pill width + label overhang (positions are
+      // node centres in graph coords).
+      const PADDING = 70;
+      const rangeW = (maxX - minX) + PADDING * 2;
+      const rangeH = (maxY - minY) + PADDING * 2;
+      const { clientWidth, clientHeight } = containerRef.current;
+      const scale = Math.min(clientWidth / rangeW, clientHeight / rangeH);
+
+      network.moveTo({
+        position: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
+        scale,
+        animation,
+      });
+    },
+    [network, safeGraph, selectedWord]
+  );
+
+  // Keep vis-network's canvas in sync with its container. Also drives the
+  // initial recenter, which has to happen against the final canvas size —
+  // if we recenter before ResizeObserver settles, the camera ends up
+  // computed against a stale canvas size and the graph drifts off-screen.
   useEffect(() => {
     if (!network || !containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
@@ -37,23 +91,16 @@ export const Graph = () => {
         if (width === 0 || height === 0) continue;
         network.setSize(`${Math.round(width)}px`, `${Math.round(height)}px`);
         network.redraw();
+        if (!initialFitDoneRef.current) {
+          recenterGraph(false);
+          initialFitDoneRef.current = true;
+        }
       }
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [network]);
+  }, [network, recenterGraph]);
 
-  // Fit once when the network first appears, with minZoomLevel so very small
-  // graphs (like just 'a') don't render microscopically.
-  useEffect(() => {
-    if (!network || initialFitDoneRef.current) return;
-    network.fit({
-      minZoomLevel: 1.0,
-      maxZoomLevel: 2,
-      animation: false,
-    });
-    initialFitDoneRef.current = true;
-  }, [network]);
 
   // Sync vis-network's selection with React state. Done in a useEffect rather
   // than on every afterDrawing tick — repeatedly calling fit() during draw
@@ -89,46 +136,7 @@ export const Graph = () => {
       if (event.nodes.length === 0) return;
       setSelectedWord(event.nodes[0]);
     },
-    doubleClick: () => {
-      if (!network || !containerRef.current) return;
-      const nodeIds = safeGraph.nodes.map((n) => n.id);
-      if (nodeIds.length === 0) return;
-
-      // For 1-2 nodes the bounding box is degenerate; focus on a node at a
-      // fixed comfortable scale instead.
-      if (nodeIds.length <= 2) {
-        const target = selectedWord ?? nodeIds[0];
-        network.focus(target, { scale: 1.2, animation: { duration: 300 } });
-        return;
-      }
-
-      // Compute a tight fit manually. vis-network's fit() leaves more margin
-      // than we want and clamps oddly at the small-graph end.
-      const positions = network.getPositions(nodeIds);
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (const id of nodeIds) {
-        const p = positions[id];
-        if (!p) continue;
-        if (p.x < minX) minX = p.x;
-        if (p.x > maxX) maxX = p.x;
-        if (p.y < minY) minY = p.y;
-        if (p.y > maxY) maxY = p.y;
-      }
-
-      // Padding accounts for node pill width + label overhang (positions are
-      // node centres in graph coords). Tune if labels clip at the edges.
-      const PADDING = 70;
-      const rangeW = (maxX - minX) + PADDING * 2;
-      const rangeH = (maxY - minY) + PADDING * 2;
-      const { clientWidth, clientHeight } = containerRef.current;
-      const scale = Math.min(clientWidth / rangeW, clientHeight / rangeH);
-
-      network.moveTo({
-        position: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
-        scale,
-        animation: { duration: 300 },
-      });
-    },
+    doubleClick: () => recenterGraph(true),
   };
 
   return (
