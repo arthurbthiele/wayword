@@ -9,20 +9,6 @@ Things that visibly affect players right now — mostly from Arthur's
 play sessions and Tumblr feedback. Mobile-heavy because ~90% of usage
 is mobile. Higher priority than the regular polish / feature queue.
 
-- **Score path uses longer route when graph has joined back on a
-  shared node.** Form respondent (31 May): played
-  `spend→spent→sent→set→sit`, but had also built the longer
-  `spend→pend→pen→pin→pit→sit` route earlier. Game scored them on
-  the 6-move route. Arthur has noticed the same while playing. The
-  path reconstruction follows `parents` map which doesn't reflect
-  shortest-route-to-node once the graph has multiple paths converging
-  on the same node. Should always score with the shortest path
-  through the user's graph from start to the just-reached word.
-- **Daily goes blank after Reset.** Form respondent (27 May): hit
-  Reset on Daily, page renders blank; Triple tab works; clicking
-  Daily tab back goes blank again. Reproducible-sounding; could be a
-  reset-flow regression or a state-key mismatch after the v2 prefix
-  change. Worth a repro session.
 - **Graph auto-zooms-out on every new word added.** Distinct from the
   double-tap-zoom item below. vis-network's auto-fit re-runs on every
   node insertion, snapping the view to fit all nodes — which on
@@ -270,6 +256,14 @@ items above.
 Kept here briefly so we can see how the queue's moving.
 
 **2026-06-02 session:**
+- Score with the shortest path *through the user's graph* (graph-BFS
+  via `findShortestPathInGraph` / `findShortestPathInGraphFromAny`)
+  instead of walking the chronological `parents` map — fixes the
+  longer-route scoring when the graph rejoins on a shared node.
+- Daily no longer goes blank after Reset: initial recenter now runs
+  on the ResizeObserver's first real-size tick (against the final
+  canvas) instead of racing it, so the start word can't land
+  off-screen.
 - Dict redesign: SCOWL ≤20 for Dict A, ≤20 + length-filtered higher
   tiers for Dict B. Dict A 1,023 → 3,158; Dict B 82,902 → 25,846.
 - Local-midnight rollover (replacing UTC).
