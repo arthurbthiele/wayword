@@ -31,13 +31,13 @@ already in it.
 
 There are two:
 
-- **Dict A** ("legitimate"): a curated small set of common English
-  words (SCOWL tier 10, intersected with a permissive English list,
-  with a few hand-promoted bridge words). Used for daily start/target
-  selection and for optimal-path computation.
-- **Dict B**: a much larger permissive English wordlist (the
-  `an-array-of-english-words` package). The user can type any word in
-  `A ∪ B`.
+- **Dict A** ("legitimate"): a curated set of common English words
+  (SCOWL tier ≤20, with a small hand-curated include/exclude list).
+  Used for daily start/target selection and for optimal-path
+  computation.
+- **Dict B**: a larger permissive set (SCOWL tier ≤20 plus
+  length-filtered words from tiers 35–70). The user can type any word
+  in `A ∪ B`.
 
 This means optimal paths feel honest (only common words), but the
 player has freedom to route via less common words if they spot a
@@ -63,8 +63,11 @@ exclude sets:
 node scripts/build-dictionaries.cjs
 ```
 
-This writes `src/dictionaryData/{wordGraph,legitimate,targets}.ts`.
+This writes `src/dictionaryData/{wordGraph,legitimate}.ts`.
 
-There's also `scripts/analyse-bridges.cjs` — a one-off that ranks
-words in B that would most expand the legitimate set if promoted
-into A.
+`scripts/preview-puzzles.cjs` previews upcoming daily + triple
+puzzles with their optimal paths — useful after a dict regen:
+
+```sh
+node scripts/preview-puzzles.cjs 10
+```
