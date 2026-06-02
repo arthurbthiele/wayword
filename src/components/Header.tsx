@@ -59,7 +59,14 @@ export const Header = ({
   return (
     <header className="wj-header">
       <h1 className="wj-header__brand">
-        way<span>word</span>
+        <button
+          type="button"
+          className="wj-header__brand-button"
+          onClick={() => setMode("daily")}
+          aria-label="Wayword — go to Daily"
+        >
+          way<span>word</span>
+        </button>
       </h1>
 
       <div className="wj-mode-toggle" role="tablist" aria-label="Game mode">
