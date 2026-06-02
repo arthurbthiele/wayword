@@ -90,7 +90,44 @@ export const Graph = () => {
       setSelectedWord(event.nodes[0]);
     },
     doubleClick: () => {
-      network?.fit({ animation: { duration: 300 } });
+      if (!network || !containerRef.current) return;
+      const nodeIds = safeGraph.nodes.map((n) => n.id);
+      if (nodeIds.length === 0) return;
+
+      // For 1-2 nodes the bounding box is degenerate; focus on a node at a
+      // fixed comfortable scale instead.
+      if (nodeIds.length <= 2) {
+        const target = selectedWord ?? nodeIds[0];
+        network.focus(target, { scale: 1.2, animation: { duration: 300 } });
+        return;
+      }
+
+      // Compute a tight fit manually. vis-network's fit() leaves more margin
+      // than we want and clamps oddly at the small-graph end.
+      const positions = network.getPositions(nodeIds);
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const id of nodeIds) {
+        const p = positions[id];
+        if (!p) continue;
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+
+      // Padding accounts for node pill width + label overhang (positions are
+      // node centres in graph coords). Tune if labels clip at the edges.
+      const PADDING = 70;
+      const rangeW = (maxX - minX) + PADDING * 2;
+      const rangeH = (maxY - minY) + PADDING * 2;
+      const { clientWidth, clientHeight } = containerRef.current;
+      const scale = Math.min(clientWidth / rangeW, clientHeight / rangeH);
+
+      network.moveTo({
+        position: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
+        scale,
+        animation: { duration: 300 },
+      });
     },
   };
 
