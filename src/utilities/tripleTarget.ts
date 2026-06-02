@@ -5,7 +5,8 @@ import {
   isTrivialPlural,
   isViableStart,
 } from "./legitimateGraph";
-import { getUtcDateString, hashStringWithSalt } from "./dailyTarget";
+import { getLocalDateString, hashStringWithSalt } from "./dailyTarget";
+import { tripleOverrides } from "./puzzleOverrides";
 
 // "Daily Triple" mode: connect 3 specific words with the minimum number of
 // added words. This is the graph-theoretic Steiner Tree problem with the
@@ -172,6 +173,11 @@ const MAX_TREE_EDGES = 10;
 // Constrains the candidate set so the Steiner check has a high hit rate.
 const MIN_TERM_DIST = 2;
 const MAX_TERM_DIST = 7;
+// The two targets must also be at least this many edges apart from each
+// other. Without this, the picker can produce degenerate triples like
+// `tribe + rid + grid` where rid → grid is a single letter — visually
+// odd and trivialises the puzzle.
+const MIN_PAIRWISE_TARGET_DIST = 2;
 
 export type DailyTriple = {
   start: string;
@@ -190,8 +196,23 @@ export type DailyTriple = {
  * Uses the same FNV-1a hash-with-salt pattern as daily for determinism.
  */
 export const getDailyTriple = (
-  dateString: string = getUtcDateString()
+  dateString: string = getLocalDateString()
 ): DailyTriple => {
+  // Manual override takes precedence over the deterministic picker.
+  const override = tripleOverrides[dateString];
+  if (override) {
+    const steiner = findSteinerTree(override.start, override.t1, override.t2);
+    return {
+      start: override.start,
+      t1: override.t1,
+      t2: override.t2,
+      // Use computed optimal if available; fall back to a safe default if
+      // the override words can't connect in legitimate (shouldn't happen
+      // for vetted overrides but guard anyway).
+      optimalEdges: steiner ? steiner.edges : 5,
+    };
+  }
+
   const sortedLegitimate = getSortedLegitimate();
   const viableStarts = sortedLegitimate.filter(isViableStart);
 
@@ -219,12 +240,19 @@ export const getDailyTriple = (
     const t1Index =
       hashStringWithSalt(dateString, attempt * 4 + 102) % candidates.length;
     const t1 = candidates[t1Index];
-    let t2Index =
-      hashStringWithSalt(dateString, attempt * 4 + 103) % candidates.length;
-    if (candidates[t2Index] === t1) {
-      t2Index = (t2Index + 1) % candidates.length;
-    }
-    const t2 = candidates[t2Index];
+
+    // Filter the t2 candidate set: must be distinct from t1 AND at least
+    // MIN_PAIRWISE_TARGET_DIST legitimate-edges away.
+    const distancesFromT1 = bfsDistancesLegitimate(t1);
+    const t2Candidates = candidates.filter((w) => {
+      if (w === t1) return false;
+      const d = distancesFromT1.get(w);
+      return d !== undefined && d >= MIN_PAIRWISE_TARGET_DIST;
+    });
+    if (t2Candidates.length === 0) continue;
+    const t2Index =
+      hashStringWithSalt(dateString, attempt * 4 + 103) % t2Candidates.length;
+    const t2 = t2Candidates[t2Index];
 
     const steiner = findSteinerTree(start, t1, t2);
     if (!steiner) continue;

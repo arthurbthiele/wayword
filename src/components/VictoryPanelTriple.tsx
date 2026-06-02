@@ -10,7 +10,7 @@ import confetti from "canvas-confetti";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
-import { getDayNumber, getUtcDateString } from "../utilities/dailyTarget";
+import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
 import {
   findSteinerTree,
   findSteinerTreeInGraph,
@@ -68,7 +68,7 @@ export const VictoryPanelTriple = ({
   solvedDate,
   setSolvedDate,
 }: VictoryPanelTripleProps) => {
-  const today = getUtcDateString();
+  const today = getLocalDateString();
   const { graph } = useContext(GraphContext);
 
   const [userTreeSize, setUserTreeSize] = useLocalStorage<number | null>(

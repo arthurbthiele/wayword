@@ -14,8 +14,17 @@ import {
 } from "./components/VictoryBannerFreePlay";
 import { HelpModal } from "./components/HelpModal";
 import { StatsModal } from "./components/StatsModal";
-import { useLocalStorage } from "./utilities/useLocalStorage";
-import { getDailyPair, getUtcDateString } from "./utilities/dailyTarget";
+import { DevPanel } from "./components/DevPanel";
+import {
+  clearLocalStorage,
+  migrateStaleGraphState,
+  useLocalStorage,
+} from "./utilities/useLocalStorage";
+import {
+  getDailyPair,
+  getRandomDailyPair,
+  getLocalDateString,
+} from "./utilities/dailyTarget";
 import { getDailyTriple } from "./utilities/tripleTarget";
 import {
   computeStreak,
@@ -50,6 +59,16 @@ const App = () => {
       if (cancelled) return;
       setWordGraph(wordGraph);
       setDictReady(true);
+      // After the dict is loaded, sanity-check stored graph state: any
+      // saved daily/triple graph whose first node doesn't match the
+      // picker's start for that date gets cleared. Covers dict-swap
+      // mismatches and the rollover-transition edge case for users
+      // west of UTC.
+      try {
+        migrateStaleGraphState(getDailyPair, getDailyTriple);
+      } catch {
+        // Migration is best-effort; never let it block app load.
+      }
     });
     return () => {
       cancelled = true;
@@ -70,16 +89,22 @@ const App = () => {
   const setMode = (next: GameMode) => {
     setModeState(next);
     setStoredMode(next);
-    const url = `/${next}`;
-    if (window.location.pathname !== url) {
+    // Preserve any query string (e.g. ?dev=1) and hash on URL updates.
+    const url = `/${next}${window.location.search}${window.location.hash}`;
+    if (window.location.pathname !== `/${next}`) {
       window.history.pushState({}, "", url);
     }
   };
   // Sync URL on mount: replaceState (not pushState) so we don't add a
-  // history entry just for landing on the right place.
+  // history entry just for landing on the right place. Preserve the
+  // query string + hash so e.g. `?dev=1` survives the rewrite.
   useEffect(() => {
     if (window.location.pathname !== `/${mode}`) {
-      window.history.replaceState({}, "", `/${mode}`);
+      window.history.replaceState(
+        {},
+        "",
+        `/${mode}${window.location.search}${window.location.hash}`
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -131,9 +156,9 @@ const App = () => {
   // across midnight UTC would keep showing yesterday's puzzle, and worse,
   // re-save yesterday's graph state to today's storage key as soon as
   // something triggers a re-render.
-  const [today, setToday] = useState(getUtcDateString);
+  const [today, setToday] = useState(getLocalDateString);
   useEffect(() => {
-    const refresh = () => setToday(getUtcDateString());
+    const refresh = () => setToday(getLocalDateString());
     const onVisibility = () => {
       if (!document.hidden) refresh();
     };
@@ -144,10 +169,47 @@ const App = () => {
       window.removeEventListener("focus", refresh);
     };
   }, []);
-  const dailyPair = useMemo(
-    () => (dictReady ? getDailyPair(today) : null),
-    [today, dictReady]
-  );
+  // Dev mode: when `?dev=1` is in the URL, the DevPanel is rendered and the
+  // dev-override (if set) replaces the real daily pair. Not deployed —
+  // tooling for testing the picker against different difficulties / seeds.
+  const devMode =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("dev") === "1";
+  const [devDailyOverride, setDevDailyOverride] = useLocalStorage<{
+    start: string;
+    target: string;
+    optimalMoves: number;
+  } | null>("dev:dailyOverride", null);
+
+  const dailyPair = useMemo(() => {
+    if (!dictReady) return null;
+    if (devMode && devDailyOverride) {
+      return {
+        start: devDailyOverride.start,
+        target: devDailyOverride.target,
+      };
+    }
+    return getDailyPair(today);
+  }, [today, dictReady, devMode, devDailyOverride]);
+
+  const handleDevReroll = (difficulty: number | undefined) => {
+    const pair = getRandomDailyPair(difficulty);
+    setDevDailyOverride(pair);
+    // Clear daily progress so the new puzzle starts fresh (legitimate words
+    // for the previous pair may not connect to the new one).
+    clearLocalStorage("daily:");
+    setDailySolvedDate(null);
+    // Force a hard reload so the GraphProvider remounts with the new pair —
+    // its `key` is keyed off `today` which doesn't change here.
+    window.location.reload();
+  };
+
+  const handleDevClearOverride = () => {
+    setDevDailyOverride(null);
+    clearLocalStorage("daily:");
+    setDailySolvedDate(null);
+    window.location.reload();
+  };
   const dailyInitialGraph = useMemo(
     () =>
       dailyPair
@@ -349,6 +411,13 @@ const App = () => {
         tripleHistory={tripleHistory}
         initialTab={mode === "triple" ? "triple" : "daily"}
       />
+      {devMode && (
+        <DevPanel
+          currentOverride={devDailyOverride}
+          onReroll={handleDevReroll}
+          onClearOverride={handleDevClearOverride}
+        />
+      )}
     </div>
   );
 };

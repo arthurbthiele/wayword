@@ -1,22 +1,27 @@
-import { targetWords } from "../dictionaryData/targets";
 import {
   bfsDistancesLegitimate,
   getSortedLegitimate,
   isTrivialPlural,
   isViableStart,
 } from "./legitimateGraph";
+import { dailyOverrides } from "./puzzleOverrides";
 
 /**
- * Today's date in UTC, formatted YYYY-MM-DD. UTC (not local) so the daily
- * puzzle rolls over at the same instant for everyone — otherwise two players
- * in different timezones could see different puzzles when comparing scores.
+ * Today's date in the player's LOCAL timezone, formatted YYYY-MM-DD.
+ * Local (not UTC) so the daily puzzle rolls over at local midnight —
+ * matches user intuition that "a new day starts at midnight" on their
+ * clock. Trade-off: two players in different timezones can see different
+ * puzzles when comparing scores at the timezone boundary. Per-date
+ * overrides (see `dailyOverrides.ts`) let us pin specific puzzles for
+ * specific dates if a particular calendar day matters.
  */
-export const getUtcDateString = (date: Date = new Date()): string => {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
+export const getLocalDateString = (date: Date = new Date()): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+
 
 // Day 1 of daily-challenge mode. The day number is computed as days elapsed
 // from this date in UTC, +1 (so launch day == #1).
@@ -25,7 +30,7 @@ export const LAUNCH_DATE = "2026-05-17";
 const MS_PER_DAY = 86400000;
 
 export const getDayNumber = (
-  dateString: string = getUtcDateString()
+  dateString: string = getLocalDateString()
 ): number => {
   const launch = Date.parse(`${LAUNCH_DATE}T00:00:00Z`);
   const date = Date.parse(`${dateString}T00:00:00Z`);
@@ -45,19 +50,6 @@ export const hashStringWithSalt = (input: string, salt: number): number => {
   return Math.abs(hash | 0);
 };
 
-const hashString = (input: string): number => hashStringWithSalt(input, 0);
-
-/**
- * Deterministic target word for a given date. Picks from the curated daily
- * target list (length, plural, optimal-path-4-7 filtered).
- */
-export const getTargetForDate = (
-  dateString: string = getUtcDateString()
-): string => {
-  const index = hashString(dateString) % targetWords.length;
-  return targetWords[index];
-};
-
 // --- Daily pair (start + target) -------------------------------------------
 
 const MIN_LEGITIMATE_DISTANCE = 4;
@@ -70,8 +62,12 @@ const MAX_LEGITIMATE_DISTANCE = 7;
  * targets in range) and rerolls until it finds a viable pair.
  */
 export const getDailyPair = (
-  dateString: string = getUtcDateString()
+  dateString: string = getLocalDateString()
 ): { start: string; target: string } => {
+  // Manual override takes precedence over the deterministic picker.
+  const override = dailyOverrides[dateString];
+  if (override) return { start: override.start, target: override.target };
+
   const sortedLegitimate = getSortedLegitimate();
   const viableStarts = sortedLegitimate.filter(isViableStart);
 
@@ -100,7 +96,54 @@ export const getDailyPair = (
     return { start, target: candidates[targetIndex] };
   }
 
-  // Fallback that should never trigger in practice — degenerate to the
-  // single-target picker so callers always get something usable.
-  return { start: "a", target: getTargetForDate(dateString) };
+  // Should not trigger in practice with ~3k+ viable starts — surfacing as
+  // an error if it ever does is more useful than a silent fallback.
+  throw new Error(
+    `getDailyPair: no viable (start, target) pair after 64 attempts ` +
+      `for dateString=${dateString}`
+  );
+};
+
+/**
+ * Random (start, target) pair — for dev/testing only. Not deterministic;
+ * each call returns a different pair. If `optimalMoves` is provided, the
+ * target's BFS distance from the start through legitimate-only edges will
+ * be exactly that. Otherwise distance is in [4, 7].
+ */
+export const getRandomDailyPair = (
+  optimalMoves?: number
+): { start: string; target: string; optimalMoves: number } => {
+  const sortedLegitimate = getSortedLegitimate();
+  const viableStarts = sortedLegitimate.filter(isViableStart);
+  const minD =
+    optimalMoves !== undefined ? optimalMoves : MIN_LEGITIMATE_DISTANCE;
+  const maxD =
+    optimalMoves !== undefined ? optimalMoves : MAX_LEGITIMATE_DISTANCE;
+
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const start =
+      viableStarts[Math.floor(Math.random() * viableStarts.length)];
+    const distances = bfsDistancesLegitimate(start);
+
+    const candidates: { word: string; distance: number }[] = [];
+    for (const [word, distance] of distances) {
+      if (
+        distance >= minD &&
+        distance <= maxD &&
+        word.length >= 3 &&
+        !isTrivialPlural(word)
+      ) {
+        candidates.push({ word, distance });
+      }
+    }
+    if (candidates.length === 0) continue;
+
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    return { start, target: pick.word, optimalMoves: pick.distance };
+  }
+
+  throw new Error(
+    `getRandomDailyPair: no viable pair after 200 attempts ` +
+      `(optimalMoves=${optimalMoves})`
+  );
 };

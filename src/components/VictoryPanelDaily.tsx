@@ -9,7 +9,7 @@ import confetti from "canvas-confetti";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
-import { getDayNumber, getUtcDateString } from "../utilities/dailyTarget";
+import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
@@ -66,7 +66,7 @@ export const VictoryPanelDaily = ({
   solvedDate,
   setSolvedDate,
 }: VictoryPanelDailyProps) => {
-  const today = getUtcDateString();
+  const today = getLocalDateString();
   const { graph } = useContext(GraphContext);
 
   const [solvedPath, setSolvedPath] = useLocalStorage<string[] | null>(

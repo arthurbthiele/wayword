@@ -1,4 +1,4 @@
-import { getUtcDateString } from "./dailyTarget";
+import { getLocalDateString } from "./dailyTarget";
 
 export type DailyHistoryEntry = {
   start: string;
@@ -33,14 +33,14 @@ export const computeStreak = (
   history: Record<string, unknown>
 ): number => {
   const now = new Date();
-  const todayStr = getUtcDateString(now);
+  const todayStr = getLocalDateString(now);
   const cursor = new Date(now);
   if (!history[todayStr]) {
     cursor.setUTCDate(cursor.getUTCDate() - 1);
   }
   let streak = 0;
   for (let i = 0; i < 1000; i++) {
-    const dateStr = getUtcDateString(cursor);
+    const dateStr = getLocalDateString(cursor);
     if (!history[dateStr]) break;
     streak++;
     cursor.setUTCDate(cursor.getUTCDate() - 1);
