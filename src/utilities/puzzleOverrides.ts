@@ -27,9 +27,20 @@ export const dailyOverrides: Record<string, DailyOverride> = {
   // dict-swap deploy doesn't disrupt users mid-game on these days.
   "2026-06-01": { start: "raised", target: "rover" },
   "2026-06-02": { start: "plain", target: "held" },
+  // 2026-06-03 / 06-04 / 06-05 pinned to the values currently live on
+  // prod, so the triple-linear-cap + rape-exclusion deploy doesn't shift
+  // puzzles for anyone mid-game. 06-04 is still "today" west of UTC+10;
+  // 06-05 is "today" in eastern Australia.
+  "2026-06-03": { start: "keen", target: "boss" },
+  "2026-06-04": { start: "born", target: "sir" },
+  "2026-06-05": { start: "jam", target: "end" },
 };
 
 export const tripleOverrides: Record<string, TripleOverride> = {
   "2026-06-01": { start: "stop", t1: "few", t2: "heat" },
   "2026-06-02": { start: "slip", t1: "know", t2: "post" },
+  // Same continuity rationale as the daily pins above.
+  "2026-06-03": { start: "may", t1: "byte", t2: "amend" },
+  "2026-06-04": { start: "packing", t1: "lasting", t2: "costing" },
+  "2026-06-05": { start: "treated", t1: "halve", t2: "rave" },
 };

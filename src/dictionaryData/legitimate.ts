@@ -2082,7 +2082,6 @@ export const legitimateWords: ReadonlySet<string> = new Set([
   "ranted",
   "ranting",
   "rants",
-  "rape",
   "rapid",
   "rare",
   "rarer",

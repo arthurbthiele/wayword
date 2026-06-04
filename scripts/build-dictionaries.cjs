@@ -210,6 +210,10 @@ const dictAOnlyExclude = new Set([
   "twink", "twinks",
   "nip", "nips",
   "cripple", "cripples",
+  // Contextually fraught — real words, but shouldn't surface as a daily
+  // target or step in the displayed common-word optimal.
+  "rape", "rapes", "raped", "raping",
+  "rapist", "rapists",
 ]);
 
 // Manually promoted bridge words. SCOWL's lower tiers miss some common

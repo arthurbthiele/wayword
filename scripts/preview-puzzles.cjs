@@ -191,20 +191,36 @@ const findSteinerTree = (start, t1, t2, useAllWords) => {
     }
   }
   if (!best) return null;
+  const dST1 = fromStart.distances.get(t1);
+  const dST2 = fromStart.distances.get(t2);
+  const dT1T2 = fromT1.distances.get(t2);
+  const hasLinearOptimal =
+    dST1 !== undefined &&
+    dST2 !== undefined &&
+    dT1T2 !== undefined &&
+    Math.min(dST1 + dST2, dST1 + dT1T2, dST2 + dT1T2) === best.edges;
   return {
     edges: best.edges,
     joint: best.joint,
+    hasLinearOptimal,
     pathToStart: reconstructPath(fromStart.predecessors, best.joint).reverse(),
     pathToT1: reconstructPath(fromT1.predecessors, best.joint).reverse(),
     pathToT2: reconstructPath(fromT2.predecessors, best.joint).reverse(),
   };
 };
 
+const hasLinearOptimalInDictB = (start, t1, t2) => {
+  const tree = findSteinerTree(start, t1, t2, true);
+  return tree ? tree.hasLinearOptimal : false;
+};
+
 const getDailyTriple = (dateString) => {
   const override = overrides.triple[dateString];
   if (override) return { ...override };
 
-  for (let attempt = 0; attempt < 256; attempt++) {
+  const TOTAL_ATTEMPTS = 256;
+  const LINEAR_REJECT_UNTIL = 240;
+  for (let attempt = 0; attempt < TOTAL_ATTEMPTS; attempt++) {
     const startIndex =
       hashStringWithSalt(dateString, attempt * 4 + 101) % viableStarts.length;
     const start = viableStarts[startIndex];
@@ -240,6 +256,10 @@ const getDailyTriple = (dateString) => {
     if (!steiner) continue;
     if (steiner.edges < MIN_TREE_EDGES || steiner.edges > MAX_TREE_EDGES) {
       continue;
+    }
+    if (attempt < LINEAR_REJECT_UNTIL) {
+      if (steiner.hasLinearOptimal) continue;
+      if (hasLinearOptimalInDictB(start, t1, t2)) continue;
     }
     return { start, t1, t2 };
   }

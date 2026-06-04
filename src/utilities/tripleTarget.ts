@@ -7,6 +7,7 @@ import {
 } from "./legitimateGraph";
 import { getLocalDateString, hashStringWithSalt } from "./dailyTarget";
 import { tripleOverrides } from "./puzzleOverrides";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 // "Daily Triple" mode: connect 3 specific words with the minimum number of
 // added words. This is the graph-theoretic Steiner Tree problem with the
@@ -33,6 +34,14 @@ export type SteinerTree = {
   branchToT1: string[];
   /** Path joint → ... → T2. */
   branchToT2: string[];
+  /**
+   * True iff there exists *any* optimal-cost solution that is a single
+   * chain — i.e. one terminal sits on the shortest path between the other
+   * two. The picker rejects puzzles where this holds: even if the tree we
+   * returned isn't itself linear, a player who finds the linear path gets
+   * an identical edge count and the puzzle loses its tree character.
+   */
+  hasLinearOptimal: boolean;
 };
 
 /**
@@ -95,7 +104,99 @@ export const findSteinerTree = (
     branchToStart: walkBranch(best.joint, start, fromStart.predecessors),
     branchToT1: walkBranch(best.joint, t1, fromT1.predecessors),
     branchToT2: walkBranch(best.joint, t2, fromT2.predecessors),
+    hasLinearOptimal: detectLinearOptimal(
+      best.sum,
+      fromStart.distances.get(t1),
+      fromStart.distances.get(t2),
+      fromT1.distances.get(t2)
+    ),
   };
+};
+
+/**
+ * Given the optimal Steiner cost and the three pairwise terminal distances,
+ * decide whether *any* linear arrangement (one terminal in the middle of
+ * the other two) achieves the same cost. Linear arrangements always exist
+ * as valid Steiner solutions, so optimal cost ≤ min linear cost; equality
+ * means at least one linear arrangement ties the optimum.
+ */
+const detectLinearOptimal = (
+  optimalEdges: number,
+  dStartT1: number | undefined,
+  dStartT2: number | undefined,
+  dT1T2: number | undefined
+): boolean => {
+  if (
+    dStartT1 === undefined ||
+    dStartT2 === undefined ||
+    dT1T2 === undefined
+  ) {
+    return false;
+  }
+  const startInMiddle = dStartT1 + dStartT2;
+  const t1InMiddle = dStartT1 + dT1T2;
+  const t2InMiddle = dStartT2 + dT1T2;
+  const minLinear = Math.min(startInMiddle, t1InMiddle, t2InMiddle);
+  return minLinear === optimalEdges;
+};
+
+/**
+ * BFS distances from `source` through Dict B (the full word graph). Used
+ * by the strict linear check below — we want to know whether even players
+ * who route through uncommon words can solve the triple linearly.
+ */
+const bfsDictBDistances = (source: string): Map<string, number> => {
+  const wordGraph = getWordGraph();
+  const distances = new Map<string, number>([[source, 0]]);
+  const queue: string[] = [source];
+  let head = 0;
+  while (head < queue.length) {
+    const word = queue[head++];
+    const distance = distances.get(word) ?? 0;
+    for (const neighbour of wordGraph[word] ?? []) {
+      if (!distances.has(neighbour)) {
+        distances.set(neighbour, distance + 1);
+        queue.push(neighbour);
+      }
+    }
+  }
+  return distances;
+};
+
+/**
+ * True iff the triple has any linear-optimal arrangement in Dict B's full
+ * word graph — i.e. one terminal sits on a Dict B shortest path between
+ * the other two with cost equal to the Dict B Steiner optimum. The picker
+ * rejects this case: even though our displayed optimal is via Dict A,
+ * players who route through rarer words could otherwise find a chain
+ * solution that matches the most efficient B-space tree.
+ */
+export const hasLinearOptimalInDictB = (
+  start: string,
+  t1: string,
+  t2: string
+): boolean => {
+  const fromStart = bfsDictBDistances(start);
+  const fromT1 = bfsDictBDistances(t1);
+  const fromT2 = bfsDictBDistances(t2);
+
+  let steinerSum = Infinity;
+  for (const [v, d1] of fromStart) {
+    const d2 = fromT1.get(v);
+    if (d2 === undefined) continue;
+    const d3 = fromT2.get(v);
+    if (d3 === undefined) continue;
+    const sum = d1 + d2 + d3;
+    if (sum < steinerSum) steinerSum = sum;
+  }
+  if (!isFinite(steinerSum)) return false;
+
+  return detectLinearOptimal(
+    steinerSum,
+    fromStart.get(t1),
+    fromStart.get(t2),
+    fromT1.get(t2)
+  );
 };
 
 /**
@@ -162,6 +263,12 @@ export const findSteinerTreeInGraph = (
     branchToStart: walkBranch(best.joint, start, fromStart.predecessors),
     branchToT1: walkBranch(best.joint, t1, fromT1.predecessors),
     branchToT2: walkBranch(best.joint, t2, fromT2.predecessors),
+    hasLinearOptimal: detectLinearOptimal(
+      best.sum,
+      fromStart.distances.get(t1),
+      fromStart.distances.get(t2),
+      fromT1.distances.get(t2)
+    ),
   };
 };
 
@@ -216,7 +323,15 @@ export const getDailyTriple = (
   const sortedLegitimate = getSortedLegitimate();
   const viableStarts = sortedLegitimate.filter(isViableStart);
 
-  for (let attempt = 0; attempt < 256; attempt++) {
+  // Phase 1 (most attempts): reject any candidate where a linear-optimal
+  // arrangement exists — linear "triples" are essentially two daily puzzles
+  // stuck together and lose the tree character. Phase 2 (final attempts)
+  // drops the constraint as a fallback so we never fail to return a puzzle.
+  // In practice phase 2 should be rare; the natural linear rate is well
+  // below the budget.
+  const TOTAL_ATTEMPTS = 256;
+  const LINEAR_REJECT_UNTIL = 240;
+  for (let attempt = 0; attempt < TOTAL_ATTEMPTS; attempt++) {
     const startIndex =
       hashStringWithSalt(dateString, attempt * 4 + 101) % viableStarts.length;
     const start = viableStarts[startIndex];
@@ -258,6 +373,15 @@ export const getDailyTriple = (
     if (!steiner) continue;
     if (steiner.edges < MIN_TREE_EDGES || steiner.edges > MAX_TREE_EDGES) {
       continue;
+    }
+    if (attempt < LINEAR_REJECT_UNTIL) {
+      // Reject if a linear-optimal exists in *either* the legitimate
+      // (Dict A) graph or the full Dict B graph — see hasLinearOptimal
+      // comment on SteinerTree for context. Two-step check: the Dict A
+      // one is cheap (already computed), Dict B requires extra BFS so
+      // only run it when Dict A passes.
+      if (steiner.hasLinearOptimal) continue;
+      if (hasLinearOptimalInDictB(start, t1, t2)) continue;
     }
 
     return { start, t1, t2, optimalEdges: steiner.edges };

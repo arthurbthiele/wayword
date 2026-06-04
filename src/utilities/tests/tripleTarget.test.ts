@@ -1,4 +1,8 @@
-import { findSteinerTree, getDailyTriple } from "../tripleTarget";
+import {
+  findSteinerTree,
+  getDailyTriple,
+  hasLinearOptimalInDictB,
+} from "../tripleTarget";
 import { legitimateWords } from "../../dictionaryData/legitimate";
 import { bfsDistancesLegitimate } from "../legitimateGraph";
 
@@ -55,6 +59,13 @@ describe("findSteinerTree", () => {
       (tree.branchToT2.length - 1);
     expect(totalEdges).toBe(tree.edges);
   });
+
+  it("detects linear-optimal when one terminal sits on the shortest path between the others", () => {
+    // 'at' lies on the shortest path a → at → art, so {a, at, art} has a
+    // linear-optimal arrangement (at in the middle).
+    const tree = findSteinerTree("a", "at", "art")!;
+    expect(tree.hasLinearOptimal).toBe(true);
+  });
 });
 
 describe("getDailyTriple", () => {
@@ -104,5 +115,30 @@ describe("getDailyTriple", () => {
     // 30 dates should produce many distinct triples — at minimum not all
     // the same.
     expect(samples.size).toBeGreaterThan(5);
+  });
+
+  it("avoids linear-optimal triples in both Dict A and Dict B across a 50-day sample", () => {
+    // Natural rates before the cap: ~35% in Dict A, ~50% in Dict B
+    // (measured locally over a year). The strict cap rejects either, and
+    // a feasibility check showed median 2 attempts to find a non-linear-
+    // in-both candidate — so fallback (linear allowed) should never
+    // trigger in this sample.
+    //
+    // Start past the pinned-override dates: overrides bypass the picker
+    // (intentionally), so they can legitimately be linear. This test
+    // covers the picker behaviour, not the override path.
+    let linearA = 0;
+    let linearB = 0;
+    for (let i = 0; i < 50; i++) {
+      const d = new Date(2026, 5, 10);
+      d.setDate(d.getDate() + i);
+      const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const t = getDailyTriple(date);
+      const tree = findSteinerTree(t.start, t.t1, t.t2)!;
+      if (tree.hasLinearOptimal) linearA++;
+      if (hasLinearOptimalInDictB(t.start, t.t1, t.t2)) linearB++;
+    }
+    expect(linearA).toBe(0);
+    expect(linearB).toBe(0);
   });
 });

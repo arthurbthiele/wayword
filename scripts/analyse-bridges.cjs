@@ -18,44 +18,103 @@
  * Run:  node scripts/analyse-bridges.cjs
  */
 
-const englishWords = require("an-array-of-english-words");
-const scowlSize10 = require("wordlist-english/english-words-10.json");
+const fs = require("fs");
+const path = require("path");
 
-// Match the exclude list from build-dictionaries.cjs.
-const dictAExclude = new Set([
-  "cs", "hes", "hell", "hellish",
-  "cum", "cums",
-  "ass", "asses", "asshole", "assholes",
-  "fuck", "fucks", "fucking", "fucked",
-  "shit", "shits", "shitty", "shitting",
-  "damn", "damned", "damning",
-  "piss", "pisses", "pissing", "pissed",
-  "crap", "craps", "crappy",
-  "bitch", "bitches", "bitching", "bitchy",
-  "bastard", "bastards",
-  "whore", "whores",
-  "dick", "dicks", "cock", "cocks", "cocky",
-  "tit", "tits", "titty", "boob", "boobs",
-  "porn", "porno",
-  "sex", "sexy", "sexual", "sexually",
-  "nigger", "niggers", "fag", "fags", "faggot", "faggots",
-  "kike", "spic", "gook", "chink", "paki",
-  "retard", "retards", "retarded",
-  "cunt", "cunts",
+// Mirror the current source-dict construction from build-dictionaries.cjs.
+// Re-implementing rather than importing to keep this script standalone and
+// independent of the build step's exports. Keep these in sync if the build
+// changes.
+
+const wlBase = path.join(__dirname, "..", "node_modules", "wordlist-english");
+const SCOWL_TIERS = [10, 20, 35, 40, 50, 55, 60, 70];
+
+const loadTier = (tier) => {
+  const out = new Set();
+  for (const variant of ["english", "american", "british", "australian", "canadian"]) {
+    const file = path.join(wlBase, `${variant}-words-${tier}.json`);
+    if (!fs.existsSync(file)) continue;
+    for (const w of JSON.parse(fs.readFileSync(file, "utf8"))) {
+      const lw = w.toLowerCase();
+      if (/^[a-z]+$/.test(lw)) out.add(lw);
+    }
+  }
+  return out;
+};
+
+const cumulativeUpTo = (maxTier) => {
+  const all = new Set();
+  for (const t of SCOWL_TIERS) {
+    if (t > maxTier) break;
+    for (const w of loadTier(t)) all.add(w);
+  }
+  return all;
+};
+
+const DICT_A_MAX_TIER = 20;
+const DICT_B_MAX_TIER = 20;
+const DICT_B_EXTRA_TIERS = [
+  { tier: 35, minLength: 3 },
+  { tier: 40, minLength: 3 },
+  { tier: 50, minLength: 4 },
+  { tier: 55, minLength: 6 },
+  { tier: 60, minLength: 6 },
+  { tier: 70, minLength: 6 },
+];
+
+const excludeBoth = new Set([
+  "nigger","niggers","coon","coons","darkie","darkies","darky","sambo","sambos",
+  "jigaboo","jigaboos","golliwog","golliwogs","wog","wogs","wop","wops","dago",
+  "dagos","spic","spics","moolies","beaner","beaners","wetback","wetbacks",
+  "gook","gooks","jap","japs","zipperhead","paki","pakis","raghead","ragheads",
+  "towelhead","towelheads","gippo","gippos","pikey","pikeys","kraut","krauts",
+  "mick","micks","polack","polacks","kike","kikes","hymie","hymies","yid","yids",
+  "sheeny","sheenies","sheenie","faggot","faggots","fag","fags","poofter",
+  "poofters","homo","homos","shemale","shemales","tranny","trannies","retard",
+  "retards","retarded","spaz","spazzes","spastic","mong","mongs","mongol",
+  "mongols","mongoloid","bint","bints","gyp","gyps","gypped","gypping",
+  "cs","ohs","oks","ifs","ins","mas","mes","mys","pis","dos","ads","hos",
+  "ems","ens","uts","els","ohms","avo","zac",
 ]);
+const dictAOnlyExclude = new Set([
+  "hes","ax","eh","em","ha","ho","re","amp","huh","ken","mod","mom","nay",
+  "sic","ups","hell","hellish","cum","cums","ass","asses","asshole","assholes",
+  "fuck","fucks","fucking","fucked","shit","shits","shitty","shitting","damn",
+  "damned","damning","piss","pisses","pissing","pissed","crap","craps","crappy",
+  "bitch","bitches","bitching","bitchy","bastard","bastards","whore","whores",
+  "dick","dicks","cock","cocks","cocky","tit","tits","titty","boob","boobs",
+  "porn","porno","sex","sexy","sexual","sexually","cunt","cunts","dyke","dykes",
+  "twink","twinks","nip","nips","cripple","cripples",
+  "rape","rapes","raped","raping","rapist","rapists",
+]);
+const dictAInclude = new Set([
+  "stale","lease","hone","heave","fling","stare",
+  "dove","drone","grove","liver","rider","rover",
+  "shone","slate","spate","sage",
+  "hi",
+]);
+const dictBInclude = new Set(["en","fa","la","ti"]);
 
-const dictBList = englishWords
-  .map((w) => w.toLowerCase())
-  .filter((w) => /^[a-z]+$/.test(w));
-const dictB = new Set(dictBList);
+const dictASource = cumulativeUpTo(DICT_A_MAX_TIER);
+const dictBSource = cumulativeUpTo(DICT_B_MAX_TIER);
+for (const { tier, minLength } of DICT_B_EXTRA_TIERS) {
+  for (const w of loadTier(tier)) if (w.length >= minLength) dictBSource.add(w);
+}
 
-const dictA = new Set(
-  scowlSize10
-    .map((w) => w.toLowerCase())
-    .filter(
-      (w) => /^[a-z]+$/.test(w) && dictB.has(w) && !dictAExclude.has(w)
-    )
-);
+const dictA = new Set();
+for (const w of dictASource) {
+  if (excludeBoth.has(w) || dictAOnlyExclude.has(w)) continue;
+  dictA.add(w);
+}
+for (const w of dictAInclude) if (!excludeBoth.has(w)) dictA.add(w);
+
+const dictB = new Set();
+for (const w of dictBSource) {
+  if (excludeBoth.has(w)) continue;
+  dictB.add(w);
+}
+for (const w of dictAInclude) if (!excludeBoth.has(w)) dictB.add(w);
+for (const w of dictBInclude) if (!excludeBoth.has(w)) dictB.add(w);
 
 console.log(`dict A: ${dictA.size}, dict B: ${dictB.size}`);
 
