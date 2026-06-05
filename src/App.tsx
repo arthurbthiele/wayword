@@ -37,7 +37,6 @@ import { setWordGraph } from "./dictionaryData/wordGraphRef";
 const freeplayInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
   edges: [] as { from: string; to: string }[],
-  parents: {} as Record<string, string>,
 };
 
 const VALID_MODES: GameMode[] = ["daily", "triple", "freeplay"];
@@ -228,7 +227,6 @@ const App = () => {
         ? {
             nodes: [{ id: dailyPair.start, label: dailyPair.start }],
             edges: [] as { from: string; to: string }[],
-            parents: {} as Record<string, string>,
           }
         : null,
     [dailyPair?.start]
@@ -243,7 +241,6 @@ const App = () => {
         ? {
             nodes: [{ id: dailyTriple.start, label: dailyTriple.start }],
             edges: [] as { from: string; to: string }[],
-            parents: {} as Record<string, string>,
           }
         : null,
     [dailyTriple?.start]

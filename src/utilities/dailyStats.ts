@@ -28,22 +28,29 @@ export type TripleHistory = Record<string, TripleHistoryEntry>;
  *
  * Accepts either DailyHistory or TripleHistory (anything keyed by
  * YYYY-MM-DD date strings).
+ *
+ * Must use *local* date arithmetic: history keys come from
+ * `getLocalDateString`, so walking the cursor back must move one local
+ * calendar day at a time. Using `setUTCDate` here was a latent bug — in
+ * any non-UTC timezone it can land on the same local date twice (positive
+ * UTC offset, near midnight) or skip one (negative offset), quietly
+ * miscounting streaks.
  */
 export const computeStreak = (
-  history: Record<string, unknown>
+  history: Record<string, unknown>,
+  now: Date = new Date()
 ): number => {
-  const now = new Date();
   const todayStr = getLocalDateString(now);
   const cursor = new Date(now);
   if (!history[todayStr]) {
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursor.setDate(cursor.getDate() - 1);
   }
   let streak = 0;
   for (let i = 0; i < 1000; i++) {
     const dateStr = getLocalDateString(cursor);
     if (!history[dateStr]) break;
     streak++;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
 };

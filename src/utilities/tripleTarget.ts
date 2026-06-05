@@ -1,4 +1,5 @@
 import {
+  bfsDistancesInWordGraph,
   bfsDistancesLegitimate,
   bfsLegitimateWithPredecessors,
   getSortedLegitimate,
@@ -7,7 +8,6 @@ import {
 } from "./legitimateGraph";
 import { getLocalDateString, hashStringWithSalt } from "./dailyTarget";
 import { tripleOverrides } from "./puzzleOverrides";
-import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 // "Daily Triple" mode: connect 3 specific words with the minimum number of
 // added words. This is the graph-theoretic Steiner Tree problem with the
@@ -141,29 +141,6 @@ const detectLinearOptimal = (
 };
 
 /**
- * BFS distances from `source` through Dict B (the full word graph). Used
- * by the strict linear check below — we want to know whether even players
- * who route through uncommon words can solve the triple linearly.
- */
-const bfsDictBDistances = (source: string): Map<string, number> => {
-  const wordGraph = getWordGraph();
-  const distances = new Map<string, number>([[source, 0]]);
-  const queue: string[] = [source];
-  let head = 0;
-  while (head < queue.length) {
-    const word = queue[head++];
-    const distance = distances.get(word) ?? 0;
-    for (const neighbour of wordGraph[word] ?? []) {
-      if (!distances.has(neighbour)) {
-        distances.set(neighbour, distance + 1);
-        queue.push(neighbour);
-      }
-    }
-  }
-  return distances;
-};
-
-/**
  * True iff the triple has any linear-optimal arrangement in Dict B's full
  * word graph — i.e. one terminal sits on a Dict B shortest path between
  * the other two with cost equal to the Dict B Steiner optimum. The picker
@@ -176,9 +153,9 @@ export const hasLinearOptimalInDictB = (
   t1: string,
   t2: string
 ): boolean => {
-  const fromStart = bfsDictBDistances(start);
-  const fromT1 = bfsDictBDistances(t1);
-  const fromT2 = bfsDictBDistances(t2);
+  const fromStart = bfsDistancesInWordGraph(start);
+  const fromT1 = bfsDistancesInWordGraph(t1);
+  const fromT2 = bfsDistancesInWordGraph(t2);
 
   let steinerSum = Infinity;
   for (const [v, d1] of fromStart) {

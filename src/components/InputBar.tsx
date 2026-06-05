@@ -123,13 +123,10 @@ export const InputBar = ({
       }
       setSelectedWord(trimmed);
     } else {
-      // New word — add node, edge, and record its parent for chronological
-      // path reconstruction.
-      const existingParents = graph.parents ?? {};
+      // New word — add node + edge.
       setGraph({
         nodes: [...graph.nodes, { id: trimmed, label: trimmed }],
         edges: [...graph.edges, { from: selectedWord, to: trimmed }],
-        parents: { ...existingParents, [trimmed]: selectedWord },
       });
       setSelectedWord(trimmed);
     }

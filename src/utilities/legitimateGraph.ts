@@ -75,6 +75,33 @@ export const bfsLegitimateWithPredecessors = (
   return { distances, predecessors };
 };
 
+/**
+ * BFS distances through the *full* Dict B word graph (no legitimate-only
+ * restriction). Used wherever a constraint needs to look at the player's
+ * playable graph rather than just the common-word subset — e.g. the
+ * weekend strict daily check, and the Triple mode's Dict-B linear
+ * detection.
+ */
+export const bfsDistancesInWordGraph = (
+  source: string
+): Map<string, number> => {
+  const wordGraph = getWordGraph();
+  const distances = new Map<string, number>([[source, 0]]);
+  const queue: string[] = [source];
+  let head = 0;
+  while (head < queue.length) {
+    const word = queue[head++];
+    const distance = distances.get(word) ?? 0;
+    for (const neighbour of wordGraph[word] ?? []) {
+      if (!distances.has(neighbour)) {
+        distances.set(neighbour, distance + 1);
+        queue.push(neighbour);
+      }
+    }
+  }
+  return distances;
+};
+
 export const isTrivialPlural = (word: string): boolean =>
   word.endsWith("s") && legitimateWords.has(word.slice(0, -1));
 

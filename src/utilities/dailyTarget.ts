@@ -1,4 +1,5 @@
 import {
+  bfsDistancesInWordGraph,
   bfsDistancesLegitimate,
   getSortedLegitimate,
   isTrivialPlural,
@@ -146,24 +147,6 @@ export const getDailyDistanceBand = (
 // Weekend-only helpers: distance lookups used to verify that no shortest
 // path between start and target dips through short ("hub") words.
 
-const bfsDictBDistances = (source: string): Map<string, number> => {
-  const wordGraph = getWordGraph();
-  const distances = new Map<string, number>([[source, 0]]);
-  const queue: string[] = [source];
-  let head = 0;
-  while (head < queue.length) {
-    const word = queue[head++];
-    const distance = distances.get(word) ?? 0;
-    for (const neighbour of wordGraph[word] ?? []) {
-      if (!distances.has(neighbour)) {
-        distances.set(neighbour, distance + 1);
-        queue.push(neighbour);
-      }
-    }
-  }
-  return distances;
-};
-
 // Lazy: only built the first time a weekend picker call needs them.
 // Maps each "short" (length < 4) word to a distance map covering every
 // reachable word. Used for the "no shortest path dips below 4" check —
@@ -181,7 +164,7 @@ const ensureShortWordDistances = () => {
   shortWordDistancesA = aMap;
   const bMap = new Map<string, Map<string, number>>();
   for (const word of Object.keys(getWordGraph())) {
-    if (word.length < 4) bMap.set(word, bfsDictBDistances(word));
+    if (word.length < 4) bMap.set(word, bfsDistancesInWordGraph(word));
   }
   shortWordDistancesB = bMap;
 };
@@ -228,7 +211,7 @@ export const getDailyPair = (
       hashStringWithSalt(dateString, attempt * 2 + 1) % viableStarts.length;
     const start = viableStarts[startIndex];
     const distances = bfsDistancesLegitimate(start);
-    const distancesB = isWeekend ? bfsDictBDistances(start) : null;
+    const distancesB = isWeekend ? bfsDistancesInWordGraph(start) : null;
 
     const candidates: string[] = [];
     for (const [word, distance] of distances) {

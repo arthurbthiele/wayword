@@ -3,10 +3,9 @@ import React from "react";
 export type FreePlayHit = {
   target: string;
   /**
-   * The path the user took to reach this target: walks the parents map back
-   * from the target until reaching a word that was already in the graph at
-   * pick time. The graph could have been huge or just {'a'} — either way
-   * this is what the player actually did for *this* target.
+   * The shortest path through the user's graph from any pick-time node
+   * to this target. Reflects the best route the player has available,
+   * not necessarily the chronological order they added words.
    */
   userPath: string[];
   /**

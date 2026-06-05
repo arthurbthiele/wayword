@@ -87,4 +87,21 @@ describe("migrateStaleGraphState", () => {
       window.localStorage.getItem("wordJourney:stats:dailyHistory")
     ).not.toBeNull();
   });
+
+  it("ignores malformed JSON in a stored graph (doesn't throw)", () => {
+    // A corrupted graph blob shouldn't crash the migration on app load.
+    // Leaving the value in place is fine — useLocalStorage will fall back
+    // to the initial value when it tries to parse and fails.
+    window.localStorage.setItem(
+      "wordJourney:daily:v2:2026-06-02:graph",
+      "{not valid JSON"
+    );
+
+    expect(() =>
+      migrateStaleGraphState(
+        () => ({ start: "plain" }),
+        () => ({ start: "anything" })
+      )
+    ).not.toThrow();
+  });
 });
