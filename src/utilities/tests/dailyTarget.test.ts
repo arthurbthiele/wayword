@@ -4,6 +4,7 @@ import {
   getDailyPair,
 } from "../dailyTarget";
 import { bfsDistancesLegitimate } from "../legitimateGraph";
+import { legitimateWords } from "../../dictionaryData/legitimate";
 
 describe("getLocalDateString", () => {
   it("formats a date as YYYY-MM-DD using local components", () => {
@@ -56,6 +57,43 @@ describe("getDailyPair — weekday difficulty", () => {
       const moves = optimalMoves(start, target);
       expect(moves).toBeGreaterThanOrEqual(4);
       expect(moves).toBeLessThanOrEqual(7);
+    }
+  });
+});
+
+// Strict weekend constraints — verified by reconstructing the "any
+// shortest path dips" check at test time.
+describe("getDailyPair — weekend strict constraints", () => {
+  // Replicate the strict-floor check independently so the test isn't a
+  // tautology against the production code.
+  const dipsBelow4 = (
+    start: string,
+    target: string,
+    distance: number,
+    distancesFromShort: Map<string, Map<string, number>>
+  ): boolean => {
+    for (const [, dists] of distancesFromShort) {
+      const ds = dists.get(start);
+      const dt = dists.get(target);
+      if (ds !== undefined && dt !== undefined && ds + dt === distance) return true;
+    }
+    return false;
+  };
+
+  // Build short-word distance maps once.
+  let shortAdists: Map<string, Map<string, number>>;
+  beforeAll(() => {
+    shortAdists = new Map();
+    for (const word of legitimateWords) {
+      if (word.length < 4) shortAdists.set(word, bfsDistancesLegitimate(word));
+    }
+  });
+
+  it("weekend Dict A optimal path never dips below 4 letters", () => {
+    for (const date of ["2026-06-13", "2026-06-14", "2026-06-20", "2026-06-21"]) {
+      const { start, target } = getDailyPair(date);
+      const dist = bfsDistancesLegitimate(start).get(target)!;
+      expect(dipsBelow4(start, target, dist, shortAdists)).toBe(false);
     }
   });
 });

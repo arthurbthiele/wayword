@@ -142,40 +142,74 @@ const MIN_LEGIT_DIST = 4;
 const MAX_LEGIT_DIST = 7;
 const SATURDAY_LEGIT_DIST = 8;
 const SUNDAY_LEGIT_DIST = 9;
+const WEEKEND_PATH_MIN_WORD_LENGTH = 4;
+const WEEKEND_MAX_DICTB_GAP = 3;
 const MIN_TERM_DIST = 2;
 const MAX_TERM_DIST = 7;
 const MIN_TREE_EDGES = 5;
 const MAX_TREE_EDGES = 10;
 const MIN_PAIRWISE_TARGET_DIST = 2;
 
+// Lazy short-word distance precompute (mirrors dailyTarget.ts).
+let shortADists = null;
+let shortBDists = null;
+const ensureShortDists = () => {
+  if (shortADists && shortBDists) return;
+  shortADists = new Map();
+  for (const w of legitimate) {
+    if (w.length < 4) shortADists.set(w, bfsWithPredecessors(w, false).distances);
+  }
+  shortBDists = new Map();
+  for (const w of Object.keys(wordGraph)) {
+    if (w.length < 4) shortBDists.set(w, bfsWithPredecessors(w, true).distances);
+  }
+};
+const anyShortDip = (s, t, d, distMap) => {
+  for (const [, dists] of distMap) {
+    const ds = dists.get(s); const dt = dists.get(t);
+    if (ds !== undefined && dt !== undefined && ds + dt === d) return true;
+  }
+  return false;
+};
+
 const getDistanceBand = (dateString) => {
   const [y, m, d] = dateString.split("-").map((n) => parseInt(n, 10));
   const weekday = new Date(y, m - 1, d).getDay();
-  if (weekday === 6) return { min: SATURDAY_LEGIT_DIST, max: SATURDAY_LEGIT_DIST };
-  if (weekday === 0) return { min: SUNDAY_LEGIT_DIST, max: SUNDAY_LEGIT_DIST };
-  return { min: MIN_LEGIT_DIST, max: MAX_LEGIT_DIST };
+  if (weekday === 6) return { min: SATURDAY_LEGIT_DIST, max: SATURDAY_LEGIT_DIST, weekend: true };
+  if (weekday === 0) return { min: SUNDAY_LEGIT_DIST, max: SUNDAY_LEGIT_DIST, weekend: true };
+  return { min: MIN_LEGIT_DIST, max: MAX_LEGIT_DIST, weekend: false };
 };
 
 const getDailyPair = (dateString) => {
   const override = overrides.daily[dateString];
   if (override) return { start: override.start, target: override.target };
 
-  const { min: minDist, max: maxDist } = getDistanceBand(dateString);
+  const { min: minDist, max: maxDist, weekend } = getDistanceBand(dateString);
+  if (weekend) ensureShortDists();
   for (let attempt = 0; attempt < 64; attempt++) {
     const startIndex =
       hashStringWithSalt(dateString, attempt * 2 + 1) % viableStarts.length;
     const start = viableStarts[startIndex];
     const { distances } = bfsWithPredecessors(start, false);
+    const distancesB = weekend ? bfsWithPredecessors(start, true).distances : null;
     const candidates = [];
     for (const [word, distance] of distances) {
       if (
-        distance >= minDist &&
-        distance <= maxDist &&
-        word.length >= 3 &&
-        !isTrivialPlural(word)
+        distance < minDist ||
+        distance > maxDist ||
+        word.length < 3 ||
+        isTrivialPlural(word)
       ) {
-        candidates.push(word);
+        continue;
       }
+      if (weekend) {
+        if (anyShortDip(start, word, distance, shortADists)) continue;
+        const distanceB = distancesB.get(word);
+        if (distanceB === undefined) continue;
+        if (anyShortDip(start, word, distanceB, shortBDists)) continue;
+        if (distance - distanceB > WEEKEND_MAX_DICTB_GAP) continue;
+      }
+      candidates.push(word);
     }
     if (candidates.length === 0) continue;
     candidates.sort();

@@ -5,6 +5,8 @@ import {
   isViableStart,
 } from "./legitimateGraph";
 import { dailyOverrides } from "./puzzleOverrides";
+import { legitimateWords } from "../dictionaryData/legitimate";
+import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 /**
  * Today's date in the player's LOCAL timezone, formatted YYYY-MM-DD.
@@ -61,16 +63,48 @@ const MAX_LEGITIMATE_DISTANCE = 7;
 // dictionary, so there's no repetition risk from the narrow band.
 const SATURDAY_LEGITIMATE_DISTANCE = 8;
 const SUNDAY_LEGITIMATE_DISTANCE = 9;
+// On weekends, also require the optimal path's shortest word to be at
+// least this many letters — applied to both Dict A and Dict B. Without
+// the floor, ~64% of d=8/9 pairs have *some* shortest path that dips
+// through 2-3 letter "hub" words (a known speedrun trick). With the
+// floor, optimal paths look more like word-transformation chains.
+const WEEKEND_PATH_MIN_WORD_LENGTH = 4;
+// Cap on (Dict A optimal − Dict B optimal). Without this, a "hard" d=9
+// puzzle could be solved in 4-5 moves via rare Dict B words, making the
+// difficulty advertisement misleading. Cap of 3 trims the egregious
+// shortcuts while keeping ~80% of the strict-floor pool.
+const WEEKEND_MAX_DICTB_GAP = 3;
+
+export type DailyConstraints = {
+  /** Inclusive lower bound on the legit-only optimal distance. */
+  minDistance: number;
+  /** Inclusive upper bound on the legit-only optimal distance. */
+  maxDistance: number;
+  /**
+   * Inclusive lower bound on the shortest word along the optimal path
+   * (applied to ANY shortest path, in both Dict A and Dict B). 1 means
+   * no real constraint; ≥ 4 forbids the "dip to 2/3-letter hub" shortcut.
+   */
+  pathMinWordLength: number;
+  /**
+   * Maximum allowed (Dict A optimal − Dict B optimal). null means no cap.
+   * Stops puzzles that look hard in Dict A but have a trivial Dict B
+   * shortcut making them feel "secretly easy".
+   */
+  maxDictBGap: number | null;
+};
 
 /**
- * Distance band for the daily puzzle on a given calendar date. Mon-Fri is
- * the long-standing 4-7 band; Sat and Sun lock to single harder distances.
- * Weekday is computed from the player's *local* timezone, matching the
- * date-rollover semantics elsewhere.
+ * Daily picker constraints for a given calendar date. Mon-Fri is the
+ * long-standing 4-7 distance band with no path-shape constraint; Sat and
+ * Sun lock to a single harder distance AND require the optimal path to
+ * stay at ≥ 4-letter words throughout (no short-word dips). Weekday is
+ * computed from the player's *local* timezone, matching the date-rollover
+ * semantics elsewhere.
  */
-export const getDailyDistanceBand = (
+export const getDailyConstraints = (
   dateString: string = getLocalDateString()
-): { min: number; max: number } => {
+): DailyConstraints => {
   // Construct in local time by parsing as YYYY-MM-DD without a TZ suffix —
   // `new Date("2026-06-07")` is parsed as UTC midnight, which can roll to
   // the previous day in negative-offset zones. Construct from components.
@@ -78,17 +112,94 @@ export const getDailyDistanceBand = (
   const weekday = new Date(year, month - 1, day).getDay();
   if (weekday === 6) {
     return {
-      min: SATURDAY_LEGITIMATE_DISTANCE,
-      max: SATURDAY_LEGITIMATE_DISTANCE,
+      minDistance: SATURDAY_LEGITIMATE_DISTANCE,
+      maxDistance: SATURDAY_LEGITIMATE_DISTANCE,
+      pathMinWordLength: WEEKEND_PATH_MIN_WORD_LENGTH,
+      maxDictBGap: WEEKEND_MAX_DICTB_GAP,
     };
   }
   if (weekday === 0) {
     return {
-      min: SUNDAY_LEGITIMATE_DISTANCE,
-      max: SUNDAY_LEGITIMATE_DISTANCE,
+      minDistance: SUNDAY_LEGITIMATE_DISTANCE,
+      maxDistance: SUNDAY_LEGITIMATE_DISTANCE,
+      pathMinWordLength: WEEKEND_PATH_MIN_WORD_LENGTH,
+      maxDictBGap: WEEKEND_MAX_DICTB_GAP,
     };
   }
-  return { min: MIN_LEGITIMATE_DISTANCE, max: MAX_LEGITIMATE_DISTANCE };
+  return {
+    minDistance: MIN_LEGITIMATE_DISTANCE,
+    maxDistance: MAX_LEGITIMATE_DISTANCE,
+    pathMinWordLength: 1,
+    maxDictBGap: null,
+  };
+};
+
+// Back-compat shim — older callers (tests) used getDailyDistanceBand.
+export const getDailyDistanceBand = (
+  dateString?: string
+): { min: number; max: number } => {
+  const c = getDailyConstraints(dateString);
+  return { min: c.minDistance, max: c.maxDistance };
+};
+
+// ---------------------------------------------------------------------------
+// Weekend-only helpers: distance lookups used to verify that no shortest
+// path between start and target dips through short ("hub") words.
+
+const bfsDictBDistances = (source: string): Map<string, number> => {
+  const wordGraph = getWordGraph();
+  const distances = new Map<string, number>([[source, 0]]);
+  const queue: string[] = [source];
+  let head = 0;
+  while (head < queue.length) {
+    const word = queue[head++];
+    const distance = distances.get(word) ?? 0;
+    for (const neighbour of wordGraph[word] ?? []) {
+      if (!distances.has(neighbour)) {
+        distances.set(neighbour, distance + 1);
+        queue.push(neighbour);
+      }
+    }
+  }
+  return distances;
+};
+
+// Lazy: only built the first time a weekend picker call needs them.
+// Maps each "short" (length < 4) word to a distance map covering every
+// reachable word. Used for the "no shortest path dips below 4" check —
+// a word w lies on some shortest path s→t iff d(s,w) + d(w,t) = d(s,t),
+// and we only care about w's with |w| < 4.
+let shortWordDistancesA: Map<string, Map<string, number>> | null = null;
+let shortWordDistancesB: Map<string, Map<string, number>> | null = null;
+
+const ensureShortWordDistances = () => {
+  if (shortWordDistancesA && shortWordDistancesB) return;
+  const aMap = new Map<string, Map<string, number>>();
+  for (const word of legitimateWords) {
+    if (word.length < 4) aMap.set(word, bfsDistancesLegitimate(word));
+  }
+  shortWordDistancesA = aMap;
+  const bMap = new Map<string, Map<string, number>>();
+  for (const word of Object.keys(getWordGraph())) {
+    if (word.length < 4) bMap.set(word, bfsDictBDistances(word));
+  }
+  shortWordDistancesB = bMap;
+};
+
+const anyOptimalPathDipsBelow4 = (
+  start: string,
+  target: string,
+  distance: number,
+  distFromShort: Map<string, Map<string, number>>
+): boolean => {
+  for (const [shortWord, dists] of distFromShort) {
+    const dStartToShort = dists.get(start);
+    if (dStartToShort === undefined) continue;
+    const dShortToTarget = dists.get(target);
+    if (dShortToTarget === undefined) continue;
+    if (dStartToShort + dShortToTarget === distance) return true;
+  }
+  return false;
 };
 
 /**
@@ -104,7 +215,11 @@ export const getDailyPair = (
   const override = dailyOverrides[dateString];
   if (override) return { start: override.start, target: override.target };
 
-  const { min: minDist, max: maxDist } = getDailyDistanceBand(dateString);
+  const constraints = getDailyConstraints(dateString);
+  const { minDistance, maxDistance, pathMinWordLength, maxDictBGap } =
+    constraints;
+  const isWeekend = pathMinWordLength > 1 || maxDictBGap !== null;
+  if (isWeekend) ensureShortWordDistances();
   const sortedLegitimate = getSortedLegitimate();
   const viableStarts = sortedLegitimate.filter(isViableStart);
 
@@ -113,17 +228,54 @@ export const getDailyPair = (
       hashStringWithSalt(dateString, attempt * 2 + 1) % viableStarts.length;
     const start = viableStarts[startIndex];
     const distances = bfsDistancesLegitimate(start);
+    const distancesB = isWeekend ? bfsDictBDistances(start) : null;
 
     const candidates: string[] = [];
     for (const [word, distance] of distances) {
       if (
-        distance >= minDist &&
-        distance <= maxDist &&
-        word.length >= 3 &&
-        !isTrivialPlural(word)
+        distance < minDistance ||
+        distance > maxDistance ||
+        word.length < 3 ||
+        isTrivialPlural(word)
       ) {
-        candidates.push(word);
+        continue;
       }
+      if (isWeekend) {
+        // Reject if any shortest A-path between start and word dips below
+        // the required floor.
+        if (
+          pathMinWordLength > 1 &&
+          anyOptimalPathDipsBelow4(
+            start,
+            word,
+            distance,
+            shortWordDistancesA!
+          )
+        ) {
+          continue;
+        }
+        // Same check for Dict B's shortest paths.
+        const distanceB = distancesB!.get(word);
+        if (distanceB === undefined) continue;
+        if (
+          pathMinWordLength > 1 &&
+          anyOptimalPathDipsBelow4(
+            start,
+            word,
+            distanceB,
+            shortWordDistancesB!
+          )
+        ) {
+          continue;
+        }
+        // Reject if Dict B route is too much shorter than the Dict A
+        // benchmark — keeps the puzzle hard regardless of how the player
+        // routes.
+        if (maxDictBGap !== null && distance - distanceB > maxDictBGap) {
+          continue;
+        }
+      }
+      candidates.push(word);
     }
     if (candidates.length === 0) continue;
     candidates.sort();
