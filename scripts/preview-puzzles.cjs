@@ -140,16 +140,27 @@ const viableStarts = sortedLegitimate.filter(isViableStart);
 
 const MIN_LEGIT_DIST = 4;
 const MAX_LEGIT_DIST = 7;
+const SATURDAY_LEGIT_DIST = 8;
+const SUNDAY_LEGIT_DIST = 9;
 const MIN_TERM_DIST = 2;
 const MAX_TERM_DIST = 7;
 const MIN_TREE_EDGES = 5;
 const MAX_TREE_EDGES = 10;
 const MIN_PAIRWISE_TARGET_DIST = 2;
 
+const getDistanceBand = (dateString) => {
+  const [y, m, d] = dateString.split("-").map((n) => parseInt(n, 10));
+  const weekday = new Date(y, m - 1, d).getDay();
+  if (weekday === 6) return { min: SATURDAY_LEGIT_DIST, max: SATURDAY_LEGIT_DIST };
+  if (weekday === 0) return { min: SUNDAY_LEGIT_DIST, max: SUNDAY_LEGIT_DIST };
+  return { min: MIN_LEGIT_DIST, max: MAX_LEGIT_DIST };
+};
+
 const getDailyPair = (dateString) => {
   const override = overrides.daily[dateString];
   if (override) return { start: override.start, target: override.target };
 
+  const { min: minDist, max: maxDist } = getDistanceBand(dateString);
   for (let attempt = 0; attempt < 64; attempt++) {
     const startIndex =
       hashStringWithSalt(dateString, attempt * 2 + 1) % viableStarts.length;
@@ -158,8 +169,8 @@ const getDailyPair = (dateString) => {
     const candidates = [];
     for (const [word, distance] of distances) {
       if (
-        distance >= MIN_LEGIT_DIST &&
-        distance <= MAX_LEGIT_DIST &&
+        distance >= minDist &&
+        distance <= maxDist &&
         word.length >= 3 &&
         !isTrivialPlural(word)
       ) {
