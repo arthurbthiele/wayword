@@ -9,21 +9,40 @@ import React, {
 } from "react";
 import { GraphContext } from "./GraphProvider";
 
-export const Graph = () => {
+// Soft tint applied to the start word AND any terminal — they're the
+// fixed structural nodes of the puzzle (which is which is conveyed by
+// the status strip, not by colour). Pale enough to sit alongside the
+// default cream nodes without competing with the terracotta selected-
+// highlight.
+const FIXED_NODE_COLOR = {
+  background: "#cfdcc4",
+  border: "#a0b896",
+};
+
+export const Graph = ({ startWord, terminalWords }) => {
   const { selectedWord, setSelectedWord, graph } = useContext(GraphContext);
 
   // vis-network rejects duplicate node ids. Older saved graphs may have
   // duplicate entries from the closed-loop feature; dedupe defensively.
+  // Also decorate the start word + any terminals with their distinguishing
+  // colour. vis-network keeps the default highlight colour when only
+  // `background` and `border` are specified, so the terracotta selection
+  // cue continues to work for these nodes too.
   const safeGraph = useMemo(() => {
+    const terminalSet = new Set(terminalWords ?? []);
     const seen = new Set();
     const nodes = [];
     for (const node of graph.nodes) {
       if (seen.has(node.id)) continue;
       seen.add(node.id);
-      nodes.push(node);
+      if (node.id === startWord || terminalSet.has(node.id)) {
+        nodes.push({ ...node, color: FIXED_NODE_COLOR });
+      } else {
+        nodes.push(node);
+      }
     }
     return { nodes, edges: graph.edges };
-  }, [graph]);
+  }, [graph, startWord, terminalWords]);
 
   const [network, setNetwork] = useState();
   const containerRef = useRef(null);

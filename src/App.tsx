@@ -320,7 +320,10 @@ const App = () => {
           />
           <main className="wj-graph">
             <div className="wj-graph__inner">
-              <Graph />
+              <Graph
+                startWord={dailyPair.start}
+                terminalWords={[dailyPair.target]}
+              />
             </div>
           </main>
           <VictoryPanelDaily
@@ -360,7 +363,10 @@ const App = () => {
           />
           <main className="wj-graph">
             <div className="wj-graph__inner">
-              <Graph />
+              <Graph
+                startWord={dailyTriple.start}
+                terminalWords={[dailyTriple.t1, dailyTriple.t2]}
+              />
             </div>
           </main>
           <VictoryPanelTriple
