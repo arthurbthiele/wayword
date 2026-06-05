@@ -124,9 +124,22 @@ export const Graph = ({ startWord, terminalWords }) => {
   // Sync vis-network's selection with React state. Done in a useEffect rather
   // than on every afterDrawing tick — repeatedly calling fit() during draw
   // was fighting the user's pinch-to-zoom.
+  //
+  // Defer by one frame so vis-network has processed the most recent `graph`
+  // prop into its internal node store before we try to select. Without this,
+  // initial mount on a hydrated graph (e.g. from localStorage) can throw
+  // `Node with id "X" not found` — setSelection runs after the network is
+  // constructed but before its node store is populated by react-graph-vis.
   useEffect(() => {
     if (!network || !selectedWord) return;
-    network.setSelection({ nodes: [selectedWord] });
+    const handle = requestAnimationFrame(() => {
+      try {
+        network.setSelection({ nodes: [selectedWord] });
+      } catch {
+        // Node not in network yet — the next selection change will re-apply.
+      }
+    });
+    return () => cancelAnimationFrame(handle);
   }, [network, selectedWord]);
 
   // When an input takes focus (i.e. the mobile keyboard is about to appear
@@ -168,7 +181,6 @@ export const Graph = ({ startWord, terminalWords }) => {
         options={options}
         events={events}
         getNetwork={setNetwork}
-        id={safeGraph.edges.length}
       />
     </div>
   );
