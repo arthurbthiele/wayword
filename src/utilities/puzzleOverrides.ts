@@ -1,7 +1,7 @@
 // Per-date overrides for daily and triple puzzles.
 //
 // Adding an entry pins that calendar day's puzzle to specific words. Used
-// for two reasons:
+// for three reasons:
 //
 //   1. **Migration smoothness across dict changes.** When we re-build the
 //      dictionary, the deterministic picker produces different start/target
@@ -11,8 +11,18 @@
 //   2. **Themed / hand-picked puzzles.** Future use — e.g. a holiday
 //      puzzle, a milestone-day puzzle, a partner-collab puzzle.
 //
+//   3. **Pre-computed weekends.** Saturday/Sunday puzzles use heavy
+//      constraints (strict path-floor, Dict B gap cap) that are expensive
+//      to evaluate on mobile. We pre-generate them via
+//      `scripts/regenerate-weekend-overrides.cjs` and check them in, so
+//      the runtime weekend code path acts as a safety net for any date
+//      not yet generated. See `weekendOverrides.ts` for the generated
+//      list.
+//
 // The picker checks the override map first; if no entry, falls back to
 // the deterministic date-hash logic.
+
+import { weekendDailyOverrides } from "./weekendOverrides";
 
 export type DailyOverride = { start: string; target: string };
 export type TripleOverride = { start: string; t1: string; t2: string };
@@ -21,8 +31,12 @@ export type TripleOverride = { start: string; t1: string; t2: string };
  * Date-string → daily puzzle. Date strings use the same format as
  * `getLocalDateString()`: `YYYY-MM-DD`. The picker matches on the player's
  * local date.
+ *
+ * Generated weekend pins are spread first; hand-curated pins below
+ * override them (object spread semantics — later keys win).
  */
 export const dailyOverrides: Record<string, DailyOverride> = {
+  ...weekendDailyOverrides,
   // 2026-06-01 / 2026-06-02 pinned to the prod (tier-10) values so the
   // dict-swap deploy doesn't disrupt users mid-game on these days.
   "2026-06-01": { start: "raised", target: "rover" },

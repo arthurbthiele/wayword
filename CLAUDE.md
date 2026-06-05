@@ -30,6 +30,7 @@ If you touch the dictionary build, **regenerate locally and spot-check by length
 - [src/utilities/dailyTarget.ts](src/utilities/dailyTarget.ts) — daily picker (FNV-1a hash with salt, deterministic by date)
 - [src/utilities/tripleTarget.ts](src/utilities/tripleTarget.ts) — triple picker (3-terminal Steiner tree)
 - [src/utilities/puzzleOverrides.ts](src/utilities/puzzleOverrides.ts) — per-date manual pins (see below)
+- [src/utilities/weekendOverrides.ts](src/utilities/weekendOverrides.ts) — auto-generated weekend pins (do not hand-edit; regenerate via `yarn regen-weekends`)
 - [src/utilities/useLocalStorage.ts](src/utilities/useLocalStorage.ts) — storage hook + `migrateStaleGraphState` (see below)
 - [src/utilities/legitimateGraph.ts](src/utilities/legitimateGraph.ts) — BFS helpers over Dict A
 - [src/dictionaryData/](src/dictionaryData/) — generated, do not hand-edit
@@ -41,6 +42,8 @@ If you touch the dictionary build, **regenerate locally and spot-check by length
 **Per-date overrides** ([puzzleOverrides.ts](src/utilities/puzzleOverrides.ts)). Both pickers check this map first and return the pinned start/target before falling through to the deterministic picker. Use this when:
 - You're about to ship a dict change and need to preserve continuity for today's already-in-progress puzzle
 - You want to drop a themed puzzle on a specific date
+
+**Pre-generated weekend pins** ([weekendOverrides.ts](src/utilities/weekendOverrides.ts)). Saturday and Sunday daily puzzles use heavy strict constraints (path-floor ≥ 4 letters in both Dict A and Dict B, Dict B gap cap ≤ 3). Computing this at runtime is expensive on mobile, so we pre-generate ~26 weeks of weekend pins and check them in. Spread into `dailyOverrides` at module load; runtime weekend logic is the safety net for dates past the generator window. Regenerate via `yarn regen-weekends` after any change to weekend constraints or dictionary.
 
 **Stale-state migration** (`migrateStaleGraphState` in [useLocalStorage.ts](src/utilities/useLocalStorage.ts)). Runs once per app load. Scans localStorage for `wordJourney:daily:v2:{date}:graph` and `wordJourney:triple:v1:{date}:graph`, parses the stored start word, compares against what the picker now returns for that date, and clears the date's state if mismatched. This is the safety net that lets us ship dict changes without wiping unaffected in-progress games. **Do not replace with a blanket clear** — we got the targeted version specifically to avoid that.
 
