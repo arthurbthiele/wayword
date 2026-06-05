@@ -1,13 +1,12 @@
 import {
-  bfsDistancesInWordGraph,
   bfsDistancesLegitimate,
+  bfsInWordGraphWithDipFlag,
+  bfsLegitimateWithDipFlag,
   getSortedLegitimate,
   isTrivialPlural,
   isViableStart,
 } from "./legitimateGraph";
 import { dailyOverrides } from "./puzzleOverrides";
-import { legitimateWords } from "../dictionaryData/legitimate";
-import { getWordGraph } from "../dictionaryData/wordGraphRef";
 
 /**
  * Today's date in the player's LOCAL timezone, formatted YYYY-MM-DD.
@@ -143,48 +142,6 @@ export const getDailyDistanceBand = (
   return { min: c.minDistance, max: c.maxDistance };
 };
 
-// ---------------------------------------------------------------------------
-// Weekend-only helpers: distance lookups used to verify that no shortest
-// path between start and target dips through short ("hub") words.
-
-// Lazy: only built the first time a weekend picker call needs them.
-// Maps each "short" (length < 4) word to a distance map covering every
-// reachable word. Used for the "no shortest path dips below 4" check —
-// a word w lies on some shortest path s→t iff d(s,w) + d(w,t) = d(s,t),
-// and we only care about w's with |w| < 4.
-let shortWordDistancesA: Map<string, Map<string, number>> | null = null;
-let shortWordDistancesB: Map<string, Map<string, number>> | null = null;
-
-const ensureShortWordDistances = () => {
-  if (shortWordDistancesA && shortWordDistancesB) return;
-  const aMap = new Map<string, Map<string, number>>();
-  for (const word of legitimateWords) {
-    if (word.length < 4) aMap.set(word, bfsDistancesLegitimate(word));
-  }
-  shortWordDistancesA = aMap;
-  const bMap = new Map<string, Map<string, number>>();
-  for (const word of Object.keys(getWordGraph())) {
-    if (word.length < 4) bMap.set(word, bfsDistancesInWordGraph(word));
-  }
-  shortWordDistancesB = bMap;
-};
-
-const anyOptimalPathDipsBelow4 = (
-  start: string,
-  target: string,
-  distance: number,
-  distFromShort: Map<string, Map<string, number>>
-): boolean => {
-  for (const [shortWord, dists] of distFromShort) {
-    const dStartToShort = dists.get(start);
-    if (dStartToShort === undefined) continue;
-    const dShortToTarget = dists.get(target);
-    if (dShortToTarget === undefined) continue;
-    if (dStartToShort + dShortToTarget === distance) return true;
-  }
-  return false;
-};
-
 /**
  * Deterministic (start, target) pair for the daily puzzle. Both are in the
  * legitimate set, with a 4-7 BFS distance between them through legitimate-
@@ -202,7 +159,6 @@ export const getDailyPair = (
   const { minDistance, maxDistance, pathMinWordLength, maxDictBGap } =
     constraints;
   const isWeekend = pathMinWordLength > 1 || maxDictBGap !== null;
-  if (isWeekend) ensureShortWordDistances();
   const sortedLegitimate = getSortedLegitimate();
   const viableStarts = sortedLegitimate.filter(isViableStart);
 
@@ -210,8 +166,25 @@ export const getDailyPair = (
     const startIndex =
       hashStringWithSalt(dateString, attempt * 2 + 1) % viableStarts.length;
     const start = viableStarts[startIndex];
-    const distances = bfsDistancesLegitimate(start);
-    const distancesB = isWeekend ? bfsDistancesInWordGraph(start) : null;
+    // For weekend picks, use the dip-aware BFS — it gives both distances
+    // and a per-node flag for whether ANY shortest path from start to
+    // that node passes through a short (< pathMinWordLength) word. Cheap
+    // alternative to precomputing all-pairs distances from every short
+    // word (which is fine on desktop but blows mobile memory budgets).
+    let distances: Map<string, number>;
+    let dipsA: Map<string, boolean> | null = null;
+    let distancesB: Map<string, number> | null = null;
+    let dipsB: Map<string, boolean> | null = null;
+    if (isWeekend) {
+      const a = bfsLegitimateWithDipFlag(start, pathMinWordLength);
+      distances = a.distances;
+      dipsA = a.dipsBelowShort;
+      const b = bfsInWordGraphWithDipFlag(start, pathMinWordLength);
+      distancesB = b.distances;
+      dipsB = b.dipsBelowShort;
+    } else {
+      distances = bfsDistancesLegitimate(start);
+    }
 
     const candidates: string[] = [];
     for (const [word, distance] of distances) {
@@ -224,36 +197,16 @@ export const getDailyPair = (
         continue;
       }
       if (isWeekend) {
-        // Reject if any shortest A-path between start and word dips below
-        // the required floor.
-        if (
-          pathMinWordLength > 1 &&
-          anyOptimalPathDipsBelow4(
-            start,
-            word,
-            distance,
-            shortWordDistancesA!
-          )
-        ) {
-          continue;
-        }
-        // Same check for Dict B's shortest paths.
+        // Reject if any shortest Dict A path s→word passes through a
+        // short word.
+        if (pathMinWordLength > 1 && dipsA!.get(word) === true) continue;
         const distanceB = distancesB!.get(word);
         if (distanceB === undefined) continue;
-        if (
-          pathMinWordLength > 1 &&
-          anyOptimalPathDipsBelow4(
-            start,
-            word,
-            distanceB,
-            shortWordDistancesB!
-          )
-        ) {
-          continue;
-        }
+        // Same for Dict B.
+        if (pathMinWordLength > 1 && dipsB!.get(word) === true) continue;
         // Reject if Dict B route is too much shorter than the Dict A
-        // benchmark — keeps the puzzle hard regardless of how the player
-        // routes.
+        // benchmark — keeps the puzzle hard regardless of how the
+        // player routes.
         if (maxDictBGap !== null && distance - distanceB > maxDictBGap) {
           continue;
         }
