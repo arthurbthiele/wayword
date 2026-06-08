@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { getWordGraph } from "../dictionaryData/wordGraphRef";
+import { getDisconnectedValidWords } from "../dictionaryData/disconnectedValidWordsRef";
 import { wordsAreConnected } from "../utilities/wordAreConnected";
 import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
@@ -81,6 +82,19 @@ export const InputBar = ({
       );
     }
     if (!isDictionaryWord) {
+      // Disconnected-valid: real English, just not in our playable graph.
+      // Treat it like the "in-dict but not L1" case — the connected-
+      // component build guarantees these words are never L1-adjacent to
+      // any wordGraph word, so the "not one edit from [selected]" phrasing
+      // is true by construction (the rare orphan→disconnected-valid case
+      // is the only exception and is benign).
+      if (getDisconnectedValidWords().has(trimmed)) {
+        return (
+          <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
+            '{trimmed}' is a word, but not one edit from '{selectedWord}'
+          </span>
+        );
+      }
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--bad">
           ✗ '{trimmed}' is not a word

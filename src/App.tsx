@@ -33,6 +33,7 @@ import {
   type TripleHistory,
 } from "./utilities/dailyStats";
 import { setWordGraph } from "./dictionaryData/wordGraphRef";
+import { setDisconnectedValidWords } from "./dictionaryData/disconnectedValidWordsRef";
 
 const freeplayInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
@@ -55,9 +56,18 @@ const App = () => {
   const [dictReady, setDictReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    import("./dictionaryData/wordGraph").then(({ wordGraph }) => {
+    Promise.all([
+      import("./dictionaryData/wordGraph"),
+      // Companion data: friendlier rejection messages for real words that
+      // aren't in the playable graph. Not gameplay-critical, so we could
+      // gate dictReady on wordGraph only — but loading in parallel means
+      // by the time the user starts typing, the better messages are
+      // available.
+      import("./dictionaryData/disconnectedValidWords"),
+    ]).then(([{ wordGraph }, { disconnectedValidWords }]) => {
       if (cancelled) return;
       setWordGraph(wordGraph);
+      setDisconnectedValidWords(disconnectedValidWords);
       setDictReady(true);
       // After the dict is loaded, sanity-check stored graph state: any
       // saved daily/triple graph whose first node doesn't match the
