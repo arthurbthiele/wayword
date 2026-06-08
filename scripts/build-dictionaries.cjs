@@ -170,6 +170,12 @@ const excludeBoth = new Set([
   // technically Scrabble-legal but feel illegitimate
   "ohs", "oks", "ifs", "ins", "mas", "mes", "mys", "pis", "dos", "ads",
   "hos", "ems", "ens", "uts", "els", "ohms",
+  // 2-letter abbreviations / letter-name fragments. Not real words; not
+  // admitted to play and not flagged as "valid English" in the rejection
+  // message — without this they'd land in disconnectedValid AND be L1
+  // from a Dict B word (e.g. 'gs' is L1 from 'go'), triggering the
+  // misleading "is a word, but not one edit from X" message.
+  "es", "gs", "ks", "ls", "ms", "rs", "ts", "kw",
   // odd inflections / regional slang flagged for removal
   "avo", "zac",
 ]);
@@ -233,9 +239,8 @@ const dictAInclude = new Set([
 // Force-include in Dict B regardless of source tier or length filter. Real
 // English short words that the SCOWL tier source doesn't surface at
 // length 1 or 2 (the tier-35+ length filter strips them as fragments).
-// Curated for real common-English use; intentionally excludes
-// interjections ('ah'/'oh'/'uh' etc., matching the ha/ho/eh removals
-// in dictAOnlyExclude) and abbreviations (gs/ks/ms/rs/ts).
+// Curated for real common-English use; abbreviations like gs/ks/ms/rs/ts
+// are deliberately omitted (handled by excludeBoth instead).
 const dictBInclude = new Set([
   // Musical notes / Greek letters
   "fa", "la", "ti", "mi", "mu",
@@ -243,7 +248,10 @@ const dictBInclude = new Set([
   "en",
   "ma", "pa", "ox",
   // 2-letter abbreviations that read as everyday words
-  "ad", "ok",
+  "ad", "ok", "ex",
+  // Interjections — same category as ha/ho/eh which are in Dict B
+  // (typeable but not Dict A target material).
+  "ah", "ow", "sh", "uh", "um", "yo",
   // First-person pronoun; displayed as 'I' to honour standard capitalisation
   // (see src/utilities/displayWord.ts).
   "i",
@@ -449,9 +457,14 @@ fs.writeFileSync(path.join(outDir, "legitimate.ts"), legitimateContent);
 // so they don't appear in the disconnected set in the first place.
 
 const DISCONNECTED_VALID_MAX_TIER = 40;
+// Single letters trigger the same "is a word, not one edit from X" bug
+// (every single letter is L1 from some 2-letter Dict B word). Skip them —
+// they aren't really "words" in any sense players would defend.
+const DISCONNECTED_VALID_MIN_LENGTH = 2;
 const disconnectedValidSource = cumulativeUpTo(DISCONNECTED_VALID_MAX_TIER);
 const disconnectedValid = [];
 for (const word of disconnectedValidSource) {
+  if (word.length < DISCONNECTED_VALID_MIN_LENGTH) continue;
   if (excludeBoth.has(word)) continue;
   if (unionCC.has(word)) continue;
   disconnectedValid.push(word);
