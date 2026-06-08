@@ -90,16 +90,31 @@ export const StatsModal = ({
   );
 };
 
-type StatsPanelProps<T extends { userMoves: number; optimalMoves: number | null }> = {
+type StatsPanelProps<
+  T extends {
+    userMoves: number;
+    optimalMoves: number | null;
+    hintsUsed?: number;
+  },
+> = {
   history: Record<string, T>;
   unitLabel: "moves" | "words";
   emptyText: string;
   renderRecentSubject: (entry: T) => React.ReactNode;
 };
 
-const StatsPanel = <T extends { userMoves: number; optimalMoves: number | null }>(
-  { history, unitLabel, emptyText, renderRecentSubject }: StatsPanelProps<T>
-) => {
+const StatsPanel = <
+  T extends {
+    userMoves: number;
+    optimalMoves: number | null;
+    hintsUsed?: number;
+  },
+>({
+  history,
+  unitLabel,
+  emptyText,
+  renderRecentSubject,
+}: StatsPanelProps<T>) => {
   const streak = computeStreak(history);
   const stats = computeStats(history);
   const recent = Object.entries(history)
@@ -197,6 +212,12 @@ const StatsPanel = <T extends { userMoves: number; optimalMoves: number | null }
                         ) : (
                           <span className="wj-stats__badge">+{diff}</span>
                         ))}
+                      {entry.hintsUsed !== undefined && entry.hintsUsed > 0 && (
+                        <span className="wj-stats__badge wj-stats__badge--hint">
+                          {entry.hintsUsed}{" "}
+                          {entry.hintsUsed === 1 ? "hint" : "hints"}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );

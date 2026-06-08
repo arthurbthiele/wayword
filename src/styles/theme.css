@@ -797,6 +797,10 @@ button {
   background: rgba(90, 122, 74, 0.16);
   color: var(--color-good);
 }
+.wj-stats__badge--hint {
+  background: rgba(194, 90, 42, 0.14);
+  color: var(--color-accent);
+}
 
 @media (max-width: 640px) {
   .wj-stats__bignums {
