@@ -365,6 +365,17 @@ button {
   color: var(--color-good);
   font-weight: 600;
 }
+.wj-status__hint {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+.wj-status__hint strong {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+.wj-status__hint-count {
+  color: var(--color-ink-faint);
+}
 /* Triple status strip stacks: top row (label + words + count), then a
    small hint reminding the player of the goal. */
 .wj-status--triple {

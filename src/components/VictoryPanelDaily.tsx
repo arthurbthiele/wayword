@@ -52,6 +52,7 @@ type VictoryPanelDailyProps = {
   // signal — see the comment in App.tsx.
   solvedDate: string | null;
   setSolvedDate: Dispatch<SetStateAction<string | null>>;
+  hintsUsed: number;
 };
 
 export const VictoryPanelDaily = ({
@@ -64,6 +65,7 @@ export const VictoryPanelDaily = ({
   onDismiss,
   solvedDate,
   setSolvedDate,
+  hintsUsed,
 }: VictoryPanelDailyProps) => {
   const today = getLocalDateString();
   const { graph } = useContext(GraphContext);
@@ -135,6 +137,7 @@ export const VictoryPanelDaily = ({
           target,
           userMoves: userMovesNow,
           optimalMoves: optimalMovesNow,
+          hintsUsed,
         },
       });
     }
@@ -168,13 +171,18 @@ export const VictoryPanelDaily = ({
     typeof navigator.share === "function";
 
   const buildShareText = (includePath: boolean): string => {
-    const suffix = matchedOptimal
+    const optimalSuffix = matchedOptimal
       ? " — common-word optimal!"
       : beatOptimal
         ? ` — beat common-word optimal of ${optimalMoves}!`
         : optimalMoves !== null
           ? ` (common-word optimal: ${optimalMoves})`
           : "";
+    const hintsSuffix =
+      hintsUsed > 0
+        ? ` [${hintsUsed} ${hintsUsed === 1 ? "hint" : "hints"}]`
+        : "";
+    const suffix = optimalSuffix + hintsSuffix;
     // Spoiler-free emoji block. 📍 / 🎯 mark start and target; middle path
     // words are 🟢 normally, 🟠 if that word had at least one "useless"
     // edge (one to a node off the final solve path).
@@ -242,11 +250,18 @@ export const VictoryPanelDaily = ({
   })();
 
   const subtitleText = (() => {
-    if (matchedOptimal || optimalMoves === null) return null;
-    if (beatOptimal) {
-      return `You routed through less common words to beat the common-word optimal of ${optimalMoves}.`;
+    const baseSubtitle = (() => {
+      if (matchedOptimal || optimalMoves === null) return null;
+      if (beatOptimal) {
+        return `You routed through less common words to beat the common-word optimal of ${optimalMoves}.`;
+      }
+      return `Common-word optimal was ${optimalMoves} ${optimalMoves === 1 ? "move" : "moves"}.`;
+    })();
+    if (hintsUsed > 0) {
+      const hintsLine = `Used ${hintsUsed} ${hintsUsed === 1 ? "hint" : "hints"}.`;
+      return baseSubtitle ? `${baseSubtitle} ${hintsLine}` : hintsLine;
     }
-    return `Common-word optimal was ${optimalMoves} ${optimalMoves === 1 ? "move" : "moves"}.`;
+    return baseSubtitle;
   })();
 
   const commonWordExplainer = `The shortest path from '${start}' to '${target}' using only common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;

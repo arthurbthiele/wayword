@@ -278,6 +278,13 @@ const App = () => {
     "daily:solvedDate",
     null
   );
+  // Hints used on today's daily. Date-keyed so Reset (which clears
+  // `daily:*`) clears them too, and the count is recorded into history
+  // when the puzzle is solved.
+  const [dailyHintsUsed, setDailyHintsUsed] = useLocalStorage<number>(
+    `daily:v2:${today}:hintsUsed`,
+    0
+  );
   const [tripleSolvedDate, setTripleSolvedDate] = useLocalStorage<
     string | null
   >("triple:solvedDate", null);
@@ -319,6 +326,8 @@ const App = () => {
           <StatusStripDaily
             start={dailyPair.start}
             target={dailyPair.target}
+            hintsUsed={dailyHintsUsed}
+            onHintUsed={() => setDailyHintsUsed(dailyHintsUsed + 1)}
             onShowResult={
               dailySolved && dailyDismissed
                 ? () => setDailyDismissed(false)
@@ -343,6 +352,7 @@ const App = () => {
             onDismiss={() => setDailyDismissed(true)}
             solvedDate={dailySolvedDate}
             setSolvedDate={setDailySolvedDate}
+            hintsUsed={dailyHintsUsed}
           />
           {!hideInputForDaily && (
             <InputBar

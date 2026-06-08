@@ -5,6 +5,12 @@ export type DailyHistoryEntry = {
   target: string;
   userMoves: number;
   optimalMoves: number | null;
+  /**
+   * Hints the player used before solving this puzzle. Optional for
+   * back-compat with entries recorded before the hint feature shipped.
+   * Treat absent as 0.
+   */
+  hintsUsed?: number;
 };
 
 export type DailyHistory = Record<string, DailyHistoryEntry>;
