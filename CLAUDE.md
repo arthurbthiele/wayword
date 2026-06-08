@@ -37,6 +37,39 @@ If you touch the dictionary build, **regenerate locally and spot-check by length
 - [scripts/build-dictionaries.cjs](scripts/build-dictionaries.cjs) — regenerates dict data from SCOWL
 - [scripts/preview-puzzles.cjs](scripts/preview-puzzles.cjs) — previews next N days of daily + triple puzzles with their optimal paths
 
+## Dict curation principles
+
+**`dictBInclude` vs `dictAInclude` have very different blast radius.** Internalise this before touching curation.
+
+- `dictAInclude` adds words to the *legitimate* / common-word set — affects the daily/triple picker's candidate streams, can shift past-and-future puzzle outputs. **Risky for continuity.**
+- `dictBInclude` adds to playable-but-not-target words — does **not** change picker outputs at all. **Safe to use freely** to patch typeable-word gaps.
+- Why: the picker hashes a date to choose from sorted Dict A, BFSes through Dict A adjacency. Dict B never enters the picker.
+- If a player complains "X should be typeable", the fix is almost always `dictBInclude`.
+
+**Recurring diagnostic: the "L1-from-Dict-B" scan.** A bug pattern: a word `w` is in `disconnectedValid` (real English, not in playable graph) AND is L1-adjacent to a current Dict B word. The rejection message "X is a word, but not one edit from Y" mis-states the truth because Y *is* in fact one edit away. Run this scan after ANY change to `dictBInclude` or `excludeBoth`:
+
+```js
+// Pseudocode — re-derive from build-dictionaries.cjs's outputs
+for (const w of disconnectedValid) {
+  for (const neighbour of l1Neighbours(w)) {
+    if (currentDictB.has(neighbour)) {
+      console.log('BUG: ' + w + ' is L1 from ' + neighbour);
+      break;
+    }
+  }
+}
+```
+
+If found, either include `w` in `dictBInclude` (real word) or exclude via `excludeBoth` (fragment/noise). Final scan should return zero matches.
+
+**Continuity discipline** before deploying dict changes:
+1. `node scripts/preview-puzzles.cjs N 2026-MM-DD` to inspect upcoming puzzles
+2. `yarn regen-weekends` to refresh `weekendOverrides.ts` against the new dict
+3. Diff `weekendOverrides.ts` — if pins shifted, weigh whether to ship (affected players lose state via `migrateStaleGraphState`)
+4. For today specifically: confirm picker output is unchanged, OR pin it in `puzzleOverrides.ts`
+
+`dictBInclude`-only changes are safe per the blast-radius principle above. Only `dictAInclude` (or SCOWL tier shifts, or `excludeBoth` changes to A-words) put puzzles at risk.
+
 ## Non-obvious machinery
 
 **Per-date overrides** ([puzzleOverrides.ts](src/utilities/puzzleOverrides.ts)). Both pickers check this map first and return the pinned start/target before falling through to the deterministic picker. Use this when:
