@@ -20,8 +20,6 @@
 import type { DailyOverride } from "./puzzleOverrides";
 
 export const weekendDailyOverrides: Record<string, DailyOverride> = {
-  "2026-06-06": { start: "closer", target: "dashed" }, // Sat
-  "2026-06-07": { start: "quit", target: "fence" }, // Sun
   "2026-06-13": { start: "slide", target: "woman" }, // Sat
   "2026-06-14": { start: "tyre", target: "classed" }, // Sun
   "2026-06-20": { start: "they", target: "placing" }, // Sat
@@ -72,4 +70,6 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-11-22": { start: "cute", target: "trained" }, // Sun
   "2026-11-28": { start: "brain", target: "wheel" }, // Sat
   "2026-11-29": { start: "wipe", target: "trusty" }, // Sun
+  "2026-12-05": { start: "pleased", target: "mine" }, // Sat
+  "2026-12-06": { start: "cease", target: "around" }, // Sun
 };

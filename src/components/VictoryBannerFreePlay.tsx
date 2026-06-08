@@ -1,4 +1,5 @@
 import React from "react";
+import { displayWord } from "../utilities/displayWord";
 
 export type FreePlayHit = {
   target: string;
@@ -31,7 +32,7 @@ const renderPath = (path: string[], extraClass: string = "") => (
     {path.map((word, index) => (
       <React.Fragment key={`${index}-${word}`}>
         {index > 0 && <span className="arrow">→</span>}
-        <span>{word}</span>
+        <span>{displayWord(word)}</span>
       </React.Fragment>
     ))}
   </div>
@@ -50,7 +51,7 @@ export const VictoryBannerFreePlay = ({
     // Don't double-show the same chain.
     hit.optimalPath.join("→") !== hit.userPath.join("→");
 
-  const optimalExplainer = `From the closest common word in your graph to '${hit.target}', using only common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;
+  const optimalExplainer = `From the closest common word in your graph to '${displayWord(hit.target)}', using only common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;
 
   return (
     <div className="wj-victory">
@@ -65,7 +66,7 @@ export const VictoryBannerFreePlay = ({
       <div className="wj-victory__headline">
         <div>
           <div className="wj-victory__title">
-            Reached {hit.target} in {userMoves}{" "}
+            Reached {displayWord(hit.target)} in {userMoves}{" "}
             {userMoves === 1 ? "move" : "moves"}
             {hit.milestone ? " — congrats!" : ""}
           </div>

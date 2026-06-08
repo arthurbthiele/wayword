@@ -1,5 +1,6 @@
 import { findShortestPathInDictionary } from "./findPath";
 import { legitimateWords } from "../dictionaryData/legitimate";
+import { displayWord } from "./displayWord";
 
 export type Hint = {
   /**
@@ -69,7 +70,7 @@ export const computeHint = (
   if (bestNode !== selected) {
     return {
       word: bestNode,
-      message: `Try starting from '${bestNode}'`,
+      message: `Try starting from '${displayWord(bestNode)}'`,
     };
   }
 
@@ -84,19 +85,22 @@ export const computeHint = (
  * has to figure out where to apply it.
  */
 const phraseHint = (from: string, next: string): string => {
+  // 'from' is a word; render with displayWord. Letters (inserted /
+  // substituted-to) stay lowercase by convention.
+  const fromDisplay = displayWord(from);
   if (next.length > from.length) {
     const inserted = findInsertedLetter(from, next);
     return inserted
-      ? `Try adding a${vowelArticle(inserted)} '${inserted}' to '${from}'`
-      : `Try adding a letter to '${from}'`;
+      ? `Try adding a${vowelArticle(inserted)} '${inserted}' to '${fromDisplay}'`
+      : `Try adding a letter to '${fromDisplay}'`;
   }
   if (next.length < from.length) {
-    return `Try removing a letter from '${from}'`;
+    return `Try removing a letter from '${fromDisplay}'`;
   }
   const substitution = findSubstitution(from, next);
   return substitution
-    ? `Try changing a letter in '${from}' to a${vowelArticle(substitution.to)} '${substitution.to}'`
-    : `Try changing a letter in '${from}'`;
+    ? `Try changing a letter in '${fromDisplay}' to a${vowelArticle(substitution.to)} '${substitution.to}'`
+    : `Try changing a letter in '${fromDisplay}'`;
 };
 
 const findInsertedLetter = (shorter: string, longer: string): string | null => {

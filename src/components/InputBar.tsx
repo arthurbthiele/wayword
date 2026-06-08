@@ -6,6 +6,7 @@ import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { DefinitionModal } from "./DefinitionModal";
+import { displayWord } from "../utilities/displayWord";
 
 type InputBarProps = {
   targetReminder?: string | null;
@@ -62,6 +63,8 @@ export const InputBar = ({
 
   const hint = (() => {
     if (trimmed.length === 0) return null;
+    const trimmedDisplay = displayWord(trimmed);
+    const selectedDisplay = displayWord(selectedWord);
     if (!selectedWord) {
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
@@ -73,13 +76,13 @@ export const InputBar = ({
       if (trimmed === selectedWord) {
         return (
           <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
-            '{trimmed}' is already selected
+            '{trimmedDisplay}' is already selected
           </span>
         );
       }
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--good">
-          ↻ Jump to '{trimmed}' in your graph
+          ↻ Jump to '{trimmedDisplay}' in your graph
         </span>
       );
     }
@@ -93,26 +96,26 @@ export const InputBar = ({
       if (getDisconnectedValidWords().has(trimmed)) {
         return (
           <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
-            '{trimmed}' is a word, but not one edit from '{selectedWord}'
+            '{trimmedDisplay}' is a word, but not one edit from '{selectedDisplay}'
           </span>
         );
       }
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--bad">
-          ✗ '{trimmed}' is not a word
+          ✗ '{trimmedDisplay}' is not a word
         </span>
       );
     }
     if (!isConnected) {
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
-          '{trimmed}' is a word, but not one edit from '{selectedWord}'
+          '{trimmedDisplay}' is a word, but not one edit from '{selectedDisplay}'
         </span>
       );
     }
     return (
       <span className="wj-inputbar__hint wj-inputbar__hint--good">
-        ✓ '{trimmed}' is one edit from '{selectedWord}'
+        ✓ '{trimmedDisplay}' is one edit from '{selectedDisplay}'
       </span>
     );
   })();
@@ -153,13 +156,13 @@ export const InputBar = ({
   return (
     <div className="wj-inputbar">
       <div className="wj-inputbar__selected">
-        Selected <b>{selectedWord}</b>
+        Selected <b>{displayWord(selectedWord)}</b>
         {selectedWord && (
           <button
             type="button"
             className="wj-inputbar__lookup"
             onClick={() => setLookupWord(selectedWord)}
-            aria-label={`Look up '${selectedWord}'`}
+            aria-label={`Look up '${displayWord(selectedWord)}'`}
             title="Look up"
           >
             ⓘ
@@ -169,7 +172,7 @@ export const InputBar = ({
         {targetReminder && (
           <>
             {" reach "}
-            <b className="wj-inputbar__target">{targetReminder}</b>
+            <b className="wj-inputbar__target">{displayWord(targetReminder)}</b>
           </>
         )}
       </div>
@@ -181,7 +184,7 @@ export const InputBar = ({
         <Input
           ref={inputRef}
           autoFocus={autoFocus}
-          placeholder={`Type a word one edit from '${selectedWord}'…`}
+          placeholder={`Type a word one edit from '${displayWord(selectedWord)}'…`}
           value={value}
           onChange={(event) => setValue(event.target.value.toLowerCase())}
           onKeyDown={(event) => {

@@ -231,10 +231,22 @@ const dictAInclude = new Set([
 ]);
 
 // Force-include in Dict B regardless of source tier or length filter. Real
-// English short words (e.g. musical notes) that the SCOWL tier source
-// doesn't surface at length 2.
+// English short words that the SCOWL tier source doesn't surface at
+// length 1 or 2 (the tier-35+ length filter strips them as fragments).
+// Curated for real common-English use; intentionally excludes
+// interjections ('ah'/'oh'/'uh' etc., matching the ha/ho/eh removals
+// in dictAOnlyExclude) and abbreviations (gs/ks/ms/rs/ts).
 const dictBInclude = new Set([
-  "en", "fa", "la", "ti",
+  // Musical notes / Greek letters
+  "fa", "la", "ti", "mi", "mu",
+  // 2-letter pronouns / nouns
+  "en",
+  "ma", "pa", "ox",
+  // 2-letter abbreviations that read as everyday words
+  "ad", "ok",
+  // First-person pronoun; displayed as 'I' to honour standard capitalisation
+  // (see src/utilities/displayWord.ts).
+  "i",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------

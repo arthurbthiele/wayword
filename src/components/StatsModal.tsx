@@ -6,6 +6,7 @@ import {
   type DailyHistory,
   type TripleHistory,
 } from "../utilities/dailyStats";
+import { displayWord } from "../utilities/displayWord";
 
 type StatsTab = "daily" | "triple";
 
@@ -63,9 +64,9 @@ export const StatsModal = ({
             emptyText="Nothing recorded yet. Solve a daily and it shows up here."
             renderRecentSubject={(entry) => (
               <>
-                <span>{entry.start}</span>
+                <span>{displayWord(entry.start)}</span>
                 <span className="wj-stats__arrow">→</span>
-                <span>{entry.target}</span>
+                <span>{displayWord(entry.target)}</span>
               </>
             )}
           />
@@ -76,11 +77,11 @@ export const StatsModal = ({
             emptyText="Nothing recorded yet. Solve a triple and it shows up here."
             renderRecentSubject={(entry) => (
               <>
-                <span>{entry.start}</span>
+                <span>{displayWord(entry.start)}</span>
                 <span className="wj-stats__arrow">→</span>
-                <span>{entry.t1}</span>
+                <span>{displayWord(entry.t1)}</span>
                 <span className="wj-stats__arrow-sep">·</span>
-                <span>{entry.t2}</span>
+                <span>{displayWord(entry.t2)}</span>
               </>
             )}
           />

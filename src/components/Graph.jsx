@@ -8,6 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { GraphContext } from "./GraphProvider";
+import { displayWord } from "../utilities/displayWord";
 
 // Soft tint applied to the start word AND any terminal — they're the
 // fixed structural nodes of the puzzle (which is which is conveyed by
@@ -35,10 +36,11 @@ export const Graph = ({ startWord, terminalWords }) => {
     for (const node of graph.nodes) {
       if (seen.has(node.id)) continue;
       seen.add(node.id);
+      const label = displayWord(node.id);
       if (node.id === startWord || terminalSet.has(node.id)) {
-        nodes.push({ ...node, color: FIXED_NODE_COLOR });
+        nodes.push({ ...node, label, color: FIXED_NODE_COLOR });
       } else {
-        nodes.push(node);
+        nodes.push({ ...node, label });
       }
     }
     return { nodes, edges: graph.edges };

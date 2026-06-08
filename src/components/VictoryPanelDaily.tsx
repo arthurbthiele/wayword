@@ -9,6 +9,7 @@ import confetti from "canvas-confetti";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
+import { displayWord } from "../utilities/displayWord";
 import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
@@ -235,7 +236,7 @@ export const VictoryPanelDaily = ({
               terminals.has(word) ? "wj-victory__path-terminal" : undefined
             }
           >
-            {word}
+            {displayWord(word)}
           </span>
         </React.Fragment>
       ))}
@@ -243,7 +244,7 @@ export const VictoryPanelDaily = ({
   );
 
   const titleText = (() => {
-    const word = `Solved ${target} in ${userMoves} ${userMoves === 1 ? "move" : "moves"}`;
+    const word = `Solved ${displayWord(target)} in ${userMoves} ${userMoves === 1 ? "move" : "moves"}`;
     if (matchedOptimal) return `${word} — optimal!`;
     if (beatOptimal) return `${word} — you found a shortcut!`;
     return word;

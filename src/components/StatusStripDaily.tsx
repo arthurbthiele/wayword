@@ -3,6 +3,7 @@ import { GraphContext } from "./GraphProvider";
 import { logTargetPaths } from "../utilities/logTargetPaths";
 import { getDayNumber } from "../utilities/dailyTarget";
 import { computeHint } from "../utilities/computeHint";
+import { displayWord } from "../utilities/displayWord";
 import { Button } from "./ui/Button";
 
 type StatusStripDailyProps = {
@@ -61,9 +62,9 @@ export const StatusStripDaily = ({
     <div className="wj-status">
       <div className="wj-status__target">
         <span className="wj-status__label">#{dayNumber}</span>
-        <span className="wj-status__word">{start}</span>
+        <span className="wj-status__word">{displayWord(start)}</span>
         <span className="wj-status__arrow">→</span>
-        <span className="wj-status__word">{target}</span>
+        <span className="wj-status__word">{displayWord(target)}</span>
       </div>
       <div className="wj-status__meta">
         {onShowResult ? (

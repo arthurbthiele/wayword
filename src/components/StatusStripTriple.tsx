@@ -3,6 +3,7 @@ import { GraphContext } from "./GraphProvider";
 import { logTargetPaths } from "../utilities/logTargetPaths";
 import { getDayNumber } from "../utilities/dailyTarget";
 import { Button } from "./ui/Button";
+import { displayWord } from "../utilities/displayWord";
 
 type StatusStripTripleProps = {
   start: string;
@@ -45,7 +46,7 @@ export const StatusStripTriple = ({
         reached ? " wj-status__triple-target--reached" : ""
       }`}
     >
-      {word}
+      {displayWord(word)}
       {reached && (
         <span className="wj-status__check" aria-hidden="true">
           ✓
@@ -59,7 +60,7 @@ export const StatusStripTriple = ({
       <div className="wj-status__row">
         <div className="wj-status__target">
           <span className="wj-status__label">Triple #{dayNumber}</span>
-          <span className="wj-status__word">{start}</span>
+          <span className="wj-status__word">{displayWord(start)}</span>
           <span className="wj-status__arrow">→</span>
           <span className="wj-status__triple-targets">
             {renderTarget(t1, reachedT1)}

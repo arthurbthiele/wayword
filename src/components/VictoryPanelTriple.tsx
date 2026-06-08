@@ -10,6 +10,7 @@ import confetti from "canvas-confetti";
 import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
+import { displayWord } from "../utilities/displayWord";
 import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
 import {
   findSteinerTree,
@@ -221,7 +222,7 @@ export const VictoryPanelTriple = ({
   };
 
   const titleText = (() => {
-    const head = `Connected ${start}, ${t1}, ${t2} in ${userTreeSize} ${userTreeSize === 1 ? "word" : "words"}`;
+    const head = `Connected ${displayWord(start)}, ${displayWord(t1)}, ${displayWord(t2)} in ${userTreeSize} ${userTreeSize === 1 ? "word" : "words"}`;
     if (matchedOptimal) return `${head} — optimal!`;
     if (beatOptimal) return `${head} — you found a shortcut!`;
     return head;
@@ -276,7 +277,7 @@ export const VictoryPanelTriple = ({
                 }${isTerminal ? " wj-tree__word--terminal" : ""}`}
                 aria-hidden={!cell.visible}
               >
-                {cell.word}
+                {displayWord(cell.word)}
               </span>
             </React.Fragment>
           );
