@@ -5,6 +5,7 @@ import { wordsAreConnected } from "../utilities/wordAreConnected";
 import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { DefinitionModal } from "./DefinitionModal";
 
 type InputBarProps = {
   targetReminder?: string | null;
@@ -22,6 +23,7 @@ export const InputBar = ({
     useContext(GraphContext);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const [lookupWord, setLookupWord] = useState<string | null>(null);
 
   // Focus the input whenever the selected word changes — i.e. when the
   // user clicks a node in the graph (or types-to-jump to an existing word).
@@ -151,7 +153,19 @@ export const InputBar = ({
   return (
     <div className="wj-inputbar">
       <div className="wj-inputbar__selected">
-        Selected <b>{selectedWord}</b> →
+        Selected <b>{selectedWord}</b>
+        {selectedWord && (
+          <button
+            type="button"
+            className="wj-inputbar__lookup"
+            onClick={() => setLookupWord(selectedWord)}
+            aria-label={`Look up '${selectedWord}'`}
+            title="Look up"
+          >
+            ⓘ
+          </button>
+        )}{" "}
+        →
         {targetReminder && (
           <>
             {" reach "}
@@ -159,6 +173,10 @@ export const InputBar = ({
           </>
         )}
       </div>
+      <DefinitionModal
+        word={lookupWord}
+        onClose={() => setLookupWord(null)}
+      />
       <div className="wj-inputbar__field">
         <Input
           ref={inputRef}

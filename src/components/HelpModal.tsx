@@ -82,6 +82,14 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
         >
           an-array-of-english-words
         </a>
+        . Word definitions via{" "}
+        <a
+          href="https://dictionaryapi.dev/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          dictionaryapi.dev
+        </a>
         . Full credits and licenses at{" "}
         <a href="/attributions.txt" target="_blank" rel="noopener noreferrer">
           /attributions.txt

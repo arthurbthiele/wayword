@@ -464,6 +464,70 @@ button {
 .wj-inputbar__target {
   color: var(--color-accent) !important;
 }
+.wj-inputbar__lookup {
+  background: none;
+  border: none;
+  padding: 0 var(--space-1);
+  color: var(--color-ink-faint);
+  font-size: var(--text-base);
+  cursor: pointer;
+  line-height: 1;
+}
+.wj-inputbar__lookup:hover {
+  color: var(--color-accent);
+}
+
+/* Definition modal. */
+.wj-def h2 {
+  margin: 0 0 var(--space-3) 0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.wj-def__phonetic {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-ink-muted);
+  margin-left: var(--space-3);
+}
+.wj-def__loading {
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+.wj-def__meaning {
+  margin: var(--space-3) 0;
+}
+.wj-def__meaning h3 {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  margin: 0 0 var(--space-2) 0;
+}
+.wj-def__meaning ol {
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--color-ink);
+}
+.wj-def__meaning li {
+  margin-bottom: var(--space-2);
+}
+.wj-def__example {
+  font-style: italic;
+  color: var(--color-ink-muted);
+  margin-top: 2px;
+  font-size: var(--text-sm);
+}
+.wj-def__credit {
+  font-size: var(--text-xs);
+  color: var(--color-ink-faint);
+  margin-top: var(--space-4);
+}
+.wj-def__credit a {
+  color: var(--color-ink-muted);
+}
 .wj-inputbar__field {
   flex: 1;
   min-width: 0;
