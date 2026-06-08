@@ -30,8 +30,8 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-07-05": { start: "mass", target: "stirred" }, // Sun
   "2026-07-11": { start: "rear", target: "amended" }, // Sat
   "2026-07-12": { start: "cake", target: "repeat" }, // Sun
-  "2026-07-18": { start: "amuse", target: "bone" }, // Sat
-  "2026-07-19": { start: "model", target: "faster" }, // Sun
+  "2026-07-18": { start: "amuse", target: "wave" }, // Sat
+  "2026-07-19": { start: "model", target: "lasted" }, // Sun
   "2026-07-25": { start: "grind", target: "repent" }, // Sat
   "2026-07-26": { start: "sweet", target: "filled" }, // Sun
   "2026-08-01": { start: "waited", target: "come" }, // Sat
@@ -42,7 +42,7 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-08-16": { start: "rated", target: "powder" }, // Sun
   "2026-08-22": { start: "saying", target: "gleaning" }, // Sat
   "2026-08-23": { start: "parse", target: "cleaned" }, // Sun
-  "2026-08-29": { start: "bend", target: "costed" }, // Sat
+  "2026-08-29": { start: "bend", target: "inter" }, // Sat
   "2026-08-30": { start: "amuse", target: "learn" }, // Sun
   "2026-09-05": { start: "staying", target: "tank" }, // Sat
   "2026-09-06": { start: "gave", target: "socket" }, // Sun

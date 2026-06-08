@@ -255,6 +255,10 @@ const dictBInclude = new Set([
   // First-person pronoun; displayed as 'I' to honour standard capitalisation
   // (see src/utilities/displayWord.ts).
   "i",
+  // Player-requested additions (2026-06-08). All have L1 bridges into the
+  // current Dict B connected component — verified before inclusion.
+  "pug", "mage", "bot", "bots", "ramen",
+  "henge", "treaded", "fae", "ube",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
