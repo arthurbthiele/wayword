@@ -14,13 +14,18 @@ type InputBarProps = {
   // InputBar is re-mounting after the user dismissed the victory panel — so
   // the soft keyboard doesn't pop up over the graph the user wants to inspect.
   autoFocus?: boolean;
+  // When true, mirror the typed string into the graph's matchQuery so the
+  // canvas can fade non-matching nodes. Used in free play, where the graph
+  // can grow large enough that "find words containing 'eed'" is useful.
+  substringHighlight?: boolean;
 };
 
 export const InputBar = ({
   targetReminder,
   autoFocus = true,
+  substringHighlight = false,
 }: InputBarProps) => {
-  const { selectedWord, setSelectedWord, graph, setGraph } =
+  const { selectedWord, setSelectedWord, graph, setGraph, setMatchQuery } =
     useContext(GraphContext);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,6 +54,19 @@ export const InputBar = ({
   }, [selectedWord]);
 
   const trimmed = value.trim().toLowerCase();
+
+  // Mirror the typed string into the graph's matchQuery while this InputBar
+  // is mounted. The Graph component reads matchQuery to fade non-matching
+  // nodes. Cleared on unmount so a stale query doesn't leak across mode
+  // switches or victory panels.
+  useEffect(() => {
+    if (!substringHighlight) return;
+    setMatchQuery(trimmed);
+  }, [substringHighlight, trimmed, setMatchQuery]);
+  useEffect(() => {
+    if (!substringHighlight) return;
+    return () => setMatchQuery("");
+  }, [substringHighlight, setMatchQuery]);
   const wordInGraph =
     trimmed.length > 0 &&
     graph.nodes.some((node: { id: string }) => node.id === trimmed);

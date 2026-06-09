@@ -432,6 +432,7 @@ const App = () => {
           <InputBar
             targetReminder={freePlayTarget}
             autoFocus={!freePlayIntroOpen}
+            substringHighlight
           />
         </GraphProvider>
       )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { computeDepths } from "../utilities/wordDepths";
 import { useLocalStorage } from "../utilities/useLocalStorage";
 import { legitimateWords } from "../dictionaryData/legitimate";
@@ -19,6 +19,10 @@ export const GraphProvider = ({
     `${keyPrefix}:graph`,
     initialGraph
   );
+
+  // Substring-find query, mirrored from the InputBar in modes that opt in.
+  // Non-persistent on purpose — a stray query shouldn't survive a reload.
+  const [matchQuery, setMatchQuery] = useState("");
 
   // One-time self-heal for saved state from older versions that allowed
   // duplicate node ids (the closed-loop feature appended a node even when
@@ -53,7 +57,15 @@ export const GraphProvider = ({
 
   return (
     <GraphContext.Provider
-      value={{ selectedWord, setSelectedWord, graph, setGraph, depths }}
+      value={{
+        selectedWord,
+        setSelectedWord,
+        graph,
+        setGraph,
+        depths,
+        matchQuery,
+        setMatchQuery,
+      }}
     >
       {children}
     </GraphContext.Provider>

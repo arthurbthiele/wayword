@@ -10,18 +10,30 @@ import React, {
 import { GraphContext } from "./GraphProvider";
 import { displayWord } from "../utilities/displayWord";
 
+// Node colours. DEFAULT mirrors options.nodes.color so we can emit it
+// explicitly per node when needed (DataSet partial-merge means we can't
+// rely on omission to reset).
+const DEFAULT_NODE_COLOR = { background: "#efe8db", border: "#d9d0bd" };
+
 // Soft tint applied to the start word AND any terminal — they're the
 // fixed structural nodes of the puzzle (which is which is conveyed by
 // the status strip, not by colour). Pale enough to sit alongside the
 // default cream nodes without competing with the terracotta selected-
 // highlight.
-const FIXED_NODE_COLOR = {
-  background: "#cfdcc4",
-  border: "#a0b896",
-};
+const FIXED_NODE_COLOR = { background: "#cfdcc4", border: "#a0b896" };
+
+// Highlighter-pen yellow for substring-match results. Distinct from
+// terracotta selection and sage fixed-nodes; sits comfortably in the
+// warm palette.
+const MATCH_NODE_COLOR = { background: "#f5e69a", border: "#d6c562" };
+
+// Don't highlight until the user has typed something specific enough to be
+// useful. 1 char would light up most of the map while typing the next word.
+const MIN_QUERY_LENGTH = 2;
 
 export const Graph = ({ startWord, terminalWords }) => {
-  const { selectedWord, setSelectedWord, graph } = useContext(GraphContext);
+  const { selectedWord, setSelectedWord, graph, matchQuery } =
+    useContext(GraphContext);
 
   // vis-network rejects duplicate node ids. Older saved graphs may have
   // duplicate entries from the closed-loop feature; dedupe defensively.
@@ -31,20 +43,28 @@ export const Graph = ({ startWord, terminalWords }) => {
   // cue continues to work for these nodes too.
   const safeGraph = useMemo(() => {
     const terminalSet = new Set(terminalWords ?? []);
+    const findActive = matchQuery.length >= MIN_QUERY_LENGTH;
     const seen = new Set();
     const nodes = [];
     for (const node of graph.nodes) {
       if (seen.has(node.id)) continue;
       seen.add(node.id);
       const label = displayWord(node.id);
-      if (node.id === startWord || terminalSet.has(node.id)) {
-        nodes.push({ ...node, label, color: FIXED_NODE_COLOR });
-      } else {
-        nodes.push({ ...node, label });
-      }
+      const isMatch = findActive && node.id.includes(matchQuery);
+      const isFixed = node.id === startWord || terminalSet.has(node.id);
+      // Match takes precedence over fixed — when finding, the user wants to
+      // see the substring hit, not the start/terminal tint. Always emit a
+      // colour so vis-network's DataSet merge resets cleanly when a node
+      // moves between states.
+      const color = isMatch
+        ? MATCH_NODE_COLOR
+        : isFixed
+          ? FIXED_NODE_COLOR
+          : DEFAULT_NODE_COLOR;
+      nodes.push({ ...node, label, color });
     }
     return { nodes, edges: graph.edges };
-  }, [graph, startWord, terminalWords]);
+  }, [graph, startWord, terminalWords, matchQuery]);
 
   const [network, setNetwork] = useState();
   const containerRef = useRef(null);
