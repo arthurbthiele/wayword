@@ -75,6 +75,7 @@ There's no staging — every deploy is to production.
 
 - **Local-midnight rollover** (not UTC). See the warning above; the Tumblr audience preference is the load-bearing reason.
 - **Override precedence**: `dailyOverrides` / `tripleOverrides` are checked before the deterministic picker. Inside `dailyOverrides`, generated weekend pins spread first and hand-pinned entries override (later keys win in object spread).
+- **`weekendOverrides.ts` has a bounded horizon** (currently ~26 weeks ahead). Past the last pinned date, the runtime picker silently falls back to computing the strict weekend constraints on-device — correct but slower on mobile. Re-run `yarn regen-weekends` periodically to extend the window; tests that want to exercise the runtime weekend path should pick dates past the horizon (see `dailyTarget.test.ts`).
 - **Stale-state migration**: `migrateStaleGraphState` is *targeted* — only clears dates where the stored start no longer matches the current picker. Don't replace with a blanket clear; the targeted version is deliberate.
 - **Dev panel** at `?dev=1` — random-daily regenerator + difficulty input. Reroll forces a hard reload to remount the daily `GraphProvider` against the new pair.
 
