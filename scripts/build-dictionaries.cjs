@@ -259,6 +259,10 @@ const dictBInclude = new Set([
   // current Dict B connected component — verified before inclusion.
   "pug", "mage", "bot", "bots", "ramen",
   "henge", "treaded", "fae", "ube",
+  // Player-requested additions (2026-06-10). milt/gar/puce have direct
+  // dictionaryapi.dev entries; spined is morphological off "spine" and
+  // won't have a definition but reads fine.
+  "milt", "gar", "puce", "spined",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
