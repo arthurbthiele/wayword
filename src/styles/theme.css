@@ -308,6 +308,12 @@ button {
   gap: var(--space-3);
   align-items: center;
 }
+/* Holds steady width whether the label is "Stats" or "Streak NN" so the
+   tablist centre doesn't shift when the player's streak comes and goes. */
+.wj-header__streak {
+  min-width: 6em;
+  text-align: center;
+}
 
 /* Status strip. */
 .wj-status {
