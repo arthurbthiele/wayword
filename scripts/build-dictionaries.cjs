@@ -1,33 +1,32 @@
 /*
  * Builds the runtime dictionary data for Wayword from SCOWL frequency tiers.
  *
- *   Dict A — SCOWL cumulative ≤ tier 20 (~10.7k words). The "common everyday
- *            English" set: targets for daily puzzles, words in the
- *            common-word optimal. Tier 20 is pure frequency-based — no
- *            "11-of-12-dictionaries" Scrabble cruft (`ohs`, `mys`, `ute`).
- *            Plus a manually-curated `dictAInclude` set for bridge words.
+ *   Dict A — "common everyday English". Source: SCOWL ≤ DICT_A_MAX_TIER
+ *            plus the curated `dictAInclude` set. After the Levenshtein-1
+ *            connectivity filter, ~3k words. Used for daily/triple target
+ *            selection and the common-word optimal benchmark. Tier 20 is
+ *            pure frequency-based — no "11-of-12-dictionaries" Scrabble
+ *            cruft (`ohs`, `mys`, `ute`) sneaking in.
  *
- *   Dict B — SCOWL cumulative ≤ tier 40 (~42.6k words). The permissive
- *            "type-this-word" set the player may input. Includes the
- *            12-dict-intersection words (tier 35) plus Alan Beale's 3esl
- *            essentials (tier 40). Wide enough that most genuine English
- *            inputs are accepted, narrow enough to filter the most obscure
- *            Scrabble-only entries (which arrive at tier 50+).
+ *   Dict B — "type-this-word" set. Source: SCOWL ≤ DICT_B_MAX_TIER plus
+ *            higher tiers admitted with rising length floors (see
+ *            `DICT_B_EXTRA_TIERS`) plus the `dictBInclude` set. After the
+ *            connectivity filter, ~26k words. Permissive enough that most
+ *            real English inputs are accepted.
  *
- *   Note: Dict A ⊂ Dict B is required by the architecture (every word in A
- *   must be typeable). Since A_MAX_TIER (20) < B_MAX_TIER (40), the
- *   cumulative tiers naturally satisfy this. We assert it as a sanity check.
+ *   Note: Dict A ⊂ Dict B is required by the architecture (every targetable
+ *   word must be typeable). The inputs naturally satisfy this; we assert
+ *   it as a sanity check.
  *
- * We compute Levenshtein-1 adjacency over A ∪ B = B (since A ⊂ B), keep only
- * the connected component containing the word "a". Within that we compute
- * A's own connected-from-'a' subgraph using A-only edges — the "legitimate"
- * words used for optimal paths. A subset of those with optimal path 4..7
- * from 'a' are the daily targets.
+ * We compute Levenshtein-1 adjacency over Dict B (= A ∪ B since A ⊂ B),
+ * keep only the connected component containing the word "a". Within that
+ * we compute A's own connected-from-'a' subgraph using A-only edges — the
+ * "legitimate" set used for picker candidates and optimal-path display.
  *
  * Outputs:
- *   src/dictionaryData/wordGraph.ts   — adjacency over A ∪ B's CC
- *   src/dictionaryData/legitimate.ts  — A's connected-from-'a' set
- *   src/dictionaryData/targets.ts     — daily-challenge target words
+ *   src/dictionaryData/wordGraph.ts              — Dict B adjacency (CC of 'a')
+ *   src/dictionaryData/legitimate.ts             — A reachable from 'a' via A-only edges
+ *   src/dictionaryData/disconnectedValidWords.ts — real English not in the playable CC
  *
  * Re-run any time the source lists or curation lists change:
  *   node scripts/build-dictionaries.cjs
