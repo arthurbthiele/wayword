@@ -73,7 +73,7 @@ export const Header = ({
         <button
           type="button"
           role="tab"
-          aria-pressed={mode === "daily"}
+          aria-selected={mode === "daily"}
           onClick={() => setMode("daily")}
         >
           Daily
@@ -81,7 +81,7 @@ export const Header = ({
         <button
           type="button"
           role="tab"
-          aria-pressed={mode === "triple"}
+          aria-selected={mode === "triple"}
           onClick={() => setMode("triple")}
         >
           Triple
@@ -89,7 +89,7 @@ export const Header = ({
         <button
           type="button"
           role="tab"
-          aria-pressed={mode === "freeplay"}
+          aria-selected={mode === "freeplay"}
           onClick={() => setMode("freeplay")}
         >
           Free play
