@@ -43,7 +43,7 @@ export const StatsModal = ({
           <button
             type="button"
             role="tab"
-            aria-pressed={tab === "daily"}
+            aria-selected={tab === "daily"}
             onClick={() => setTab("daily")}
           >
             Daily
@@ -51,7 +51,7 @@ export const StatsModal = ({
           <button
             type="button"
             role="tab"
-            aria-pressed={tab === "triple"}
+            aria-selected={tab === "triple"}
             onClick={() => setTab("triple")}
           >
             Triple

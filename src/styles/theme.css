@@ -298,7 +298,7 @@ button {
 .wj-mode-toggle button:hover {
   color: var(--color-ink);
 }
-.wj-mode-toggle button[aria-pressed="true"] {
+.wj-mode-toggle button[aria-selected="true"] {
   background: var(--color-paper);
   color: var(--color-ink);
   box-shadow: var(--shadow-sm);
@@ -765,7 +765,7 @@ button {
 .wj-stats__tabs button:hover {
   color: var(--color-ink);
 }
-.wj-stats__tabs button[aria-pressed="true"] {
+.wj-stats__tabs button[aria-selected="true"] {
   background: var(--color-paper);
   color: var(--color-ink);
   box-shadow: var(--shadow-sm);
