@@ -3,7 +3,10 @@ import {
   getDailyDistanceBand,
   getDailyPair,
 } from "../dailyTarget";
-import { bfsDistancesLegitimate } from "../legitimateGraph";
+import {
+  bfsDistancesLegitimate,
+  bfsDistancesInWordGraph,
+} from "../legitimateGraph";
 import { legitimateWords } from "../../dictionaryData/legitimate";
 
 describe("getLocalDateString", () => {
@@ -94,6 +97,19 @@ describe("getDailyPair — weekend strict constraints", () => {
       const { start, target } = getDailyPair(date);
       const dist = bfsDistancesLegitimate(start).get(target)!;
       expect(dipsBelow4(start, target, dist, shortAdists)).toBe(false);
+    }
+  });
+
+  // WEEKEND_MAX_DICTB_GAP = 3 in dailyTarget.ts. The constraint stops Dict B
+  // shortcuts from making a "hard" weekend puzzle secretly easy. Test uses
+  // dates past the weekendOverrides horizon (currently 2026-12-06) so the
+  // runtime picker actually runs, rather than hitting the pre-gen override.
+  it("weekend Dict B optimal is at most 3 shorter than Dict A optimal", () => {
+    for (const date of ["2026-12-12", "2026-12-13", "2026-12-19", "2026-12-20"]) {
+      const { start, target } = getDailyPair(date);
+      const distA = bfsDistancesLegitimate(start).get(target)!;
+      const distB = bfsDistancesInWordGraph(start).get(target)!;
+      expect(distA - distB).toBeLessThanOrEqual(3);
     }
   });
 });
