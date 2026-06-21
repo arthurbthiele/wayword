@@ -48,6 +48,9 @@ export const dailyOverrides: Record<string, DailyOverride> = {
   "2026-06-03": { start: "keen", target: "boss" },
   "2026-06-04": { start: "born", target: "sir" },
   "2026-06-05": { start: "jam", target: "end" },
+  // W-themed Saturday for a friend's W-party. Distance 8 (Saturday-standard),
+  // no path-dip below 4 letters, Dict B gap 1.
+  "2026-06-27": { start: "whose", target: "winner" },
 };
 
 export const tripleOverrides: Record<string, TripleOverride> = {
@@ -57,4 +60,8 @@ export const tripleOverrides: Record<string, TripleOverride> = {
   "2026-06-03": { start: "may", t1: "byte", t2: "amend" },
   "2026-06-04": { start: "packing", t1: "lasting", t2: "costing" },
   "2026-06-05": { start: "treated", t1: "halve", t2: "rave" },
+  // W-themed Saturday — paired with the daily on the same date. Steiner
+  // tree: joint at "waking", with short branches to walking + wading and a
+  // longer one to wishing via bashing/washing. 7 edges total.
+  "2026-06-27": { start: "wading", t1: "walking", t2: "wishing" },
 };
