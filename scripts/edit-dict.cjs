@@ -4,9 +4,10 @@
 // downstream effects we'd otherwise forget to check.
 //
 // Usage:
-//   yarn dict add A <word>...     append to dictAInclude
-//   yarn dict add B <word>...     append to dictBInclude
-//   yarn dict remove <word>...    append to excludeBoth (removes from A and B)
+//   yarn dict add A <word>...     dictAInclude — target-eligible + typeable
+//   yarn dict add B <word>...     dictBInclude — typeable only
+//   yarn dict remove A <word>...  dictAOnlyExclude — typeable but not a target
+//   yarn dict remove B <word>...  excludeBoth — not typeable (also not a target)
 //
 // Words must be all-lowercase letters. The chain stops on the first
 // failure; review the diff before committing.
@@ -17,27 +18,31 @@ const { execSync } = require("child_process");
 
 const argv = process.argv.slice(2);
 const action = argv[0];
-const wordsStart = action === "add" ? 2 : 1;
-const dict = action === "add" ? argv[1] : null;
-const words = argv.slice(wordsStart).map((w) => w.trim().toLowerCase()).filter(Boolean);
+const dict = argv[1];
+const words = argv.slice(2).map((w) => w.trim().toLowerCase()).filter(Boolean);
 
 const usage = `Usage:
-  yarn dict add A <word>...     append to dictAInclude
-  yarn dict add B <word>...     append to dictBInclude
-  yarn dict remove <word>...    append to excludeBoth`;
+  yarn dict add A <word>...     dictAInclude
+  yarn dict add B <word>...     dictBInclude
+  yarn dict remove A <word>...  dictAOnlyExclude
+  yarn dict remove B <word>...  excludeBoth`;
+
+const setName = (() => {
+  if (action === "add" && dict === "A") return "dictAInclude";
+  if (action === "add" && dict === "B") return "dictBInclude";
+  if (action === "remove" && dict === "A") return "dictAOnlyExclude";
+  if (action === "remove" && dict === "B") return "excludeBoth";
+  return null;
+})();
 
 if (
-  !["add", "remove"].includes(action) ||
-  (action === "add" && !["A", "B"].includes(dict)) ||
+  !setName ||
   words.length === 0 ||
   words.some((w) => !/^[a-z]+$/.test(w))
 ) {
   console.error(usage);
   process.exit(1);
 }
-
-const setName =
-  action === "remove" ? "excludeBoth" : dict === "A" ? "dictAInclude" : "dictBInclude";
 
 const buildPath = path.join(__dirname, "build-dictionaries.cjs");
 let src = fs.readFileSync(buildPath, "utf8");

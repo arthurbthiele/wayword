@@ -43,11 +43,14 @@ The Dict B subtlety to internalise: the **runtime weekday picker uses Dict A onl
 |---|---|
 | `dictAInclude` add/remove | Daily picker, triple picker, weekend pin selection, "common-word optimal" benchmark, `legitimate.ts` output |
 | `dictBInclude` add/remove | Playable graph + weekend pin selection (path-floor + gap constraints check Dict B) |
+| `dictAOnlyExclude` add | Same blast radius as removing from `dictAInclude` (picker + benchmark), but the word stays typeable. Used for profanity / dual-meaning words that shouldn't be daily targets. |
 | `excludeBoth` of an A-word | Same as `dictAInclude` |
 | `excludeBoth` of a B-word | Playable graph only; players with that word in an existing graph keep it but can't navigate *to* it (orphan-fallback in `wordsAreConnected`) |
 | SCOWL tier shifts | All of the above |
 
 Common case: player complains "X should be typeable". Fix is almost always `dictBInclude`. Only promote to `dictAInclude` if X is genuinely common-English-word material — and accept the full follow-up checklist.
+
+Use `yarn dict {add,remove} {A,B} <word>...` for routine edits — it runs the full verification chain (build → L1-scan → weekend regen → tests). See README for the CLI shape.
 
 **Discipline before deploying any dict change**:
 

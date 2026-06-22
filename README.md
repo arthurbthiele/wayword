@@ -61,9 +61,10 @@ verification chain (rebuild → L1-bug scan → weekend-pin regen →
 tests) and stops on the first failure.
 
 ```sh
-yarn dict add A <word>...     # add to dictAInclude (target-eligible)
-yarn dict add B <word>...     # add to dictBInclude (typeable only)
-yarn dict remove <word>...    # add to excludeBoth (removes from A and B)
+yarn dict add A <word>...     # target-eligible + typeable
+yarn dict add B <word>...     # typeable only
+yarn dict remove A <word>...  # typeable, but not a target candidate
+yarn dict remove B <word>...  # not typeable at all (excluded everywhere)
 ```
 
 Multiple words in one invocation get one dated comment and one entry
