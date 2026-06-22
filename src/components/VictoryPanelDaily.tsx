@@ -254,7 +254,7 @@ export const VictoryPanelDaily = ({
     const baseSubtitle = (() => {
       if (matchedOptimal || optimalMoves === null) return null;
       if (beatOptimal) {
-        return `You routed through less common words to beat the common-word optimal of ${optimalMoves}.`;
+        return `You routed through rarer words to beat the common-word optimal of ${optimalMoves}.`;
       }
       return `Common-word optimal was ${optimalMoves} ${optimalMoves === 1 ? "move" : "moves"}.`;
     })();

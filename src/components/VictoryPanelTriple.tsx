@@ -231,7 +231,7 @@ export const VictoryPanelTriple = ({
   const subtitleText = (() => {
     if (matchedOptimal) return null;
     if (beatOptimal) {
-      return `You routed through less common words to beat the common-word optimal of ${optimalEdges}.`;
+      return `You routed through rarer words to beat the common-word optimal of ${optimalEdges}.`;
     }
     return `Common-word optimal was ${optimalEdges} ${optimalEdges === 1 ? "word" : "words"}.`;
   })();
@@ -313,7 +313,7 @@ export const VictoryPanelTriple = ({
     : null;
   const optimalBranch1 = optimalTree ? optimalTree.branchToT1.slice(1) : null;
   const optimalBranch2 = optimalTree ? optimalTree.branchToT2.slice(1) : null;
-  const commonWordExplainer = `Shortest tree joining your three words using only common everyday words. You can sometimes shave a few words by routing through less common ones.`;
+  const commonWordExplainer = `Shortest tree joining your three words using only common everyday words. You can sometimes shave a few words by routing through rarer ones.`;
 
   return (
     <div className="wj-victory">
