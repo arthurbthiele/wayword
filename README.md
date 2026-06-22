@@ -53,21 +53,29 @@ yarn test     # vitest
 yarn deploy   # build + publish to gh-pages branch
 ```
 
-## Regenerating the dictionary data
+## Curating the dictionaries
 
-`scripts/build-dictionaries.cjs` rebuilds the runtime word-graph data
-files from the two source lists. Re-run after adjusting the include /
-exclude sets:
+To add or remove words, prefer `yarn dict` over editing
+`scripts/build-dictionaries.cjs` by hand — it runs the full
+verification chain (rebuild → L1-bug scan → weekend-pin regen →
+tests) and stops on the first failure.
 
 ```sh
-node scripts/build-dictionaries.cjs
+yarn dict add A <word>...     # add to dictAInclude (target-eligible)
+yarn dict add B <word>...     # add to dictBInclude (typeable only)
+yarn dict remove <word>...    # add to excludeBoth (removes from A and B)
 ```
 
-This writes `src/dictionaryData/{wordGraph,legitimate}.ts`.
+Multiple words in one invocation get one dated comment and one entry
+line in `build-dictionaries.cjs`. Review the diff before committing —
+weekend pre-gen pins can shift on Dict B changes (the chain prints
+the diff at the end).
 
-`scripts/preview-puzzles.cjs` previews upcoming daily + triple
-puzzles with their optimal paths — useful after a dict regen:
+Lower-level scripts the chain calls, useful on their own:
 
 ```sh
-node scripts/preview-puzzles.cjs 10
+node scripts/build-dictionaries.cjs      # regen src/dictionaryData/*.ts
+node scripts/scan-l1-bugs.cjs            # report words wrongly rejected
+node scripts/preview-puzzles.cjs 10      # preview next 10 days
+yarn regen-weekends                      # refresh weekend-pin pre-gen
 ```
