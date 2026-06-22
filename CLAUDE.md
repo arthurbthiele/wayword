@@ -63,7 +63,7 @@ Use `yarn dict {add,remove} {A,B} <word>...` for routine edits — it runs the f
 
 ## Deploy: what breaks when you change X
 
-There's no staging — every deploy is to production.
+There's no staging — every deploy is to production. **`yarn deploy` always pushes `origin master` after `gh-pages` (via a `postdeploy` hook)** so the public source tree stays in lock-step with what's live. Don't deploy from a dirty working tree or a non-`master` branch — anything on `HEAD` will be force-sent both to users (via `gh-pages`) and to the public repo. Conversely, never push `origin master` without deploying; we want the two to track each other exactly.
 
 | Change | Failure mode | Mitigation |
 |---|---|---|
