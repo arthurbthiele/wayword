@@ -2493,6 +2493,7 @@ export const legitimateWords: ReadonlySet<string> = new Set([
   "sounding",
   "sounds",
   "soup",
+  "soy",
   "space",
   "spaced",
   "spaces",

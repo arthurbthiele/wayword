@@ -233,6 +233,8 @@ const dictAInclude = new Set([
   "shone", "slate", "spate", "sage",
   // Tier 3: common short words SCOWL misses at tier ≤20.
   "hi",
+  // Added 2026-06-22 via scripts/edit-dict.cjs.
+  "soy",
 ]);
 
 // Force-include in Dict B regardless of source tier or length filter. Real
@@ -264,6 +266,8 @@ const dictBInclude = new Set([
   "milt", "gar", "puce", "spined",
   // Added 2026-06-22 via scripts/edit-dict.cjs.
   "plat",
+  // Added 2026-06-22 via scripts/edit-dict.cjs.
+  "roo", "asp", "bream", "bam", "lede", "seance", "slimed", "wort", "binging", "brining", "mach", "stele", "pacer", "stye", "eared",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
