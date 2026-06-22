@@ -262,6 +262,8 @@ const dictBInclude = new Set([
   // dictionaryapi.dev entries; spined is morphological off "spine" and
   // won't have a definition but reads fine.
   "milt", "gar", "puce", "spined",
+  // Added 2026-06-22 via scripts/edit-dict.cjs.
+  "plat",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------

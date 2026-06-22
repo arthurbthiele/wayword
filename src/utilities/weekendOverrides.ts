@@ -20,10 +20,6 @@
 import type { DailyOverride } from "./puzzleOverrides";
 
 export const weekendDailyOverrides: Record<string, DailyOverride> = {
-  "2026-06-13": { start: "slide", target: "woman" }, // Sat
-  "2026-06-14": { start: "tyre", target: "classed" }, // Sun
-  "2026-06-20": { start: "they", target: "placing" }, // Sat
-  "2026-06-21": { start: "greed", target: "mock" }, // Sun
   "2026-06-27": { start: "heavy", target: "prayed" }, // Sat
   "2026-06-28": { start: "shoe", target: "parked" }, // Sun
   "2026-07-04": { start: "cunning", target: "aiming" }, // Sat
@@ -54,11 +50,11 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-09-27": { start: "east", target: "flushes" }, // Sun
   "2026-10-03": { start: "heating", target: "liking" }, // Sat
   "2026-10-04": { start: "wing", target: "gutter" }, // Sun
-  "2026-10-10": { start: "played", target: "trash" }, // Sat
+  "2026-10-10": { start: "played", target: "never" }, // Sat
   "2026-10-11": { start: "cause", target: "infer" }, // Sun
   "2026-10-17": { start: "closing", target: "pausing" }, // Sat
   "2026-10-18": { start: "lived", target: "messes" }, // Sun
-  "2026-10-24": { start: "deck", target: "flush" }, // Sat
+  "2026-10-24": { start: "deck", target: "shout" }, // Sat
   "2026-10-25": { start: "rounding", target: "closing" }, // Sun
   "2026-10-31": { start: "soup", target: "block" }, // Sat
   "2026-11-01": { start: "minus", target: "granted" }, // Sun
@@ -72,4 +68,8 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-11-29": { start: "wipe", target: "trusty" }, // Sun
   "2026-12-05": { start: "pleased", target: "mine" }, // Sat
   "2026-12-06": { start: "cease", target: "around" }, // Sun
+  "2026-12-12": { start: "liked", target: "poster" }, // Sat
+  "2026-12-13": { start: "slot", target: "startle" }, // Sun
+  "2026-12-19": { start: "camp", target: "nicked" }, // Sat
+  "2026-12-20": { start: "came", target: "render" }, // Sun
 };
