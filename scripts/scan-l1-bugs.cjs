@@ -20,19 +20,20 @@ const wgSrc = fs.readFileSync(
   path.join(root, "src/dictionaryData/wordGraph.ts"),
   "utf8"
 );
-const dvSrc = fs.readFileSync(
-  path.join(root, "src/dictionaryData/disconnectedValidWords.ts"),
-  "utf8"
-);
+const cachePath = path.join(__dirname, ".dict-cache/disconnected-words.txt");
+if (!fs.existsSync(cachePath)) {
+  console.error(
+    `Missing tooling cache: ${cachePath}\n` +
+      `Run \`node scripts/build-dictionaries.cjs\` first.`
+  );
+  process.exit(1);
+}
+const cacheSrc = fs.readFileSync(cachePath, "utf8");
 
-// Regex-extract keys from each generated file. The shape is stable
-// (build-dictionaries.cjs is the single writer) so this is good enough
-// without TS tooling.
 const dictB = new Set();
 for (const m of wgSrc.matchAll(/^\s*"([a-z]+)":/gm)) dictB.add(m[1]);
 
-const disconnectedValid = [];
-for (const m of dvSrc.matchAll(/"([a-z]+)"/g)) disconnectedValid.push(m[1]);
+const disconnectedValid = cacheSrc.split("\n").filter(Boolean);
 
 const findL1NeighbourInDictB = (w) => {
   for (let i = 0; i < w.length; i++) {

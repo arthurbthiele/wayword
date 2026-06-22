@@ -73,16 +73,15 @@ const App = () => {
         // Migration is best-effort; never let it block app load.
       }
     });
-    // disconnectedValidWords powers friendlier rejection messages ("X is
-    // a word, but not one edit from Y") but isn't gameplay-critical — if
-    // it hasn't loaded yet when the user types a disconnected-valid word,
-    // they get the plain "X is not a word" fallback. Worth shipping a
-    // larger file with full dictB-source alignment because the cost is
-    // entirely off the critical path.
-    import("./dictionaryData/disconnectedValidWords").then(
-      ({ disconnectedValidWords }) => {
+    // disconnectedValidBloom powers friendlier rejection messages ("X is
+    // a word, but not one edit from Y"). Bloom-encoded for ~290 KB instead
+    // of ~1.4 MB; loads lazily off the critical path, so if the user
+    // types a disconnected-valid word before it arrives they fall through
+    // to the plain "X is not a word" message.
+    import("./dictionaryData/disconnectedValidBloom").then(
+      ({ disconnectedValidBloom }) => {
         if (cancelled) return;
-        setDisconnectedValidWords(disconnectedValidWords);
+        setDisconnectedValidWords(disconnectedValidBloom);
       }
     );
     return () => {
