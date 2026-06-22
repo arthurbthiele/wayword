@@ -110,9 +110,12 @@ export const findShortestPathInGraphFromAny = (
  * `target`. Returns the shortest path, starting at whichever start node is
  * closest.
  *
- * If `restrictTo` is provided, only words in that set are traversable
- * (and only start nodes within it are considered seeds). Use this to keep
- * the chain composed of legitimate words rather than obscure B-only ones.
+ * If `restrictTo` is provided, only words in that set are *traversable* —
+ * every step after the seed must be in it. Seeds themselves are NOT
+ * filtered: a player who has a Dict B word in their graph (e.g. FEND)
+ * can still launch from there through a Dict A neighbour (FOND → FOUND).
+ * Filtering seeds was the old behaviour and produced confusing "optimal"
+ * paths that ignored words the player obviously had.
  */
 export const findShortestPathFromAnyToTarget = (
   startNodeIds: string[],
@@ -121,10 +124,7 @@ export const findShortestPathFromAnyToTarget = (
 ): string[] | null => {
   if (startNodeIds.length === 0) return null;
   if (restrictTo && !restrictTo.has(target)) return null;
-  const seeds = restrictTo
-    ? startNodeIds.filter((id) => restrictTo.has(id))
-    : startNodeIds;
-  if (seeds.length === 0) return null;
+  const seeds = startNodeIds;
   if (seeds.includes(target)) return [target];
 
   const wordGraph = getWordGraph();

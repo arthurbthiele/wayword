@@ -1,8 +1,10 @@
 import {
   findShortestPathInGraph,
   findShortestPathInGraphFromAny,
+  findShortestPathFromAnyToTarget,
   findShortestPathInDictionary,
 } from "../findPath";
+import { legitimateWords } from "../../dictionaryData/legitimate";
 
 describe("findShortestPathInGraph", () => {
   const nodes = [
@@ -123,6 +125,45 @@ describe("findShortestPathInGraphFromAny", () => {
   it("returns null when no seed can reach the target", () => {
     expect(
       findShortestPathInGraphFromAny(nodes, edges, [], "cart")
+    ).toBeNull();
+  });
+});
+
+describe("findShortestPathFromAnyToTarget", () => {
+  // Regression: a Dict B seed must be allowed as a starting point even
+  // when restrictTo limits *traversal* to Dict A. Pre-fix, the Dict B
+  // seed was filtered out and the BFS produced a path from some other
+  // (further) seed, which confused players (see the FEND→FOUND report).
+  it("launches from a Dict B seed and traverses through Dict A", () => {
+    // 'fend' is in Dict B but not Dict A. 'fond' and 'found' are both in
+    // Dict A. Optimal: fend → fond → found.
+    expect(legitimateWords.has("fend")).toBe(false);
+    expect(legitimateWords.has("fond")).toBe(true);
+    expect(legitimateWords.has("found")).toBe(true);
+    const path = findShortestPathFromAnyToTarget(
+      ["fend"],
+      "found",
+      legitimateWords
+    );
+    expect(path).toEqual(["fend", "fond", "found"]);
+  });
+
+  it("picks the nearest seed when multiple are reachable", () => {
+    // 'an' is a long way from 'found' through Dict A; 'fend' is two hops.
+    // The BFS must pick the shorter route.
+    const path = findShortestPathFromAnyToTarget(
+      ["an", "fend"],
+      "found",
+      legitimateWords
+    );
+    expect(path).toEqual(["fend", "fond", "found"]);
+  });
+
+  it("returns null when the target itself is outside restrictTo", () => {
+    // 'fend' isn't in Dict A — even if it were the target with Dict-A-only
+    // restriction, there's no valid endpoint.
+    expect(
+      findShortestPathFromAnyToTarget(["a"], "fend", legitimateWords)
     ).toBeNull();
   });
 });

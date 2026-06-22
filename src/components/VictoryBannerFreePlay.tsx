@@ -51,7 +51,7 @@ export const VictoryBannerFreePlay = ({
     // Don't double-show the same chain.
     hit.optimalPath.join("→") !== hit.userPath.join("→");
 
-  const optimalExplainer = `From the closest common word in your graph to '${displayWord(hit.target)}', using only common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;
+  const optimalExplainer = `Shortest path from any word in your graph, traversing through common English words. If yours was shorter, you found a shortcut through rarer words — nice work!`;
 
   return (
     <div className="wj-victory">
