@@ -56,18 +56,11 @@ const App = () => {
   const [dictReady, setDictReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      import("./dictionaryData/wordGraph"),
-      // Companion data: friendlier rejection messages for real words that
-      // aren't in the playable graph. Not gameplay-critical, so we could
-      // gate dictReady on wordGraph only — but loading in parallel means
-      // by the time the user starts typing, the better messages are
-      // available.
-      import("./dictionaryData/disconnectedValidWords"),
-    ]).then(([{ wordGraph }, { disconnectedValidWords }]) => {
+    // wordGraph is the playable dictionary — gates dictReady because the
+    // user can't type until we know what's allowed.
+    import("./dictionaryData/wordGraph").then(({ wordGraph }) => {
       if (cancelled) return;
       setWordGraph(wordGraph);
-      setDisconnectedValidWords(disconnectedValidWords);
       setDictReady(true);
       // After the dict is loaded, sanity-check stored graph state: any
       // saved daily/triple graph whose first node doesn't match the
@@ -80,6 +73,18 @@ const App = () => {
         // Migration is best-effort; never let it block app load.
       }
     });
+    // disconnectedValidWords powers friendlier rejection messages ("X is
+    // a word, but not one edit from Y") but isn't gameplay-critical — if
+    // it hasn't loaded yet when the user types a disconnected-valid word,
+    // they get the plain "X is not a word" fallback. Worth shipping a
+    // larger file with full dictB-source alignment because the cost is
+    // entirely off the critical path.
+    import("./dictionaryData/disconnectedValidWords").then(
+      ({ disconnectedValidWords }) => {
+        if (cancelled) return;
+        setDisconnectedValidWords(disconnectedValidWords);
+      }
+    );
     return () => {
       cancelled = true;
     };
