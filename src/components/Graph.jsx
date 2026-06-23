@@ -236,6 +236,10 @@ const options = {
   edges: {
     color: { color: "#c1b8a4", highlight: "#5d6273", hover: "#5d6273" },
     width: 1.5,
+    // Bolden connected edges when a node is selected. Player feedback:
+    // the colour-only highlight wasn't pronounced enough to see at a
+    // glance which words connect to the one you just tapped.
+    selectionWidth: 2,
     smooth: { type: "continuous" },
     arrows: { to: false },
   },
