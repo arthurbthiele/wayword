@@ -268,6 +268,8 @@ const dictBInclude = new Set([
   "plat",
   // Added 2026-06-22 via scripts/edit-dict.cjs.
   "roo", "asp", "bream", "bam", "lede", "seance", "slimed", "wort", "binging", "brining", "mach", "stele", "pacer", "stye", "eared",
+  // Added 2026-06-23 via scripts/edit-dict.cjs.
+  "barding",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
