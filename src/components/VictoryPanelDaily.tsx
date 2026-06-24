@@ -10,7 +10,7 @@ import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
 import { displayWord } from "../utilities/displayWord";
-import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
+import { getDayNumber } from "../utilities/dailyTarget";
 import {
   findShortestPathInGraph,
   findShortestPathInDictionary,
@@ -42,6 +42,11 @@ const fireConfetti = (extraOomph: boolean) => {
 };
 
 type VictoryPanelDailyProps = {
+  // The calendar date this puzzle "belongs to" — i.e. the date it was
+  // first encountered by this user. Sticky across midnight crossings,
+  // so a player who solves at 12:15am still records under the started
+  // date. Owned by App.tsx (see the `activeDate` state there).
+  puzzleDate: string;
   start: string;
   target: string;
   history: DailyHistory;
@@ -57,6 +62,7 @@ type VictoryPanelDailyProps = {
 };
 
 export const VictoryPanelDaily = ({
+  puzzleDate,
   start,
   target,
   history,
@@ -68,7 +74,7 @@ export const VictoryPanelDaily = ({
   setSolvedDate,
   hintsUsed,
 }: VictoryPanelDailyProps) => {
-  const today = getLocalDateString();
+  const today = puzzleDate;
   const { graph } = useContext(GraphContext);
 
   const [solvedPath, setSolvedPath] = useLocalStorage<string[] | null>(

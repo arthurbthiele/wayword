@@ -6,6 +6,9 @@ import { Button } from "./ui/Button";
 import { displayWord } from "../utilities/displayWord";
 
 type StatusStripTripleProps = {
+  // Date the puzzle "belongs to" — used for the displayed day number so
+  // a late-night solver sees the started-day's number, not the new one.
+  puzzleDate: string;
   start: string;
   t1: string;
   t2: string;
@@ -16,6 +19,7 @@ type StatusStripTripleProps = {
 };
 
 export const StatusStripTriple = ({
+  puzzleDate,
   start,
   t1,
   t2,
@@ -38,7 +42,7 @@ export const StatusStripTriple = ({
   );
   const solved = reachedT1 && reachedT2;
   const moveCount = Math.max(0, graph.nodes.length - 1);
-  const dayNumber = getDayNumber();
+  const dayNumber = getDayNumber(puzzleDate);
 
   const renderTarget = (word: string, reached: boolean) => (
     <span

@@ -7,6 +7,9 @@ import { displayWord } from "../utilities/displayWord";
 import { Button } from "./ui/Button";
 
 type StatusStripDailyProps = {
+  // Date the puzzle "belongs to" — used for the displayed day number so
+  // a late-night solver sees the started-day's number, not the new one.
+  puzzleDate: string;
   start: string;
   target: string;
   hintsUsed: number;
@@ -18,6 +21,7 @@ type StatusStripDailyProps = {
 };
 
 export const StatusStripDaily = ({
+  puzzleDate,
   start,
   target,
   hintsUsed,
@@ -45,7 +49,7 @@ export const StatusStripDaily = ({
   const solved = graph.nodes.some(
     (node: { id: string }) => node.id === target
   );
-  const dayNumber = getDayNumber();
+  const dayNumber = getDayNumber(puzzleDate);
 
   const askForHint = () => {
     const nodeIds = graph.nodes.map((n: { id: string }) => n.id);

@@ -22,17 +22,18 @@ import {
   useLocalStorage,
 } from "./utilities/useLocalStorage";
 import {
-  getDailyPair,
   getRandomDailyPair,
   getLocalDateString,
 } from "./utilities/dailyTarget";
-import { getDailyTriple } from "./utilities/tripleTarget";
+import { loadOrPickDaily, loadOrPickTriple } from "./utilities/puzzleCache";
+import { getWordGraph } from "./dictionaryData/wordGraphRef";
 import {
   computeStreak,
   type DailyHistory,
   type TripleHistory,
 } from "./utilities/dailyStats";
 import { setWordGraph } from "./dictionaryData/wordGraphRef";
+// `getWordGraph` imported above for the migration's orphan-word check.
 import { setDisconnectedValidWords } from "./dictionaryData/disconnectedValidWordsRef";
 
 const freeplayInitialGraph = {
@@ -63,12 +64,14 @@ const App = () => {
       setWordGraph(wordGraph);
       setDictReady(true);
       // After the dict is loaded, sanity-check stored graph state: any
-      // saved daily/triple graph whose first node doesn't match the
-      // picker's start for that date gets cleared. Covers dict-swap
-      // mismatches and the rollover-transition edge case for users
-      // west of UTC.
+      // saved daily/triple graph whose start word is no longer in the
+      // playable dictionary gets cleared (orphan-word check). Other
+      // dict-shift cases are tolerated — the per-date puzzle cache
+      // makes the user's stored puzzle authoritative regardless of
+      // current picker output.
       try {
-        migrateStaleGraphState(getDailyPair, getDailyTriple);
+        const wordGraph = getWordGraph();
+        migrateStaleGraphState((word) => word in wordGraph);
       } catch {
         // Migration is best-effort; never let it block app load.
       }
@@ -176,24 +179,18 @@ const App = () => {
       : mode === "triple"
         ? tripleStreak
         : undefined;
-  // `today` is held in state (not just computed in render) so we can refresh
-  // it when the user comes back to a stale tab — otherwise a tab left open
-  // across midnight UTC would keep showing yesterday's puzzle, and worse,
-  // re-save yesterday's graph state to today's storage key as soon as
-  // something triggers a re-render.
-  const [today, setToday] = useState(getLocalDateString);
-  useEffect(() => {
-    const refresh = () => setToday(getLocalDateString());
-    const onVisibility = () => {
-      if (!document.hidden) refresh();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("focus", refresh);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("focus", refresh);
-    };
-  }, []);
+  // `activeDate` is the date of the puzzle this user is currently
+  // playing. Initialised once at mount = current local date, then sticky
+  // for the rest of the session. We deliberately do NOT refresh it on
+  // focus or visibility events, so a user who started the puzzle at
+  // 11:55pm and finishes at 12:15am stays on the same puzzle and gets
+  // their solve recorded under the started date.
+  //
+  // A page refresh re-initialises (fresh mount → activeDate = whatever
+  // today is at that moment). So crossing midnight + reloading = today's
+  // new puzzle, yesterday's progress silently abandoned in localStorage.
+  // That's the trade we picked over a "continue yesterday?" UI prompt.
+  const [activeDate] = useState(getLocalDateString);
   // Dev mode: when `?dev=1` is in the URL, the DevPanel is rendered and the
   // dev-override (if set) replaces the real daily pair. Not deployed —
   // tooling for testing the picker against different difficulties / seeds.
@@ -214,8 +211,8 @@ const App = () => {
         target: devDailyOverride.target,
       };
     }
-    return getDailyPair(today);
-  }, [today, dictReady, devMode, devDailyOverride]);
+    return loadOrPickDaily(activeDate);
+  }, [activeDate, dictReady, devMode, devDailyOverride]);
 
   const handleDevReroll = (difficulty: number | undefined) => {
     const pair = getRandomDailyPair(difficulty);
@@ -246,8 +243,8 @@ const App = () => {
     [dailyPair?.start]
   );
   const dailyTriple = useMemo(
-    () => (dictReady ? getDailyTriple(today) : null),
-    [today, dictReady]
+    () => (dictReady ? loadOrPickTriple(activeDate) : null),
+    [activeDate, dictReady]
   );
   const tripleInitialGraph = useMemo(
     () =>
@@ -286,7 +283,7 @@ const App = () => {
   // `daily:*`) clears them too, and the count is recorded into history
   // when the puzzle is solved.
   const [dailyHintsUsed, setDailyHintsUsed] = useLocalStorage<number>(
-    `daily:v2:${today}:hintsUsed`,
+    `daily:v2:${activeDate}:hintsUsed`,
     0
   );
   const [tripleSolvedDate, setTripleSolvedDate] = useLocalStorage<
@@ -298,8 +295,8 @@ const App = () => {
     setDailyDismissed(false);
     setTripleDismissed(false);
   }, [mode]);
-  const dailySolved = dailySolvedDate === today;
-  const tripleSolved = tripleSolvedDate === today;
+  const dailySolved = dailySolvedDate === activeDate;
+  const tripleSolved = tripleSolvedDate === activeDate;
   const hideInputForDaily = dailySolved && !dailyDismissed;
   const hideInputForTriple = tripleSolved && !tripleDismissed;
 
@@ -322,12 +319,13 @@ const App = () => {
         </main>
       ) : mode === "daily" ? (
         <GraphProvider
-          key={`daily-${today}`}
-          keyPrefix={`daily:v2:${today}`}
+          key={`daily-${activeDate}`}
+          keyPrefix={`daily:v2:${activeDate}`}
           initialGraph={dailyInitialGraph}
           initialSelectedWord={dailyPair.start}
         >
           <StatusStripDaily
+            puzzleDate={activeDate}
             start={dailyPair.start}
             target={dailyPair.target}
             hintsUsed={dailyHintsUsed}
@@ -347,6 +345,7 @@ const App = () => {
             </div>
           </main>
           <VictoryPanelDaily
+            puzzleDate={activeDate}
             start={dailyPair.start}
             target={dailyPair.target}
             history={dailyHistory}
@@ -367,12 +366,13 @@ const App = () => {
         </GraphProvider>
       ) : mode === "triple" ? (
         <GraphProvider
-          key={`triple-${today}`}
-          keyPrefix={`triple:v1:${today}`}
+          key={`triple-${activeDate}`}
+          keyPrefix={`triple:v1:${activeDate}`}
           initialGraph={tripleInitialGraph}
           initialSelectedWord={dailyTriple.start}
         >
           <StatusStripTriple
+            puzzleDate={activeDate}
             start={dailyTriple.start}
             t1={dailyTriple.t1}
             t2={dailyTriple.t2}
@@ -391,6 +391,7 @@ const App = () => {
             </div>
           </main>
           <VictoryPanelTriple
+            puzzleDate={activeDate}
             start={dailyTriple.start}
             t1={dailyTriple.t1}
             t2={dailyTriple.t2}

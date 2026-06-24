@@ -16,17 +16,21 @@ describe("migrateStaleGraphState", () => {
     );
   };
 
-  it("clears daily state when stored start word doesn't match picker", () => {
-    setGraph("daily:v2:2026-06-02", "wrong");
+  // The migration only clears state in the orphan-word case: the stored
+  // start has been removed from the playable dictionary and the player
+  // genuinely can't move from it. Other forms of dict drift (picker
+  // output shifted but start word still typeable) are tolerated because
+  // the per-date puzzle cache makes the user's stored puzzle canonical.
+
+  it("clears daily state when the stored start is no longer in the dictionary", () => {
+    setGraph("daily:v2:2026-06-02", "removed");
     window.localStorage.setItem(
       "wordJourney:daily:v2:2026-06-02:selectedWord",
-      JSON.stringify("wrong")
+      JSON.stringify("removed")
     );
 
-    migrateStaleGraphState(
-      () => ({ start: "plain" }),
-      () => ({ start: "anything" })
-    );
+    const playable = new Set(["alive", "plain", "held"]);
+    migrateStaleGraphState((word) => playable.has(word));
 
     expect(
       window.localStorage.getItem("wordJourney:daily:v2:2026-06-02:graph")
@@ -38,26 +42,24 @@ describe("migrateStaleGraphState", () => {
     ).toBeNull();
   });
 
-  it("preserves state when stored start matches picker", () => {
+  it("preserves state when the stored start is still playable, even if the picker would now pick something different", () => {
     setGraph("daily:v2:2026-06-02", "plain");
 
-    migrateStaleGraphState(
-      () => ({ start: "plain" }),
-      () => ({ start: "anything" })
-    );
+    // Simulate dict drift: the picker would now give a different start,
+    // but "plain" itself is still a valid word in the dictionary.
+    const playable = new Set(["plain", "alive"]);
+    migrateStaleGraphState((word) => playable.has(word));
 
     expect(
       window.localStorage.getItem("wordJourney:daily:v2:2026-06-02:graph")
     ).not.toBeNull();
   });
 
-  it("handles triple state mismatch", () => {
-    setGraph("triple:v1:2026-06-02", "wrong");
+  it("clears triple state when the stored start is no longer playable", () => {
+    setGraph("triple:v1:2026-06-02", "removed");
 
-    migrateStaleGraphState(
-      () => ({ start: "anything" }),
-      () => ({ start: "slip" })
-    );
+    const playable = new Set(["alive"]);
+    migrateStaleGraphState((word) => playable.has(word));
 
     expect(
       window.localStorage.getItem("wordJourney:triple:v1:2026-06-02:graph")
@@ -65,7 +67,7 @@ describe("migrateStaleGraphState", () => {
   });
 
   it("doesn't touch unrelated keys (freeplay, stats)", () => {
-    setGraph("daily:v2:2026-06-02", "wrong");
+    setGraph("daily:v2:2026-06-02", "removed");
     window.localStorage.setItem(
       "wordJourney:freeplay:target",
       JSON.stringify("something")
@@ -75,10 +77,7 @@ describe("migrateStaleGraphState", () => {
       JSON.stringify({})
     );
 
-    migrateStaleGraphState(
-      () => ({ start: "plain" }),
-      () => ({ start: "anything" })
-    );
+    migrateStaleGraphState(() => false); // everything appears removed
 
     expect(
       window.localStorage.getItem("wordJourney:freeplay:target")
@@ -98,10 +97,7 @@ describe("migrateStaleGraphState", () => {
     );
 
     expect(() =>
-      migrateStaleGraphState(
-        () => ({ start: "plain" }),
-        () => ({ start: "anything" })
-      )
+      migrateStaleGraphState(() => true)
     ).not.toThrow();
   });
 });

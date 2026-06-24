@@ -11,7 +11,7 @@ import { Button } from "./ui/Button";
 import { GraphContext } from "./GraphProvider";
 import { useLocalStorage } from "../utilities/useLocalStorage";
 import { displayWord } from "../utilities/displayWord";
-import { getDayNumber, getLocalDateString } from "../utilities/dailyTarget";
+import { getDayNumber } from "../utilities/dailyTarget";
 import {
   findSteinerTree,
   findSteinerTreeInGraph,
@@ -41,6 +41,10 @@ const fireConfetti = (extraOomph: boolean) => {
 };
 
 type VictoryPanelTripleProps = {
+  // The puzzle's "started on" date (see App.tsx `activeDate`). Sticky
+  // across midnight crossings so a late-night solve still records under
+  // the started date.
+  puzzleDate: string;
   start: string;
   t1: string;
   t2: string;
@@ -57,6 +61,7 @@ type VictoryPanelTripleProps = {
 };
 
 export const VictoryPanelTriple = ({
+  puzzleDate,
   start,
   t1,
   t2,
@@ -69,7 +74,7 @@ export const VictoryPanelTriple = ({
   solvedDate,
   setSolvedDate,
 }: VictoryPanelTripleProps) => {
-  const today = getLocalDateString();
+  const today = puzzleDate;
   const { graph } = useContext(GraphContext);
 
   const [userTreeSize, setUserTreeSize] = useLocalStorage<number | null>(
