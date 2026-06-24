@@ -65,6 +65,8 @@ Use `yarn dict {add,remove} {A,B} <word>...` for routine edits — it runs the f
 
 There's no staging — every deploy is to production. **`yarn deploy` always pushes `origin master` after `gh-pages` (via a `postdeploy` hook)** so the public source tree stays in lock-step with what's live. Don't deploy from a dirty working tree or a non-`master` branch — anything on `HEAD` will be force-sent both to users (via `gh-pages`) and to the public repo. Conversely, never push `origin master` without deploying; we want the two to track each other exactly.
 
+After merging a PR on GitHub, sync local master before deploying: `git checkout master && git pull origin master`. Otherwise the build runs against pre-merge code AND the postdeploy push is rejected as non-fast-forward.
+
 | Change | Failure mode | Mitigation |
 |---|---|---|
 | Dict A | Picker output shifts for non-pinned dates, but the per-date puzzle cache (`{daily,triple}:vN:{date}:puzzle`) means each user keeps the puzzle they first encountered. Stale-bundle users see different puzzles from fresh-bundle users until they refresh. | None routine — accept cross-user divergence between deploys. For a deliberate hot-fix (e.g. a bad pair to retract), add a manual `puzzleOverrides.ts` entry AND bump `PUZZLE_CACHE_VERSION` in `src/utilities/puzzleCache.ts` to invalidate every user's cache on next load. |
