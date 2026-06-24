@@ -63,14 +63,74 @@ const writeJSON = (key: string, value: unknown): void => {
   }
 };
 
+// Cache-miss reconciliation: when we're about to write a fresh cache
+// entry for a date, check whether there's already an in-progress graph
+// for that date whose start disagrees with the fresh pick. If so, wipe
+// the date's stored state — the user's mid-game graph is for a puzzle
+// that no longer matches what loadOrPick is about to return.
+//
+// Two scenarios fire this:
+//   1. The deploy that introduced this cache file. Users with stored
+//      graphs from before the cache existed have a graph but no
+//      `:puzzle` entry; if the picker's output has shifted since they
+//      started, their stored graph is stale.
+//   2. A deliberate `PUZZLE_CACHE_VERSION` bump (e.g. to roll out a
+//      hot-fix override for a bad pair). Old cache entries fail the
+//      version check, the picker runs again, and the user's stored
+//      graph may no longer match.
+//
+// Must be called from a parent render path that runs BEFORE the
+// GraphProvider that owns the stored graph mounts — otherwise React's
+// in-memory copy of the graph survives the localStorage wipe. App.tsx
+// calls this via the dailyPair / tripleData useMemos, which run before
+// the JSX containing GraphProvider is committed.
+const wipeDatePrefix = (modeKey: string, date: string): void => {
+  const prefix = `${STORAGE_PREFIX}${modeKey}:${date}:`;
+  try {
+    for (let i = window.localStorage.length - 1; i >= 0; i--) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // Best effort.
+  }
+};
+
+const reconcileGraphWithFreshStart = (
+  modeKey: "daily:v2" | "triple:v1",
+  date: string,
+  freshStart: string
+): void => {
+  try {
+    const graphKey = `${STORAGE_PREFIX}${modeKey}:${date}:graph`;
+    const raw = window.localStorage.getItem(graphKey);
+    if (raw === null) return;
+    const parsed = JSON.parse(raw);
+    const storedStart = parsed?.nodes?.[0]?.id;
+    if (typeof storedStart === "string" && storedStart !== freshStart) {
+      wipeDatePrefix(modeKey, date);
+    }
+  } catch {
+    // Best effort — leave state alone on parse failure.
+  }
+};
+
 export const loadOrPickDaily = (
   date: string
 ): { start: string; target: string } => {
   const cached = readJSON<CachedDaily>(dailyKey(date));
-  if (cached && cached.version === PUZZLE_CACHE_VERSION) {
+  if (
+    cached &&
+    cached.version === PUZZLE_CACHE_VERSION &&
+    typeof cached.start === "string" &&
+    typeof cached.target === "string"
+  ) {
     return { start: cached.start, target: cached.target };
   }
   const fresh = getDailyPair(date);
+  reconcileGraphWithFreshStart("daily:v2", date, fresh.start);
   writeJSON(dailyKey(date), {
     ...fresh,
     version: PUZZLE_CACHE_VERSION,
@@ -80,7 +140,14 @@ export const loadOrPickDaily = (
 
 export const loadOrPickTriple = (date: string): DailyTriple => {
   const cached = readJSON<CachedTriple>(tripleKey(date));
-  if (cached && cached.version === PUZZLE_CACHE_VERSION) {
+  if (
+    cached &&
+    cached.version === PUZZLE_CACHE_VERSION &&
+    typeof cached.start === "string" &&
+    typeof cached.t1 === "string" &&
+    typeof cached.t2 === "string" &&
+    typeof cached.optimalEdges === "number"
+  ) {
     return {
       start: cached.start,
       t1: cached.t1,
@@ -89,28 +156,10 @@ export const loadOrPickTriple = (date: string): DailyTriple => {
     };
   }
   const fresh = getDailyTriple(date);
+  reconcileGraphWithFreshStart("triple:v1", date, fresh.start);
   writeJSON(tripleKey(date), {
     ...fresh,
     version: PUZZLE_CACHE_VERSION,
   } satisfies CachedTriple);
   return fresh;
-};
-
-// Used by `migrateStaleGraphState` when it detects that a cached
-// puzzle's start word is no longer in the playable dictionary. Drops the
-// cache entry so the next visit re-picks against the current dict.
-export const clearCachedDaily = (date: string): void => {
-  try {
-    window.localStorage.removeItem(dailyKey(date));
-  } catch {
-    // Best effort.
-  }
-};
-
-export const clearCachedTriple = (date: string): void => {
-  try {
-    window.localStorage.removeItem(tripleKey(date));
-  } catch {
-    // Best effort.
-  }
 };

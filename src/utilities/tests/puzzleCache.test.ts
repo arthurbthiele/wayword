@@ -50,6 +50,68 @@ describe("loadOrPickDaily", () => {
     );
     expect(stored.version).toBe(1);
   });
+
+  it("falls through to re-pick if a version-matched cache entry is missing fields", () => {
+    // A hand-edited or partially-corrupt entry with the right version
+    // tag but no start/target shouldn't return undefined words. Type
+    // guards on start/target force a fresh pick instead.
+    window.localStorage.setItem(
+      "wordJourney:daily:v2:2026-06-02:puzzle",
+      JSON.stringify({ version: 1 })
+    );
+    const pair = loadOrPickDaily("2026-06-02");
+    expect(typeof pair.start).toBe("string");
+    expect(typeof pair.target).toBe("string");
+  });
+
+  it("wipes a stale in-progress graph when the cache miss resolves to a different start", () => {
+    // Simulate a user mid-game from before the cache existed: there's a
+    // graph in localStorage but no `:puzzle` entry. The fresh pick will
+    // disagree with the stored graph's start.
+    window.localStorage.setItem(
+      "wordJourney:daily:v2:2026-06-02:graph",
+      JSON.stringify({
+        nodes: [{ id: "stalestart", label: "stalestart" }],
+        edges: [],
+      })
+    );
+    window.localStorage.setItem(
+      "wordJourney:daily:v2:2026-06-02:selectedWord",
+      JSON.stringify("stalestart")
+    );
+
+    const fresh = loadOrPickDaily("2026-06-02");
+    expect(fresh.start).not.toBe("stalestart");
+    // Graph + selectedWord both wiped by the reconciliation step.
+    expect(
+      window.localStorage.getItem("wordJourney:daily:v2:2026-06-02:graph")
+    ).toBeNull();
+    expect(
+      window.localStorage.getItem(
+        "wordJourney:daily:v2:2026-06-02:selectedWord"
+      )
+    ).toBeNull();
+  });
+
+  it("leaves an in-progress graph alone when the stored start matches the fresh pick", () => {
+    // First compute the fresh pick so we can build a matching graph.
+    const fresh = loadOrPickDaily("2026-06-02");
+    // Clear the cache entry but keep a matching graph — simulates "user
+    // had a matching graph from before the cache existed, then we cache-miss".
+    window.localStorage.removeItem("wordJourney:daily:v2:2026-06-02:puzzle");
+    window.localStorage.setItem(
+      "wordJourney:daily:v2:2026-06-02:graph",
+      JSON.stringify({
+        nodes: [{ id: fresh.start, label: fresh.start }],
+        edges: [],
+      })
+    );
+
+    loadOrPickDaily("2026-06-02");
+    expect(
+      window.localStorage.getItem("wordJourney:daily:v2:2026-06-02:graph")
+    ).not.toBeNull();
+  });
 });
 
 describe("loadOrPickTriple", () => {
