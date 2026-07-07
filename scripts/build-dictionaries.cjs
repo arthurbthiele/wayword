@@ -270,6 +270,8 @@ const dictBInclude = new Set([
   "roo", "asp", "bream", "bam", "lede", "seance", "slimed", "wort", "binging", "brining", "mach", "stele", "pacer", "stye", "eared",
   // Added 2026-06-23 via scripts/edit-dict.cjs.
   "barding",
+  // Added 2026-07-07 via scripts/edit-dict.cjs.
+  "holt", "kine", "pled", "nock", "tase", "tased", "cred", "chare", "marl", "woad", "clast", "roc", "skink", "wicking", "lek", "torc", "couth", "hench", "scry", "phage", "lich", "merc", "durity", "lat", "rad", "lam", "hod", "pip", "dun", "hob", "rand", "cud", "yaw", "sai", "fob", "bonk", "boop", "bro", "poo",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------

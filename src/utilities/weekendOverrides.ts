@@ -20,56 +20,56 @@
 import type { DailyOverride } from "./puzzleOverrides";
 
 export const weekendDailyOverrides: Record<string, DailyOverride> = {
-  "2026-06-27": { start: "wiped", target: "headed" }, // Sat
-  "2026-06-28": { start: "whose", target: "header" }, // Sun
-  "2026-07-04": { start: "timing", target: "spending" }, // Sat
-  "2026-07-05": { start: "fire", target: "bunch" }, // Sun
   "2026-07-11": { start: "bass", target: "beaten" }, // Sat
   "2026-07-12": { start: "bash", target: "trailed" }, // Sun
-  "2026-07-18": { start: "straw", target: "tribe" }, // Sat
+  "2026-07-18": { start: "straw", target: "cured" }, // Sat
   "2026-07-19": { start: "same", target: "ruined" }, // Sun
-  "2026-07-25": { start: "burned", target: "baud" }, // Sat
+  "2026-07-25": { start: "burned", target: "save" }, // Sat
   "2026-07-26": { start: "lain", target: "barrel" }, // Sun
-  "2026-08-01": { start: "stolen", target: "brick" }, // Sat
+  "2026-08-01": { start: "stolen", target: "abide" }, // Sat
   "2026-08-02": { start: "luck", target: "nailed" }, // Sun
   "2026-08-08": { start: "maize", target: "gutter" }, // Sat
-  "2026-08-09": { start: "cold", target: "barrel" }, // Sun
+  "2026-08-09": { start: "cold", target: "sneaky" }, // Sun
   "2026-08-15": { start: "bull", target: "market" }, // Sat
-  "2026-08-16": { start: "joked", target: "bitter" }, // Sun
+  "2026-08-16": { start: "joked", target: "inner" }, // Sun
   "2026-08-22": { start: "half", target: "driver" }, // Sat
   "2026-08-23": { start: "ball", target: "flying" }, // Sun
-  "2026-08-29": { start: "award", target: "tracked" }, // Sat
+  "2026-08-29": { start: "award", target: "across" }, // Sat
   "2026-08-30": { start: "nick", target: "awaited" }, // Sun
   "2026-09-05": { start: "mislead", target: "wishes" }, // Sat
   "2026-09-06": { start: "curve", target: "tackle" }, // Sun
   "2026-09-12": { start: "life", target: "sender" }, // Sat
-  "2026-09-13": { start: "spool", target: "reset" }, // Sun
+  "2026-09-13": { start: "spool", target: "parsed" }, // Sun
   "2026-09-19": { start: "spies", target: "closet" }, // Sat
-  "2026-09-20": { start: "table", target: "glasses" }, // Sun
-  "2026-09-26": { start: "talk", target: "passed" }, // Sat
+  "2026-09-20": { start: "table", target: "slowed" }, // Sun
+  "2026-09-26": { start: "talk", target: "slower" }, // Sat
   "2026-09-27": { start: "crowd", target: "merge" }, // Sun
   "2026-10-03": { start: "match", target: "tacked" }, // Sat
   "2026-10-04": { start: "switch", target: "phrase" }, // Sun
-  "2026-10-10": { start: "boil", target: "pump" }, // Sat
-  "2026-10-11": { start: "sine", target: "booked" }, // Sun
-  "2026-10-17": { start: "book", target: "priced" }, // Sat
+  "2026-10-10": { start: "boil", target: "luck" }, // Sat
+  "2026-10-11": { start: "sine", target: "clashes" }, // Sun
+  "2026-10-17": { start: "book", target: "finger" }, // Sat
   "2026-10-18": { start: "shoot", target: "around" }, // Sun
-  "2026-10-24": { start: "charmed", target: "bank" }, // Sat
+  "2026-10-24": { start: "charmed", target: "want" }, // Sat
   "2026-10-25": { start: "line", target: "bracket" }, // Sun
   "2026-10-31": { start: "dealing", target: "listing" }, // Sat
   "2026-11-01": { start: "found", target: "starred" }, // Sun
-  "2026-11-07": { start: "front", target: "winner" }, // Sat
+  "2026-11-07": { start: "front", target: "slept" }, // Sat
   "2026-11-08": { start: "quite", target: "while" }, // Sun
   "2026-11-14": { start: "barred", target: "dove" }, // Sat
   "2026-11-15": { start: "tray", target: "deprived" }, // Sun
   "2026-11-21": { start: "tended", target: "stick" }, // Sat
-  "2026-11-22": { start: "dark", target: "rocket" }, // Sun
+  "2026-11-22": { start: "dark", target: "flashes" }, // Sun
   "2026-11-28": { start: "style", target: "push" }, // Sat
   "2026-11-29": { start: "minded", target: "poster" }, // Sun
   "2026-12-05": { start: "handle", target: "grave" }, // Sat
-  "2026-12-06": { start: "barred", target: "coarse" }, // Sun
-  "2026-12-12": { start: "forced", target: "eaten" }, // Sat
+  "2026-12-06": { start: "barred", target: "bring" }, // Sun
+  "2026-12-12": { start: "forced", target: "washes" }, // Sat
   "2026-12-13": { start: "raced", target: "across" }, // Sun
-  "2026-12-19": { start: "front", target: "messy" }, // Sat
+  "2026-12-19": { start: "front", target: "board" }, // Sat
   "2026-12-20": { start: "prove", target: "amended" }, // Sun
+  "2026-12-26": { start: "push", target: "hacker" }, // Sat
+  "2026-12-27": { start: "winning", target: "typing" }, // Sun
+  "2027-01-02": { start: "belt", target: "pended" }, // Sat
+  "2027-01-03": { start: "held", target: "urged" }, // Sun
 };
