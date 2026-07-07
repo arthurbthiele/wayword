@@ -51,6 +51,12 @@ export const dailyOverrides: Record<string, DailyOverride> = {
   // W-themed Saturday for a friend's W-party. Distance 8 (Saturday-standard),
   // no path-dip below 4 letters, Dict B gap 1.
   "2026-06-27": { start: "whose", target: "winner" },
+  // Pinned away from the deterministic KILL→CURVE pick — a grim start word
+  // for a gentle daily. Neutral nature pair, same difficulty (optimal 7).
+  "2026-08-10": { start: "stone", target: "river" },
+  // Christmas Day — themed. Cozy cold→warm (optimal 6; routes through
+  // could→would→world).
+  "2026-12-25": { start: "cold", target: "warm" },
 };
 
 export const tripleOverrides: Record<string, TripleOverride> = {
@@ -64,4 +70,6 @@ export const tripleOverrides: Record<string, TripleOverride> = {
   // tree: joint at "waking", with short branches to walking + wading and a
   // longer one to wishing via bashing/washing. 7 edges total.
   "2026-06-27": { start: "wading", t1: "walking", t2: "wishing" },
+  // Christmas Day — themed triple: the three icons (snow, star, gift).
+  "2026-12-25": { start: "snow", t1: "star", t2: "gift" },
 };
