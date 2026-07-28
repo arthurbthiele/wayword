@@ -1443,7 +1443,6 @@ export const legitimateWords: ReadonlySet<string> = new Set([
   "lease",
   "least",
   "leave",
-  "leaved",
   "leaves",
   "leaving",
   "led",

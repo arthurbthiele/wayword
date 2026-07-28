@@ -51,9 +51,19 @@ export const dailyOverrides: Record<string, DailyOverride> = {
   // W-themed Saturday for a friend's W-party. Distance 8 (Saturday-standard),
   // no path-dip below 4 letters, Dict B gap 1.
   "2026-06-27": { start: "whose", target: "winner" },
+  // Pinned to the live pick so removing `leaved` from Dict A (which reshuffles
+  // the picker for every non-pinned date) doesn't change today under fresh
+  // loads. Existing players are cache-protected regardless.
+  "2026-07-28": { start: "slide", target: "task" },
   // Pinned away from the deterministic KILL→CURVE pick — a grim start word
   // for a gentle daily. Neutral nature pair, same difficulty (optimal 7).
   "2026-08-10": { start: "stone", target: "river" },
+  // Sensitivity pins: the picker landed pointed words on these dates (9/11,
+  // Halloween, and two grim January picks). Neutral/light substitutes.
+  "2026-09-11": { start: "stone", target: "acute" },
+  "2026-10-31": { start: "ghost", target: "about" },
+  "2027-01-15": { start: "smile", target: "acorn" },
+  "2027-01-26": { start: "coast", target: "aged" },
   // Christmas Day — themed. Cozy cold→warm (optimal 6; routes through
   // could→would→world).
   "2026-12-25": { start: "cold", target: "warm" },
@@ -70,6 +80,13 @@ export const tripleOverrides: Record<string, TripleOverride> = {
   // tree: joint at "waking", with short branches to walking + wading and a
   // longer one to wishing via bashing/washing. 7 edges total.
   "2026-06-27": { start: "wading", t1: "walking", t2: "wishing" },
+  // Paired with the daily pin on this date — keeps today's triple stable
+  // across the `leaved` Dict A removal.
+  "2026-07-28": { start: "dirty", t1: "chip", t2: "bored" },
+  // Sensitivity pins (see daily overrides): ABUSE and KILLER landed as triple
+  // start words. Australia Day (01-26) paired with the coast/beach daily.
+  "2027-01-08": { start: "stair", t1: "share", t2: "smart" },
+  "2027-01-26": { start: "beach", t1: "lunch", t2: "reacts" },
   // Christmas Day — themed triple: the three icons (snow, star, gift).
   "2026-12-25": { start: "snow", t1: "star", t2: "gift" },
 };

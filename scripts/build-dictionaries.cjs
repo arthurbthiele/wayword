@@ -219,6 +219,8 @@ const dictAOnlyExclude = new Set([
   // target or step in the displayed common-word optimal.
   "rape", "rapes", "raped", "raping",
   "rapist", "rapists",
+  // Removed 2026-07-28 via scripts/edit-dict.cjs.
+  "leaved",
 ]);
 
 // Manually promoted bridge words. SCOWL's lower tiers miss some common
@@ -272,6 +274,8 @@ const dictBInclude = new Set([
   "barding",
   // Added 2026-07-07 via scripts/edit-dict.cjs.
   "holt", "kine", "pled", "nock", "tase", "tased", "cred", "chare", "marl", "woad", "clast", "roc", "skink", "wicking", "lek", "torc", "couth", "hench", "scry", "phage", "lich", "merc", "durity", "lat", "rad", "lam", "hod", "pip", "dun", "hob", "rand", "cud", "yaw", "sai", "fob", "bonk", "boop", "bro", "poo",
+  // Added 2026-07-28 via scripts/edit-dict.cjs.
+  "paver", "luge", "doc", "mosh", "raver", "chai", "biter", "fop", "glug", "dosh", "dal", "dhal", "yay", "tut", "pish", "noir", "seine", "june", "july", "surd", "morse", "january", "february", "april", "august", "september", "october", "november", "december",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
