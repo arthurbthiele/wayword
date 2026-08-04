@@ -35,6 +35,7 @@ import {
 import { setWordGraph } from "./dictionaryData/wordGraphRef";
 // `getWordGraph` imported above for the migration's orphan-word check.
 import { setDisconnectedValidWords } from "./dictionaryData/disconnectedValidWordsRef";
+import { setBelowBarWords } from "./dictionaryData/belowBarWordsRef";
 
 const freeplayInitialGraph = {
   nodes: [{ id: "a", label: "a" }],
@@ -87,6 +88,14 @@ const App = () => {
         setDisconnectedValidWords(disconnectedValidBloom);
       }
     );
+    // belowBarBloom recognises real-but-too-rare words to give the
+    // "recognised, just not in the playable set" rejection + explainer.
+    // Same lazy, off-critical-path load as disconnectedValidBloom: until it
+    // arrives, these words fall through to the plain "not a word" message.
+    import("./dictionaryData/belowBarBloom").then(({ belowBarBloom }) => {
+      if (cancelled) return;
+      setBelowBarWords(belowBarBloom);
+    });
     return () => {
       cancelled = true;
     };

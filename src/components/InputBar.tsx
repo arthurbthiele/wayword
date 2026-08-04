@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { getWordGraph } from "../dictionaryData/wordGraphRef";
 import { getDisconnectedValidWords } from "../dictionaryData/disconnectedValidWordsRef";
+import { getBelowBarWords } from "../dictionaryData/belowBarWordsRef";
 import { wordsAreConnected } from "../utilities/wordAreConnected";
 import { GraphContext } from "./GraphProvider";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { DefinitionModal } from "./DefinitionModal";
+import { WhyNotPlayableModal } from "./WhyNotPlayableModal";
 import { displayWord } from "../utilities/displayWord";
 
 type InputBarProps = {
@@ -30,6 +32,7 @@ export const InputBar = ({
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [lookupWord, setLookupWord] = useState<string | null>(null);
+  const [whyOpen, setWhyOpen] = useState(false);
 
   // Focus the input whenever the selected word changes — i.e. when the
   // user clicks a node in the graph (or types-to-jump to an existing word).
@@ -118,6 +121,24 @@ export const InputBar = ({
           </span>
         );
       }
+      // Below-bar: real English, but rarer than our tier cutoff. These CAN
+      // be one edit from a playable word, so the message makes no adjacency
+      // claim — it just reports that the word is recognised, not playable.
+      if (getBelowBarWords().has(trimmed)) {
+        return (
+          <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
+            Wayword recognises '{trimmedDisplay}', but it's not in the playable
+            set.{" "}
+            <button
+              type="button"
+              className="wj-inputbar__why"
+              onClick={() => setWhyOpen(true)}
+            >
+              Why?
+            </button>
+          </span>
+        );
+      }
       return (
         <span className="wj-inputbar__hint wj-inputbar__hint--bad">
           ✗ '{trimmedDisplay}' is not a word
@@ -198,6 +219,7 @@ export const InputBar = ({
         word={lookupWord}
         onClose={() => setLookupWord(null)}
       />
+      <WhyNotPlayableModal open={whyOpen} onClose={() => setWhyOpen(false)} />
       <div className="wj-inputbar__field">
         <Input
           ref={inputRef}
