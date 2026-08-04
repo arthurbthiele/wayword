@@ -1077,6 +1077,9 @@ button {
     flex-basis: 100%;
     font-size: var(--text-xs);
     white-space: normal;
+    /* Reserve one line so the bottom-anchored input doesn't jump as the
+       hint appears/changes while typing. Messages are kept to one line. */
+    min-height: 1.5em;
   }
 
   .wj-victory {

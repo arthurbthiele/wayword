@@ -83,7 +83,11 @@ export const InputBar = ({
   const canSubmit = wordInGraph || (isDictionaryWord && isConnected);
 
   const hint = (() => {
-    if (trimmed.length === 0) return null;
+    // Always render the hint row (empty when there's no input) so its
+    // reserved height keeps the bottom-anchored input from jumping as
+    // messages appear/change. See the min-height in the mobile styles.
+    if (trimmed.length === 0)
+      return <span className="wj-inputbar__hint" aria-hidden="true" />;
     const trimmedDisplay = displayWord(trimmed);
     const selectedDisplay = displayWord(selectedWord);
     if (!selectedWord) {
@@ -127,8 +131,7 @@ export const InputBar = ({
       if (getBelowBarWords().has(trimmed)) {
         return (
           <span className="wj-inputbar__hint wj-inputbar__hint--neutral">
-            Wayword recognises '{trimmedDisplay}', but it's not in the playable
-            set.{" "}
+            '{trimmedDisplay}' is real, but not playable.{" "}
             <button
               type="button"
               className="wj-inputbar__why"
