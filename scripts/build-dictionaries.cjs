@@ -278,6 +278,10 @@ const dictBInclude = new Set([
   "paver", "luge", "doc", "mosh", "raver", "chai", "biter", "fop", "glug", "dosh", "dal", "dhal", "yay", "tut", "pish", "noir", "seine", "june", "july", "surd", "morse", "january", "february", "april", "august", "september", "october", "november", "december",
   // Added 2026-07-28 via scripts/edit-dict.cjs.
   "glute", "glutes",
+  // Added 2026-08-04 via scripts/edit-dict.cjs.
+  "hex", "max", "remix", "comp", "scrum", "busk", "serif", "cafe", "glam", "penne", "jib", "tat", "braze", "cosh", "plonk", "skive", "prang", "roust", "croft", "demob", "remap", "unfix", "whelm", "ere", "haw", "dob", "clade", "prat",
+  // Added 2026-08-04 via scripts/edit-dict.cjs.
+  "pend",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
