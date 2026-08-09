@@ -20,8 +20,9 @@ export const WhyNotPlayableModal = ({
       </p>
 
       <p>
-        When I first made Wayword, I started with a much bigger dictionary
-        (~200k valid words). While it meant basically no-one ran into the
+        In early playtesting for Wayword, I started with a much bigger
+        dictionary (~200k valid words). While it meant basically no-one ran
+        into the
         issue of 'wait, why isn't the game recognising my word?', it had other
         downsides. The winning strategy for tricky puzzles became typing
         random letters to see what connected, and the shortest paths would run

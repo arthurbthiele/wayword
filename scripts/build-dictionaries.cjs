@@ -282,6 +282,8 @@ const dictBInclude = new Set([
   "hex", "max", "remix", "comp", "scrum", "busk", "serif", "cafe", "glam", "penne", "jib", "tat", "braze", "cosh", "plonk", "skive", "prang", "roust", "croft", "demob", "remap", "unfix", "whelm", "ere", "haw", "dob", "clade", "prat",
   // Added 2026-08-04 via scripts/edit-dict.cjs.
   "pend",
+  // Added 2026-08-09 via scripts/edit-dict.cjs.
+  "ghee", "faux", "mid", "fey", "bap", "maned", "paned", "pash", "tam", "hie", "runed", "pease",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
