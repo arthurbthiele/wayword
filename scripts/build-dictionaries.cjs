@@ -284,6 +284,8 @@ const dictBInclude = new Set([
   "pend",
   // Added 2026-08-09 via scripts/edit-dict.cjs.
   "ghee", "faux", "mid", "fey", "bap", "maned", "paned", "pash", "tam", "hie", "runed", "pease",
+  // Added 2026-08-10 via scripts/edit-dict.cjs.
+  "tech", "dev", "retro", "indie", "pic", "pics", "pix", "vid", "vids", "ebook", "ebooks", "eco", "abs", "dang", "greek", "dutch", "swiss", "chinese", "latin", "irish", "thai", "finnish",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
