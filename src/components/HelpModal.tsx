@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal } from "./ui/Modal";
 import { AnimatedExplainer } from "./AnimatedExplainer";
+import { WhyNotPlayableModal } from "./WhyNotPlayableModal";
 
 type HelpModalProps = {
   open: boolean;
   onClose: () => void;
 };
 
-export const HelpModal = ({ open, onClose }: HelpModalProps) => (
+export const HelpModal = ({ open, onClose }: HelpModalProps) => {
+  const [whyOpen, setWhyOpen] = useState(false);
+  return (
+    <>
   <Modal open={open} onClose={onClose} ariaLabel="How to play">
     <div className="wj-help">
       <h2>How to play</h2>
@@ -53,6 +57,18 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
       </ul>
 
       <p style={{ marginTop: 24, marginBottom: 10, fontSize: 13, color: "var(--color-ink-muted)" }}>
+        Curious about the design and dictionary choices behind Wayword?{" "}
+        <button
+          type="button"
+          onClick={() => setWhyOpen(true)}
+          style={{ background: "none", border: "none", padding: 0, font: "inherit", color: "var(--color-accent)", textDecoration: "underline", cursor: "pointer" }}
+        >
+          Read about it here
+        </button>
+        .
+      </p>
+
+      <p style={{ marginTop: 0, marginBottom: 16, fontSize: 13, color: "var(--color-ink-muted)" }}>
         Feedback or word suggestions?{" "}
         <a
           href="https://forms.gle/KmDLHJ3Mas3kzcjz7"
@@ -99,4 +115,7 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => (
       </p>
     </div>
   </Modal>
-);
+      <WhyNotPlayableModal open={whyOpen} onClose={() => setWhyOpen(false)} />
+    </>
+  );
+};

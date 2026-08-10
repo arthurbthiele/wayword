@@ -552,16 +552,6 @@ button {
 .wj-inputbar__hint--neutral {
   color: var(--color-ink-muted);
 }
-/* Inline "Why?" link inside the below-bar rejection hint. */
-.wj-inputbar__why {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: var(--color-accent);
-  text-decoration: underline;
-  cursor: pointer;
-}
 
 /* Header icon button (used for help). */
 .wj-header__icon-button {
