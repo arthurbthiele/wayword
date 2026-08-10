@@ -286,6 +286,10 @@ const dictBInclude = new Set([
   "ghee", "faux", "mid", "fey", "bap", "maned", "paned", "pash", "tam", "hie", "runed", "pease",
   // Added 2026-08-10 via scripts/edit-dict.cjs.
   "tech", "dev", "retro", "indie", "pic", "pics", "pix", "vid", "vids", "ebook", "ebooks", "eco", "abs", "dang", "greek", "dutch", "swiss", "chinese", "latin", "irish", "thai", "finnish",
+  // Added 2026-08-10 via scripts/edit-dict.cjs.
+  "turbo", "ciao", "morph", "xerox",
+  // Added 2026-08-10 via scripts/edit-dict.cjs.
+  "african", "afrikaans", "albanian", "american", "arabic", "armenian", "asian", "australian", "aztec", "baltic", "bangladeshi", "bengali", "bolivian", "brazilian", "british", "bulgarian", "canadian", "cantonese", "caribbean", "catalan", "celtic", "chilean", "colombian", "croatian", "cuban", "czech", "egyptian", "esperanto", "estonian", "ethiopian", "european", "farsi", "filipino", "gaelic", "georgian", "haitian", "hebrew", "hindi", "hispanic", "hungarian", "icelandic", "indian", "indonesian", "iranian", "iraqi", "israeli", "italian", "jamaican", "japanese", "javanese", "kenyan", "korean", "latina", "latvian", "lebanese", "lithuanian", "malay", "malaysian", "mayan", "mexican", "mongolian", "moroccan", "nepali", "nigerian", "nordic", "norwegian", "pakistani", "persian", "peruvian", "polynesian", "portuguese", "punjabi", "romanian", "russian", "sanskrit", "saudi", "scandinavian", "scottish", "serbian", "slavic", "slovak", "slovenian", "spanish", "swahili", "swedish", "syrian", "tagalog", "tamil", "tibetan", "turkish", "ukrainian", "urdu", "venezuelan", "vietnamese", "yiddish", "zulu",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
@@ -487,7 +491,7 @@ fs.writeFileSync(path.join(outDir, "legitimate.ts"), legitimateContent);
 // still in current wordGraph (they're typeable, just not target-eligible),
 // so they don't appear in the disconnected set in the first place.
 //
-// Source = dict B source (= every word we considered for inclusion). Any
+// Source = the full dict B (source tiers + dictBInclude force-adds). Any
 // word that we attempted to admit to dict B and failed to connect lands
 // here, so the rejection message is honest. Previously this was tier-≤40
 // only, leaving higher-tier disconnected words (e.g. "duality" at tier 50)
@@ -498,7 +502,13 @@ fs.writeFileSync(path.join(outDir, "legitimate.ts"), legitimateContent);
 // they aren't really "words" in any sense players would defend.
 const DISCONNECTED_VALID_MIN_LENGTH = 2;
 const disconnectedValid = [];
-for (const word of dictBSource) {
+// Iterate the full dict B (source tiers PLUS the dictBInclude force-adds),
+// not just dictBSource — so a word we deliberately admit that turns out to
+// be graph-isolated is treated as "a real word we endorse, just unreachable"
+// (disconnectedValid → "is a word, but not one edit from X") rather than
+// silently falling through to the below-bar "not in the playable set"
+// message, which wrongly implies we judged it too obscure to include.
+for (const word of dictB) {
   if (word.length < DISCONNECTED_VALID_MIN_LENGTH) continue;
   if (excludeBoth.has(word)) continue;
   if (unionCC.has(word)) continue;
