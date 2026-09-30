@@ -100,11 +100,11 @@ export const HelpModal = ({ open, onClose }: HelpModalProps) => {
         </a>
         . Word definitions via{" "}
         <a
-          href="https://dictionaryapi.dev/"
+          href="https://en.wiktionary.org/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          dictionaryapi.dev
+          Wiktionary
         </a>
         . Full credits and licenses at{" "}
         <a href="/attributions.txt" target="_blank" rel="noopener noreferrer">
