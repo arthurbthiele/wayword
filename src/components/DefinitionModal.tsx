@@ -83,11 +83,11 @@ const renderBody = (word: string, result: DefinitionResult | null) => {
         <p className="wj-def__credit">
           Definitions via{" "}
           <a
-            href="https://dictionaryapi.dev/"
+            href={`https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            dictionaryapi.dev
+            Wiktionary
           </a>
         </p>
       </>

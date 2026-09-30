@@ -1,11 +1,19 @@
-// Fetch + cache definitions from dictionaryapi.dev (free, no key, CORS-
-// enabled). Used by the InputBar's "look up" button. Cache results in
-// localStorage so repeat lookups are instant and we don't re-hit the API
-// — they rate-limit aggressively (429s) under burst load, and we want
-// to be polite.
+// Fetch + cache definitions from the Wiktionary REST API (free, no key,
+// CORS-enabled). Used by the InputBar's "look up" button. Cache results in
+// localStorage so repeat lookups are instant and we stay polite to the API.
+//
+// Docs: https://en.wiktionary.org/api/rest_v1/#/Page%20content/get_page_definition__term_
+// The response's `en` bucket means "entries on English Wiktionary", not
+// "English-language entries" — it includes Translingual (ISO codes etc.) and
+// other languages, so we filter on `language === "English"`. Definitions are
+// Parsoid HTML fragments; we reduce them to plain text.
 
-const CACHE_PREFIX = "wj:def:";
-const API_BASE = "https://api.dictionaryapi.dev/api/v2/entries/en/";
+// Bumped when the source changed: not_found results from the previous API
+// (a partial Wiktionary scrape) shouldn't shadow the complete source.
+const CACHE_PREFIX = "wj:def2:";
+const API_BASE = "https://en.wiktionary.org/api/rest_v1/page/definition/";
+const REQUEST_TIMEOUT_MS = 8 * 1000;
+const ENGLISH = "English";
 
 export type DefinitionData = {
   word: string;
@@ -20,6 +28,12 @@ export type DefinitionResult =
   | { status: "ok"; data: DefinitionData }
   | { status: "not_found"; word: string }
   | { status: "error"; word: string };
+
+type WiktionaryEntry = {
+  partOfSpeech?: string;
+  language?: string;
+  definitions?: { definition?: string; examples?: string[] }[];
+};
 
 const readCache = (word: string): DefinitionResult | null => {
   try {
@@ -42,6 +56,38 @@ const writeCache = (word: string, result: DefinitionResult): void => {
   }
 };
 
+// Some definitions embed template <style> blocks whose CSS would otherwise
+// leak into textContent (seen on "lich").
+const htmlToText = (html: string): string => {
+  const body = new DOMParser().parseFromString(html, "text/html").body;
+  for (const element of body.querySelectorAll("style, link, script")) {
+    element.remove();
+  }
+  return (body.textContent ?? "").replace(/\s+/g, " ").trim();
+};
+
+const toMeanings = (entries: WiktionaryEntry[]): DefinitionData["meanings"] =>
+  entries
+    .filter((entry) => entry.language === ENGLISH)
+    .map((entry) => ({
+      partOfSpeech: (entry.partOfSpeech ?? "").toLowerCase(),
+      definitions: (entry.definitions ?? [])
+        .map((definition) => ({
+          definition: htmlToText(definition.definition ?? ""),
+          example: definition.examples?.[0]
+            ? htmlToText(definition.examples[0])
+            : undefined,
+        }))
+        .filter((definition) => definition.definition.length > 0),
+    }))
+    .filter((meaning) => meaning.definitions.length > 0);
+
+const saveNotFound = (word: string): DefinitionResult => {
+  const result: DefinitionResult = { status: "not_found", word };
+  writeCache(word, result);
+  return result;
+};
+
 export const fetchDefinition = async (
   word: string
 ): Promise<DefinitionResult> => {
@@ -50,55 +96,27 @@ export const fetchDefinition = async (
 
   let response: Response;
   try {
-    response = await fetch(API_BASE + encodeURIComponent(word));
+    response = await fetch(API_BASE + encodeURIComponent(word), {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
   } catch {
     return { status: "error", word };
   }
 
-  if (response.status === 404) {
-    const result: DefinitionResult = { status: "not_found", word };
-    writeCache(word, result);
-    return result;
-  }
-  if (!response.ok) {
-    // 429s or 5xxs — don't cache; let the user try again.
-    return { status: "error", word };
-  }
+  if (response.status === 404) return saveNotFound(word);
+  if (!response.ok) return { status: "error", word };
 
-  let json: unknown;
+  let json: { en?: WiktionaryEntry[] };
   try {
     json = await response.json();
   } catch {
     return { status: "error", word };
   }
 
-  if (!Array.isArray(json) || json.length === 0) {
-    const result: DefinitionResult = { status: "not_found", word };
-    writeCache(word, result);
-    return result;
-  }
+  const meanings = toMeanings(json.en ?? []);
+  if (meanings.length === 0) return saveNotFound(word);
 
-  const entry = json[0] as {
-    word?: string;
-    phonetic?: string;
-    meanings?: {
-      partOfSpeech?: string;
-      definitions?: { definition?: string; example?: string }[];
-    }[];
-  };
-
-  const data: DefinitionData = {
-    word: entry.word ?? word,
-    phonetic: entry.phonetic,
-    meanings: (entry.meanings ?? []).map((m) => ({
-      partOfSpeech: m.partOfSpeech ?? "",
-      definitions: (m.definitions ?? []).map((d) => ({
-        definition: d.definition ?? "",
-        example: d.example,
-      })),
-    })),
-  };
-  const result: DefinitionResult = { status: "ok", data };
+  const result: DefinitionResult = { status: "ok", data: { word, meanings } };
   writeCache(word, result);
   return result;
 };
