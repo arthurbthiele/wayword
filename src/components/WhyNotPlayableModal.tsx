@@ -42,29 +42,30 @@ export const WhyNotPlayableModal = ({
       </p>
 
       <p>
-        Like Wordle and other similar games, the current version of Wayword
-        uses a small list of target words (and guarantees a common-word path
-        between the targets), and a larger list of words the players are
-        allowed to input - but importantly, I try to keep that larger list
-        small enough that there's a minimum standard of recognisability for
-        each word.
+        Like Wordle and other similar games, Wayword uses a small list of
+        target words (and guarantees a common-word path between the targets),
+        and a much larger list of words players are allowed to input. I try to
+        keep that larger list generous but not bottomless: if a well-read
+        player might reasonably know a word, it's probably in - if it's
+        obsolete, or only really exists in Scrabble dictionaries, it's
+        probably not.
       </p>
 
       <p>
-        If you've found a word you think should be included but isn't, please
-        let me know in the{" "}
+        That list has grown a lot thanks to player suggestions - as of
+        September 2026, every word suggested through the feedback form that
+        clears that bar has been added. So if you've found a word you think
+        should be included but isn't, please let me know in the{" "}
         <a
           href="https://forms.gle/KmDLHJ3Mas3kzcjz7"
           target="_blank"
           rel="noopener noreferrer"
         >
           feedback form
-        </a>
-        . And if you have broader suggestions for how the game itself could
-        work better, let me know at{" "}
-        <a href="mailto:feedback@wayword.fun">feedback@wayword.fun</a> - as long
-        as the suggestion isn't 'have a much larger dictionary' - we've tried
-        that, doesn't work super well.
+        </a>{" "}
+        - it'll very likely make it in. And if you have broader suggestions for
+        how the game itself could work better, I'd love to hear them at{" "}
+        <a href="mailto:feedback@wayword.fun">feedback@wayword.fun</a>.
       </p>
     </div>
   </Modal>
