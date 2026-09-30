@@ -20,30 +20,6 @@
 import type { DailyOverride } from "./puzzleOverrides";
 
 export const weekendDailyOverrides: Record<string, DailyOverride> = {
-  "2026-07-11": { start: "bass", target: "beaten" }, // Sat
-  "2026-07-12": { start: "bash", target: "trailed" }, // Sun
-  "2026-07-18": { start: "straw", target: "cured" }, // Sat
-  "2026-07-19": { start: "same", target: "ruined" }, // Sun
-  "2026-07-25": { start: "burned", target: "save" }, // Sat
-  "2026-07-26": { start: "lain", target: "barrel" }, // Sun
-  "2026-08-01": { start: "stolen", target: "abide" }, // Sat
-  "2026-08-02": { start: "luck", target: "nailed" }, // Sun
-  "2026-08-08": { start: "maize", target: "gutter" }, // Sat
-  "2026-08-09": { start: "cold", target: "sneaky" }, // Sun
-  "2026-08-15": { start: "bull", target: "market" }, // Sat
-  "2026-08-16": { start: "joked", target: "inner" }, // Sun
-  "2026-08-22": { start: "half", target: "driver" }, // Sat
-  "2026-08-23": { start: "ball", target: "flying" }, // Sun
-  "2026-08-29": { start: "award", target: "across" }, // Sat
-  "2026-08-30": { start: "nick", target: "awaited" }, // Sun
-  "2026-09-05": { start: "mislead", target: "wishes" }, // Sat
-  "2026-09-06": { start: "curve", target: "tackle" }, // Sun
-  "2026-09-12": { start: "life", target: "sender" }, // Sat
-  "2026-09-13": { start: "spool", target: "parsed" }, // Sun
-  "2026-09-19": { start: "spies", target: "closet" }, // Sat
-  "2026-09-20": { start: "table", target: "slowed" }, // Sun
-  "2026-09-26": { start: "talk", target: "slower" }, // Sat
-  "2026-09-27": { start: "crowd", target: "merge" }, // Sun
   "2026-10-03": { start: "match", target: "tacked" }, // Sat
   "2026-10-04": { start: "switch", target: "phrase" }, // Sun
   "2026-10-10": { start: "boil", target: "luck" }, // Sat
@@ -57,7 +33,7 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-11-07": { start: "front", target: "slept" }, // Sat
   "2026-11-08": { start: "quite", target: "while" }, // Sun
   "2026-11-14": { start: "barred", target: "dove" }, // Sat
-  "2026-11-15": { start: "tray", target: "deprived" }, // Sun
+  "2026-11-15": { start: "rash", target: "listen" }, // Sun
   "2026-11-21": { start: "tended", target: "stick" }, // Sat
   "2026-11-22": { start: "dark", target: "flashes" }, // Sun
   "2026-11-28": { start: "style", target: "push" }, // Sat
@@ -72,4 +48,28 @@ export const weekendDailyOverrides: Record<string, DailyOverride> = {
   "2026-12-27": { start: "winning", target: "typing" }, // Sun
   "2027-01-02": { start: "belt", target: "pended" }, // Sat
   "2027-01-03": { start: "held", target: "urged" }, // Sun
+  "2027-01-09": { start: "tell", target: "dashed" }, // Sat
+  "2027-01-10": { start: "stream", target: "agree" }, // Sun
+  "2027-01-16": { start: "spoilt", target: "clock" }, // Sat
+  "2027-01-17": { start: "fiber", target: "campus" }, // Sun
+  "2027-01-23": { start: "soap", target: "flies" }, // Sat
+  "2027-01-24": { start: "trace", target: "monkey" }, // Sun
+  "2027-01-30": { start: "worm", target: "deprived" }, // Sat
+  "2027-01-31": { start: "mark", target: "laying" }, // Sun
+  "2027-02-06": { start: "talked", target: "pence" }, // Sat
+  "2027-02-07": { start: "halting", target: "kicking" }, // Sun
+  "2027-02-13": { start: "fooling", target: "making" }, // Sat
+  "2027-02-14": { start: "hire", target: "landed" }, // Sun
+  "2027-02-20": { start: "plan", target: "locked" }, // Sat
+  "2027-02-21": { start: "cash", target: "launch" }, // Sun
+  "2027-02-27": { start: "trick", target: "phase" }, // Sat
+  "2027-02-28": { start: "listen", target: "trace" }, // Sun
+  "2027-03-06": { start: "bracket", target: "care" }, // Sat
+  "2027-03-07": { start: "play", target: "gutter" }, // Sun
+  "2027-03-13": { start: "sorted", target: "miss" }, // Sat
+  "2027-03-14": { start: "hiring", target: "gleaning" }, // Sun
+  "2027-03-20": { start: "creep", target: "stream" }, // Sat
+  "2027-03-21": { start: "recent", target: "prove" }, // Sun
+  "2027-03-27": { start: "slow", target: "quota" }, // Sat
+  "2027-03-28": { start: "beam", target: "power" }, // Sun
 };
