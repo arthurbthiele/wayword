@@ -300,6 +300,8 @@ const dictBInclude = new Set([
   // Demonym, alongside the nationalities above. Deliberately NOT in
   // excludeBoth: that would make the game tell players "jew" isn't a word.
   "jew",
+  // Added 2026-09-30 via scripts/edit-dict.cjs.
+  "chad", "scape", "tock", "tsk", "afro", "afros", "bundt", "passe", "meta", "olde", "abled", "ender", "spoked", "quitted", "trine", "coset", "scute", "jewish", "muslim", "hindu", "buddhist", "sikh", "islam", "judaism", "hinduism", "buddhism", "sikhism", "christianity",
 ]);
 
 // --- 3. Build the two source dictionaries ------------------------------------
